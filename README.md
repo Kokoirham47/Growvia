@@ -1,192 +1,157 @@
-# 🌱 Growvia — AI-Powered Skill Ecosystem
+# 🔐 Feature: F01 — Authentication
 
-> **Platform karier terintegrasi bagi mahasiswa dan fresh graduate untuk mengubah pengalaman organisasi, kepanitiaan, magang, dan proyek menjadi skill terstruktur, analisis kesiapan karier, rekomendasi belajar personalisasi, dan portofolio profesional.**
-
-Branch ini (`develop`) adalah **integration branch utama** tempat bertemunya seluruh fitur tim Growvia sebelum dirilis ke `main`.
-
----
-
-## 📑 Daftar Isi
-
-1. [Ringkasan Proyek](#1-ringkasan-proyek)
-2. [Tech Stack](#2-tech-stack)
-3. [Pembagian Tugas Tim](#3-pembagian-tugas-tim)
-4. [Strategi Branch & Alur Kerja Git](#4-strategi-branch--alur-kerja-git)
-5. [Matriks Kepemilikan Database (Anti-Konflik)](#5-matriks-kepemilikan-database-anti-konflik)
-6. [Roadmap Merge & Sprint](#6-roadmap-merge--sprint)
-7. [Katalog Fitur & Daftar Branch](#7-katalog-fitur--daftar-branch)
-8. [Panduan Menjalankan Proyek](#8-panduan-menjalankan-proyek)
-9. [Dokumentasi Perencanaan (`plan-md`)](#9-dokumentasi-perencanaan-plan-md)
+> **Branch:** `feature/f01-authentication`  
+> **PIC / Assignee:** Anggota A (Beban: 40% — *Foundation & Core AI Loop*)  
+> **Prioritas:** P0 (Must Have)  
+> **Target Merge:** `develop` (Merge ke-1 — *Fondasi Sistem*)  
+> **Dokumen Terkait:** [PRD (F01)](./plan-md/prd.md#f01--authentication) · [Task Management](./plan-md/task-management.md#f01--authentication) · [ERD](./plan-md/erd_growvia.md)
 
 ---
 
-## 1. Ringkasan Proyek
+## 📌 Deskripsi Fitur
 
-- **Visi**: Menjadi ekosistem karier terlengkap bagi generasi muda Indonesia yang menghubungkan **Pengalaman → Skill → Karier** dalam satu alur berbasis kecerdasan buatan (AI).
-- **Target Pengguna**:
-  - *Primary*: Mahasiswa aktif semester 4–8 (aktif berorganisasi & kepanitiaan).
-  - *Secondary*: Fresh graduate 0–2 tahun pengalaman kerja.
-  - *Tertiary*: Career switcher yang memetakan ulang skill set mereka.
-- **Problem Statement**:
-  1. Sulit mengidentifikasi skill konkret dari pengalaman non-formal/organisasi.
-  2. Tidak mengetahui skill gap terhadap karier impian.
-  3. Bingung memilih materi belajar yang tepat untuk menutup gap.
-  4. Belum memiliki portofolio profesional berbasis bukti (*evidence-based*).
+Fitur autentikasi dan otorisasi adalah **tulang punggung (foundation)** seluruh sistem Growvia. Menyediakan mekanisme pendaftaran mahasiswa/fresh graduate yang aman, verifikasi email, login bersesi panjang (JWT + refresh token 30 hari), lupa password, dan middleware keamanan (`authMiddleware`) yang akan digunakan oleh seluruh branch fitur lainnya.
 
 ---
 
-## 2. Tech Stack
+## 🎯 Spesifikasi Kebutuhan & Sub-Fitur (PRD)
 
-| Layer | Teknologi | Keterangan |
-|---|---|---|
-| **Framework** | Next.js 16.1.1 (App Router + Turbopack) | Server & Client Components hybrid |
-| **UI Library** | MUI (Material UI) v7.3.6 | `@mui/material`, `@mui/lab`, CSS Variables |
-| **Styling** | Emotion + Tailwind CSS 4.1 | Utility styling & modular themes |
-| **Language** | TypeScript 5.9 | Strict typing |
-| **Icons** | Iconify (Tabler Icons) | `src/assets/iconify-icons` |
-| **AI Intelligence** | Gemini / Groq LLM API | Ekstraksi skill & ranking rekomendasi belajar |
-| **Visualization** | D3.js / Vis.js / React Flow | Skill Pattern Map graph |
+### F01.1 Register
+- Form input:
+  - **Nama Lengkap**
+  - **Email** (format email valid)
+  - **Password** (min. 8 karakter, minimal 1 huruf besar, minimal 1 angka)
+  - **Konfirmasi Password**
+- Validasi *real-time* per field dengan pesan error interaktif.
+- Enkripsi password menggunakan `bcrypt` (salt rounds ≥ 10).
+- Setelah submit sukses:
+  - Simpan akun dengan status `unverified`.
+  - Generate token verifikasi dan kirim email verifikasi.
+  - Tampilkan state loading saat submit, dan error feedback jika email sudah terdaftar.
+
+### F01.2 Email Verification
+- Token verifikasi acak yang aman dan valid selama **24 jam**.
+- Batas resend email: cooldown **60 detik**.
+- Setelah verifikasi berhasil: ubah status user menjadi `active`, simpan timestamp `email_verified_at`, dan redirect otomatis ke halaman Login dengan notifikasi sukses.
+
+### F01.3 Login & Session
+- Form input: **Email** + **Password**.
+- Responsif terhadap *rate limiting* untuk mencegah brute-force.
+- Pesan error generik demi keamanan: *"Email atau password salah"* (tanpa membocorkan apakah email terdaftar).
+- User tidak dapat login bila email belum diverifikasi (status `unverified`).
+- Penyimpanan session dengan JWT token & refresh token (stay logged in 30 hari).
+- **Logika Redireksi Pasca Login**:
+  - Jika profil belum lengkap (`PROFILE` belum ada / belum onboarding) ➔ redirect ke `/onboarding`.
+  - Jika profil sudah lengkap ➔ redirect ke `/dashboard`.
+
+### F01.4 Forgot & Reset Password
+- Request link reset password melalui email.
+- Token reset password dengan masa berlaku terbatas (1 jam).
+- Form set password baru dengan validasi keamanan identik dengan registrasi.
 
 ---
 
-## 3. Pembagian Tugas Tim
+## 🗄️ Lingkup Backend & Skema Basis Data
 
-Total Beban: **100%** | Skema Fullstack per Fitur (Frontend + Backend per orang):
+### Endpoint API
 
-| Anggota | Peran / Fokus | Fitur yang Dikerjakan | Beban |
+| Method | Endpoint | Deskripsi | Proteksi Auth |
 |---|---|---|---|
-| **Anggota A** | Foundation & Core AI Loop | **F01** Auth, **F02** Onboarding, **F03** Experience, **F04** AI Skill Extraction, **F10** Dashboard | **40%** |
-| **Anggota B** | Intelligence & Career Engine | **F05** Skill Profile, **F06** Career Target & Gap, **F07** Learning Recommendation, **F13** Admin Dashboard | **40%** |
-| **Anggota C** | Discovery & Identity | **F08** Career Opportunities, **F09** Portfolio Builder, **F12** Profile & Settings | **20%** |
+| `POST` | `/api/auth/register` | Mendaftarkan akun baru & kirim token email | Publik |
+| `POST` | `/api/auth/verify-email` | Memvalidasi token verifikasi email | Publik |
+| `POST` | `/api/auth/resend-verification` | Kirim ulang token verifikasi (cooldown 60s) | Publik |
+| `POST` | `/api/auth/login` | Login user, issue JWT access & refresh token | Publik |
+| `POST` | `/api/auth/logout` | Menghapus token session aktif | User Auth |
+| `POST` | `/api/auth/forgot-password` | Kirim email instruksi reset password | Publik |
+| `POST` | `/api/auth/reset-password` | Validasi token & update password baru | Publik |
+| `GET` | `/api/auth/me` | Ambil data identitas sesi login aktif | User Auth |
 
----
+### Middleware Bersama (`authMiddleware`)
+> ⚠️ **Sangat Penting:** `authMiddleware` harus diuji secara menyeluruh dan di-merge ke `develop` terlebih dahulu agar anggota lain (B dan C) dapat memanfaatkannya di branch masing-masing.
 
-## 4. Strategi Branch & Alur Kerja Git
+- Memeriksa header `Authorization: Bearer <token>` atau HTTP-only cookie session.
+- Mengurai user payload (`userId`, `email`, `role = user`).
+- Menghentikan request dengan status `401 Unauthorized` jika token tidak valid/kadaluarsa.
 
-```text
-main (Production / Stable Release)
- └── develop (Integration Branch)
-      ├── feature/f01-authentication      (Sprint 1 - Anggota A)
-      ├── feature/f02-onboarding          (Sprint 2 - Anggota A)
-      ├── feature/f03-experience          (Sprint 2 - Anggota A)
-      ├── feature/f04-ai-skill-extraction (Sprint 3 - Anggota A)
-      ├── feature/f05-skill-profile       (Sprint 4 - Anggota B)
-      ├── feature/f06-career-gap          (Sprint 5 - Anggota B)
-      ├── feature/f07-learning            (Sprint 6 - Anggota B)
-      ├── feature/f08-opportunities       (Sprint 3 - Anggota C)
-      ├── feature/f09-portfolio           (Sprint 5 - Anggota C)
-      ├── feature/f10-dashboard           (Sprint 4 - Anggota A)
-      ├── feature/f12-profile-settings    (Sprint 1 - Anggota C)
-      └── feature/f13-admin               (Sprint 6 - Anggota B)
-```
+### Entitas Basis Data (Ownership: Anggota A)
 
-### Aturan Branching & Pull Request:
-1. **Source Branch**: Setiap feature branch **wajib dibuat dari `develop` terbaru**:
-   ```bash
-   git checkout develop
-   git pull origin develop
-   git checkout -b feature/fXX-nama-fitur
-   ```
-2. **Merge Target**: Semua PR diarahkan ke **`develop`**, bukan ke `main`.
-3. **Branch `main`**: Hanya diperbarui saat rilis milestone stabil (Alpha/Beta/v1.0).
-4. **Shared Files**: File global seperti middleware auth, skema basis data inti, konfigurasi `.env`, dan layout root dikerjakan di `develop` sebelum didistribusikan ke branch fitur.
+```mermaid
+erDiagram
+    USER {
+        uuid id PK
+        string name
+        string email UK
+        string password_hash
+        string avatar_url
+        enum status "active | unverified | suspended | deleted"
+        timestamp email_verified_at
+        timestamp created_at
+        timestamp updated_at
+        timestamp deleted_at
+    }
 
----
+    EMAIL_VERIFICATION {
+        uuid id PK
+        uuid user_id FK
+        string token UK
+        timestamp expires_at
+        boolean used
+        timestamp created_at
+    }
 
-## 5. Matriks Kepemilikan Database (Anti-Konflik)
+    SESSION {
+        uuid id PK
+        uuid user_id FK
+        string refresh_token UK
+        string device_info
+        timestamp expires_at
+        timestamp created_at
+    }
 
-Untuk menghindari *merge conflict* pada database logic dan schema:
-
-| Tabel Basis Data | PIC Pemilik (Write / Primary CRUD) | Keterangan Konsumsi |
-|---|---|---|
-| `USER`, `EMAIL_VERIFICATION`, `SESSION` | **Anggota A** | Digunakan middleware auth oleh semua anggota |
-| `PROFILE`, `CAREER_INTEREST`, `CAREER_FIELD` | **Anggota A** | Dibaca oleh F09 (Portofolio) & F12 (Settings) |
-| `EXPERIENCE` | **Anggota A** | Dibaca oleh F04 (AI), F05 (Evidence), F09 (Portofolio) |
-| `AI_ANALYSIS_JOB`, `AI_SKILL_SUGGESTION` | **Anggota A** | Khusus modul AI extraction |
-| `SKILL` | **Anggota A** (Inisiasi/Seed) → **Anggota B** (Admin CRUD & Read) | Master taxonomy skill sistem |
-| `USER_SKILL`, `SKILL_EVIDENCE` | **Anggota A** (Write saat ekstraksi) → **Anggota B** (Read & Manage) | Relasi skill user & bukti pengalaman |
-| `CAREER_ROLE`, `CAREER_ROLE_SKILL` | **Anggota B** | Master library peran karier & bobot skill |
-| `USER_CAREER_TARGET`, `SKILL_GAP_RESULT` | **Anggota B** | Data analisis gap & readiness score |
-| `LEARNING_RESOURCE`, `RESOURCE_SKILL_TAG` | **Anggota B** | Master data resource & tag skill |
-| `LEARNING_RECOMMENDATION`, `USER_SAVED_RESOURCE` | **Anggota B** | Hasil hybrid AI ranking belajar & bookmark |
-| `ADMIN` | **Anggota B** | Akun autentikasi portal admin |
-| `CAREER_OPPORTUNITY`, `OPPORTUNITY_SKILL_TAG` | **Anggota C** | Data lowongan karier & tag kualifikasi |
-| `USER_SAVED_OPPORTUNITY` | **Anggota C** | Bookmark lowongan pengguna |
-
----
-
-## 6. Roadmap Merge & Sprint
-
-```text
-Sprint 1  →  F01 (Auth - A) [FOUNDATION] ──> F12 (Profile & Settings - C) bisa mulai
-Sprint 2  →  F02 (Onboarding - A) ───────> F03 (Experience - A)
-Sprint 3  →  F04 (AI Skill Extraction - A) ──> F08 (Opportunities - C) paralel
-Sprint 4  →  F05 (Skill Profile - B) ────> F10 (Dashboard Shell & Widgets - A)
-Sprint 5  →  F06 (Career Gap - B) ───────> F09 (Portfolio Builder - C)
-Sprint 6  →  F07 (Learning Rec - B) ─────> F13 (Admin Dashboard - B)
-Sprint 7  →  Integrasi menyeluruh, End-to-End Testing, & Bug fixing
+    USER ||--o{ EMAIL_VERIFICATION : "verifies"
+    USER ||--o{ SESSION : "has"
 ```
 
 ---
 
-## 7. Katalog Fitur & Daftar Branch
+## 💻 Lingkup Frontend
 
-| ID | Nama Fitur | Nama Branch | PIC | Prioritas PRD |
-|---|---|---|---|---|
-| **F01** | Authentication & Session | `feature/f01-authentication` | Anggota A | P0 (Must Have) |
-| **F02** | User Onboarding | `feature/f02-onboarding` | Anggota A | P0 (Must Have) |
-| **F03** | Experience Management | `feature/f03-experience` | Anggota A | P0 (Must Have) |
-| **F04** | AI Skill Extraction | `feature/f04-ai-skill-extraction` | Anggota A | P0 (Must Have) |
-| **F05** | Skill Profile & Pattern Map | `feature/f05-skill-profile` | Anggota B | P0 (Must Have) |
-| **F06** | Career Target & Gap Analysis | `feature/f06-career-gap` | Anggota B | P1 (Should Have) |
-| **F07** | Learning Recommendation | `feature/f07-learning` | Anggota B | P1 (Should Have) |
-| **F08** | Career Opportunities | `feature/f08-opportunities` | Anggota C | P1 (Should Have) |
-| **F09** | Portfolio Builder & Public View | `feature/f09-portfolio` | Anggota C | P1 (Should Have) |
-| **F10** | Core Dashboard | `feature/f10-dashboard` | Anggota A | P0 (Must Have) |
-| **F12** | Profile & Account Settings | `feature/f12-profile-settings` | Anggota C | P0 (Must Have) |
-| **F13** | Admin Dashboard & Master Data | `feature/f13-admin` | Anggota B | P1 (Should Have) |
+### Rute & Halaman
+- `src/app/(blank-layout-pages)/login/page.tsx` ➔ Halaman masuk.
+- `src/app/(blank-layout-pages)/register/page.tsx` ➔ Halaman pendaftaran.
+- `src/app/(blank-layout-pages)/verify-email/page.tsx` ➔ Halaman status verifikasi email.
+- `src/app/(blank-layout-pages)/forgot-password/page.tsx` ➔ Halaman permohonan reset password.
+- `src/app/(blank-layout-pages)/reset-password/page.tsx` ➔ Halaman input password baru.
 
-*Catatan: Setiap branch di atas memiliki `README.md` terdedikasi yang merinci flow, endpoint, skema, dan kriteria penerimaan sesuai PRD.*
+### Komponen & State Management
+- `src/contexts/AuthContext.tsx` ➔ React Context penyimpan session user, token, fungsi `login()`, `logout()`, dan status `isAuthenticated`.
+- `LoginForm.tsx`, `RegisterForm.tsx`, `ForgotPasswordForm.tsx`.
+- Feedback UI: Alert banner MUI, loading spinner tombol saat submit, input password dengan toggle visibilitas intip password.
 
 ---
 
-## 8. Panduan Menjalankan Proyek
+## ✅ Kriteria Penerimaan (Acceptance Criteria)
 
-### Prasyarat
-- Node.js versi 18.x atau 20.x
-- npm / pnpm
+- [ ] User tidak bisa login tanpa verifikasi email aktif.
+- [ ] Validasi form menampilkan error real-time yang jelas dan aman.
+- [ ] Session login tersimpan (stay logged in) hingga 30 hari via refresh token.
+- [ ] Redireksi dinamis tepat: belum onboarding ➔ `/onboarding`, sudah onboarding ➔ `/dashboard`.
+- [ ] Rate limiting aktif pada endpoint autentikasi.
+- [ ] `authMiddleware` berfungsi dengan baik dan siap dipakai oleh branch lain setelah merge ke `develop`.
 
-### Langkah Instalasi
+---
+
+## 🛠️ Panduan Pengembangan
+
 ```bash
-# 1. Pastikan berada di branch develop atau branch fitur tujuan
-git checkout develop
-
-# 2. Install dependencies
-npm install
-
-# 3. Siapkan environment file
-cp .env.example .env.local
-
-# 4. Jalankan development server dengan Turbopack
+# 1. Jalankan development server
 npm run dev
+
+# 2. Uji endpoint auth & tampilan di:
+# http://localhost:3000/login
+# http://localhost:3000/register
+# http://localhost:3000/forgot-password
+
+# 3. Lakukan linting sebelum submit PR
+npm run lint
 ```
-
-Aplikasi berjalan di [http://localhost:3000](http://localhost:3000).
-
-### Script Berguna
-- `npm run dev` : Menjalankan Next.js dev server.
-- `npm run build` : Memvalidasi bundle build Next.js.
-- `npm run lint` : Menjalankan audit ESLint.
-- `npm run lint:fix` : Memperbaiki pelanggaran linting secara otomatis.
-- `npm run build:icons` : Mengompilasi CSS ikon Iconify jika menambah ikon baru.
-
----
-
-## 9. Dokumentasi Perencanaan (`plan-md`)
-
-Detail arsitektur teknis dan panduan lengkap tersedia di folder `plan-md/`:
-- [`plan-md/prd.md`](./plan-md/prd.md) : Product Requirements Document lengkap (F01–F13).
-- [`plan-md/task-management.md`](./plan-md/task-management.md) : Panduan pembagian tugas, format Notion, dan aturan merge.
-- [`plan-md/erd_growvia.md`](./plan-md/erd_growvia.md) : Diagram ERD Mermaid & struktur seluruh tabel.
-- [`plan-md/erd_penjelasan.md`](./plan-md/erd_penjelasan.md) : Penjelasan mendalam kamus data dan relasi tabel.
-- [`plan-md/design_system.md`](./plan-md/design_system.md) : Panduan Design System, tipografi, warna, dan komponen UI.
