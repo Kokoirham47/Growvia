@@ -1,192 +1,137 @@
-# 🌱 Growvia — AI-Powered Skill Ecosystem
+# 🚀 Feature: F02 — Onboarding
 
-> **Platform karier terintegrasi bagi mahasiswa dan fresh graduate untuk mengubah pengalaman organisasi, kepanitiaan, magang, dan proyek menjadi skill terstruktur, analisis kesiapan karier, rekomendasi belajar personalisasi, dan portofolio profesional.**
-
-Branch ini (`develop`) adalah **integration branch utama** tempat bertemunya seluruh fitur tim Growvia sebelum dirilis ke `main`.
-
----
-
-## 📑 Daftar Isi
-
-1. [Ringkasan Proyek](#1-ringkasan-proyek)
-2. [Tech Stack](#2-tech-stack)
-3. [Pembagian Tugas Tim](#3-pembagian-tugas-tim)
-4. [Strategi Branch & Alur Kerja Git](#4-strategi-branch--alur-kerja-git)
-5. [Matriks Kepemilikan Database (Anti-Konflik)](#5-matriks-kepemilikan-database-anti-konflik)
-6. [Roadmap Merge & Sprint](#6-roadmap-merge--sprint)
-7. [Katalog Fitur & Daftar Branch](#7-katalog-fitur--daftar-branch)
-8. [Panduan Menjalankan Proyek](#8-panduan-menjalankan-proyek)
-9. [Dokumentasi Perencanaan (`plan-md`)](#9-dokumentasi-perencanaan-plan-md)
+> **Branch:** `feature/f02-onboarding`  
+> **PIC / Assignee:** Anggota A (Beban: 40% — *Foundation & Core AI Loop*)  
+> **Prioritas:** P0 (Must Have)  
+> **Dependency:** F01 (Authentication) harus sudah di-merge ke `develop`  
+> **Target Merge:** `develop` (Merge ke-2)  
+> **Dokumen Terkait:** [PRD (F02)](./plan-md/prd.md#f02--onboarding) · [Task Management](./plan-md/task-management.md#f02--onboarding) · [ERD](./plan-md/erd_growvia.md)
 
 ---
 
-## 1. Ringkasan Proyek
+## 📌 Deskripsi Fitur
 
-- **Visi**: Menjadi ekosistem karier terlengkap bagi generasi muda Indonesia yang menghubungkan **Pengalaman → Skill → Karier** dalam satu alur berbasis kecerdasan buatan (AI).
-- **Target Pengguna**:
-  - *Primary*: Mahasiswa aktif semester 4–8 (aktif berorganisasi & kepanitiaan).
-  - *Secondary*: Fresh graduate 0–2 tahun pengalaman kerja.
-  - *Tertiary*: Career switcher yang memetakan ulang skill set mereka.
-- **Problem Statement**:
-  1. Sulit mengidentifikasi skill konkret dari pengalaman non-formal/organisasi.
-  2. Tidak mengetahui skill gap terhadap karier impian.
-  3. Bingung memilih materi belajar yang tepat untuk menutup gap.
-  4. Belum memiliki portofolio profesional berbasis bukti (*evidence-based*).
+Onboarding adalah *first impression* bagi mahasiswa dan fresh graduate setelah verifikasi akun. Pengalaman ini harus terasa ringan, cepat (selesai dalam **< 3 menit**), dan memandu pengguna dalam membangun profil awal serta menentukan preferensi bidang karier sebelum masuk ke Dashboard.
 
 ---
 
-## 2. Tech Stack
+## 🎯 Spesifikasi Kebutuhan & Alur Pengguna (PRD)
 
-| Layer | Teknologi | Keterangan |
-|---|---|---|
-| **Framework** | Next.js 16.1.1 (App Router + Turbopack) | Server & Client Components hybrid |
-| **UI Library** | MUI (Material UI) v7.3.6 | `@mui/material`, `@mui/lab`, CSS Variables |
-| **Styling** | Emotion + Tailwind CSS 4.1 | Utility styling & modular themes |
-| **Language** | TypeScript 5.9 | Strict typing |
-| **Icons** | Iconify (Tabler Icons) | `src/assets/iconify-icons` |
-| **AI Intelligence** | Gemini / Groq LLM API | Ekstraksi skill & ranking rekomendasi belajar |
-| **Visualization** | D3.js / Vis.js / React Flow | Skill Pattern Map graph |
+Alur onboarding menggunakan antarmuka **Stepper 3 Langkah**:
+
+```text
+Langkah 1: Basic Profile ➔ Langkah 2: Career Interest ➔ Langkah 3: First Experience Prompt ➔ Masuk Dashboard
+      (Wajib diisi)             (Pilih 1–3 / Skip)             (Tambah / Nanti Saja)
+```
+
+### F02.1 Step 1 — Basic Profile (Wajib)
+- Input data akademik & profil dasar:
+  - **Nama Lengkap** (terisi otomatis dari pendaftaran, dapat diedit)
+  - **Institusi Pendidikan / Universitas** (contoh: "Universitas Indonesia")
+  - **Jurusan / Program Studi** (contoh: "Sistem Informasi")
+  - **Tahun Kelulusan / Angkatan** (dropdown angka, e.g. 2024, 2025, 2026, dst.)
+- Progress indicator: Step 1 dari 3.
+- Validasi input sebelum melangkah ke step berikutnya.
+
+### F02.2 Step 2 — Career Interest (Opsional / Bisa Dilewati)
+- Memilih bidang minat karier dari daftar master data `CAREER_FIELD` (contoh: *Product Management, Software Engineering, Data & AI, UI/UX Design, Digital Marketing, Finance & Business*).
+- Batasan: **Minimum 1, Maksimum 3 pilihan**.
+- Visualisasi card/chips interaktif yang bisa diklik untuk memilih/membatalkan.
+- Tombol aksi: **"Lanjutkan"** (aktif bila 1–3 terpilih) dan opsi **"Lewati untuk Sekarang"** (dapat diatur nanti melalui menu Career).
+
+### F02.3 Step 3 — First Experience Prompt (Opsional)
+- Menampilkan ajakan ramah: *"Punya pengalaman organisasi, kepanitiaan, magang, atau proyek yang ingin kamu tambahkan sekarang?"*
+- Opsi A: **"Ya, Tambah Pengalaman Sekarang"** ➔ Membuka form cepat input pengalaman pertama (terintegrasi dengan F03).
+- Opsi B: **"Nanti Saja, Masuk ke Dashboard"** ➔ Menyelesaikan onboarding dan langsung mengarahkan user ke `/dashboard` dengan *empty state* yang interaktif.
 
 ---
 
-## 3. Pembagian Tugas Tim
+## 🗄️ Lingkup Backend & Skema Basis Data
 
-Total Beban: **100%** | Skema Fullstack per Fitur (Frontend + Backend per orang):
+### Endpoint API
 
-| Anggota | Peran / Fokus | Fitur yang Dikerjakan | Beban |
+| Method | Endpoint | Deskripsi | Proteksi Auth |
 |---|---|---|---|
-| **Anggota A** | Foundation & Core AI Loop | **F01** Auth, **F02** Onboarding, **F03** Experience, **F04** AI Skill Extraction, **F10** Dashboard | **40%** |
-| **Anggota B** | Intelligence & Career Engine | **F05** Skill Profile, **F06** Career Target & Gap, **F07** Learning Recommendation, **F13** Admin Dashboard | **40%** |
-| **Anggota C** | Discovery & Identity | **F08** Career Opportunities, **F09** Portfolio Builder, **F12** Profile & Settings | **20%** |
+| `GET` | `/api/career-fields` | Mengambil daftar bidang karier (seed data) | User Auth |
+| `POST` | `/api/onboarding/profile` | Menyimpan profil dasar mahasiswa (Step 1) | User Auth |
+| `POST` | `/api/onboarding/interests` | Menyimpan preferensi bidang karier (Step 2) | User Auth |
+| `GET` | `/api/onboarding/status` | Cek apakah user telah menyelesaikan onboarding | User Auth |
 
----
+### Entitas Basis Data (Ownership: Anggota A)
 
-## 4. Strategi Branch & Alur Kerja Git
+```mermaid
+erDiagram
+    USER {
+        uuid id PK
+        string name
+        string email UK
+        enum status
+    }
 
-```text
-main (Production / Stable Release)
- └── develop (Integration Branch)
-      ├── feature/f01-authentication      (Sprint 1 - Anggota A)
-      ├── feature/f02-onboarding          (Sprint 2 - Anggota A)
-      ├── feature/f03-experience          (Sprint 2 - Anggota A)
-      ├── feature/f04-ai-skill-extraction (Sprint 3 - Anggota A)
-      ├── feature/f05-skill-profile       (Sprint 4 - Anggota B)
-      ├── feature/f06-career-gap          (Sprint 5 - Anggota B)
-      ├── feature/f07-learning            (Sprint 6 - Anggota B)
-      ├── feature/f08-opportunities       (Sprint 3 - Anggota C)
-      ├── feature/f09-portfolio           (Sprint 5 - Anggota C)
-      ├── feature/f10-dashboard           (Sprint 4 - Anggota A)
-      ├── feature/f12-profile-settings    (Sprint 1 - Anggota C)
-      └── feature/f13-admin               (Sprint 6 - Anggota B)
-```
+    PROFILE {
+        uuid id PK
+        uuid user_id FK "1-to-1"
+        string institution
+        string major
+        int graduation_year
+        text bio
+        string headline
+        string portfolio_slug UK
+    }
 
-### Aturan Branching & Pull Request:
-1. **Source Branch**: Setiap feature branch **wajib dibuat dari `develop` terbaru**:
-   ```bash
-   git checkout develop
-   git pull origin develop
-   git checkout -b feature/fXX-nama-fitur
-   ```
-2. **Merge Target**: Semua PR diarahkan ke **`develop`**, bukan ke `main`.
-3. **Branch `main`**: Hanya diperbarui saat rilis milestone stabil (Alpha/Beta/v1.0).
-4. **Shared Files**: File global seperti middleware auth, skema basis data inti, konfigurasi `.env`, dan layout root dikerjakan di `develop` sebelum didistribusikan ke branch fitur.
+    CAREER_FIELD {
+        uuid id PK
+        string name
+        string slug UK
+        string icon
+    }
 
----
+    CAREER_INTEREST {
+        uuid id PK
+        uuid user_id FK
+        uuid career_field_id FK
+        timestamp created_at
+    }
 
-## 5. Matriks Kepemilikan Database (Anti-Konflik)
-
-Untuk menghindari *merge conflict* pada database logic dan schema:
-
-| Tabel Basis Data | PIC Pemilik (Write / Primary CRUD) | Keterangan Konsumsi |
-|---|---|---|
-| `USER`, `EMAIL_VERIFICATION`, `SESSION` | **Anggota A** | Digunakan middleware auth oleh semua anggota |
-| `PROFILE`, `CAREER_INTEREST`, `CAREER_FIELD` | **Anggota A** | Dibaca oleh F09 (Portofolio) & F12 (Settings) |
-| `EXPERIENCE` | **Anggota A** | Dibaca oleh F04 (AI), F05 (Evidence), F09 (Portofolio) |
-| `AI_ANALYSIS_JOB`, `AI_SKILL_SUGGESTION` | **Anggota A** | Khusus modul AI extraction |
-| `SKILL` | **Anggota A** (Inisiasi/Seed) → **Anggota B** (Admin CRUD & Read) | Master taxonomy skill sistem |
-| `USER_SKILL`, `SKILL_EVIDENCE` | **Anggota A** (Write saat ekstraksi) → **Anggota B** (Read & Manage) | Relasi skill user & bukti pengalaman |
-| `CAREER_ROLE`, `CAREER_ROLE_SKILL` | **Anggota B** | Master library peran karier & bobot skill |
-| `USER_CAREER_TARGET`, `SKILL_GAP_RESULT` | **Anggota B** | Data analisis gap & readiness score |
-| `LEARNING_RESOURCE`, `RESOURCE_SKILL_TAG` | **Anggota B** | Master data resource & tag skill |
-| `LEARNING_RECOMMENDATION`, `USER_SAVED_RESOURCE` | **Anggota B** | Hasil hybrid AI ranking belajar & bookmark |
-| `ADMIN` | **Anggota B** | Akun autentikasi portal admin |
-| `CAREER_OPPORTUNITY`, `OPPORTUNITY_SKILL_TAG` | **Anggota C** | Data lowongan karier & tag kualifikasi |
-| `USER_SAVED_OPPORTUNITY` | **Anggota C** | Bookmark lowongan pengguna |
-
----
-
-## 6. Roadmap Merge & Sprint
-
-```text
-Sprint 1  →  F01 (Auth - A) [FOUNDATION] ──> F12 (Profile & Settings - C) bisa mulai
-Sprint 2  →  F02 (Onboarding - A) ───────> F03 (Experience - A)
-Sprint 3  →  F04 (AI Skill Extraction - A) ──> F08 (Opportunities - C) paralel
-Sprint 4  →  F05 (Skill Profile - B) ────> F10 (Dashboard Shell & Widgets - A)
-Sprint 5  →  F06 (Career Gap - B) ───────> F09 (Portfolio Builder - C)
-Sprint 6  →  F07 (Learning Rec - B) ─────> F13 (Admin Dashboard - B)
-Sprint 7  →  Integrasi menyeluruh, End-to-End Testing, & Bug fixing
+    USER ||--|| PROFILE : "has"
+    USER ||--o{ CAREER_INTEREST : "chooses"
+    CAREER_FIELD ||--o{ CAREER_INTEREST : "categorized in"
 ```
 
 ---
 
-## 7. Katalog Fitur & Daftar Branch
+## 💻 Lingkup Frontend
 
-| ID | Nama Fitur | Nama Branch | PIC | Prioritas PRD |
-|---|---|---|---|---|
-| **F01** | Authentication & Session | `feature/f01-authentication` | Anggota A | P0 (Must Have) |
-| **F02** | User Onboarding | `feature/f02-onboarding` | Anggota A | P0 (Must Have) |
-| **F03** | Experience Management | `feature/f03-experience` | Anggota A | P0 (Must Have) |
-| **F04** | AI Skill Extraction | `feature/f04-ai-skill-extraction` | Anggota A | P0 (Must Have) |
-| **F05** | Skill Profile & Pattern Map | `feature/f05-skill-profile` | Anggota B | P0 (Must Have) |
-| **F06** | Career Target & Gap Analysis | `feature/f06-career-gap` | Anggota B | P1 (Should Have) |
-| **F07** | Learning Recommendation | `feature/f07-learning` | Anggota B | P1 (Should Have) |
-| **F08** | Career Opportunities | `feature/f08-opportunities` | Anggota C | P1 (Should Have) |
-| **F09** | Portfolio Builder & Public View | `feature/f09-portfolio` | Anggota C | P1 (Should Have) |
-| **F10** | Core Dashboard | `feature/f10-dashboard` | Anggota A | P0 (Must Have) |
-| **F12** | Profile & Account Settings | `feature/f12-profile-settings` | Anggota C | P0 (Must Have) |
-| **F13** | Admin Dashboard & Master Data | `feature/f13-admin` | Anggota B | P1 (Should Have) |
+### Rute Halaman
+- `src/app/(dashboard)/onboarding/page.tsx` atau `src/app/(blank-layout-pages)/onboarding/page.tsx`
 
-*Catatan: Setiap branch di atas memiliki `README.md` terdedikasi yang merinci flow, endpoint, skema, dan kriteria penerimaan sesuai PRD.*
+### Komponen UI
+- `OnboardingStepper.tsx` ➔ Header progress bar & penunjuk tahapan aktif (1-2-3).
+- `StepBasicProfile.tsx` ➔ Form identitas universitas, jurusan, kelulusan.
+- `StepCareerInterest.tsx` ➔ Grid kartu bidang karier dengan multi-select toggle.
+- `StepExperiencePrompt.tsx` ➔ Call to action pilihan tambah pengalaman atau langsung ke dashboard.
 
 ---
 
-## 8. Panduan Menjalankan Proyek
+## ✅ Kriteria Penerimaan (Acceptance Criteria)
 
-### Prasyarat
-- Node.js versi 18.x atau 20.x
-- npm / pnpm
+- [ ] Onboarding dapat diselesaikan dalam 3 langkah interaktif (< 3 menit).
+- [ ] Validasi step 1 mencegah user lanjut jika form profil belum terisi lengkap.
+- [ ] Step 2 membatasi pilihan minat karier antara 1 hingga 3 bidang.
+- [ ] Tombol lewati (skip) tersedia di step 2 dan step 3.
+- [ ] Setelah selesai, flag onboarding user ditandai selesai dan diarahkan ke `/dashboard`.
 
-### Langkah Instalasi
+---
+
+## 🛠️ Panduan Pengembangan
+
 ```bash
-# 1. Pastikan berada di branch develop atau branch fitur tujuan
-git checkout develop
-
-# 2. Install dependencies
-npm install
-
-# 3. Siapkan environment file
-cp .env.example .env.local
-
-# 4. Jalankan development server dengan Turbopack
+# 1. Jalankan development server
 npm run dev
+
+# 2. Akses halaman onboarding:
+# http://localhost:3000/onboarding
+
+# 3. Jalankan pengecekan tipe data & linting
+npm run lint
 ```
-
-Aplikasi berjalan di [http://localhost:3000](http://localhost:3000).
-
-### Script Berguna
-- `npm run dev` : Menjalankan Next.js dev server.
-- `npm run build` : Memvalidasi bundle build Next.js.
-- `npm run lint` : Menjalankan audit ESLint.
-- `npm run lint:fix` : Memperbaiki pelanggaran linting secara otomatis.
-- `npm run build:icons` : Mengompilasi CSS ikon Iconify jika menambah ikon baru.
-
----
-
-## 9. Dokumentasi Perencanaan (`plan-md`)
-
-Detail arsitektur teknis dan panduan lengkap tersedia di folder `plan-md/`:
-- [`plan-md/prd.md`](./plan-md/prd.md) : Product Requirements Document lengkap (F01–F13).
-- [`plan-md/task-management.md`](./plan-md/task-management.md) : Panduan pembagian tugas, format Notion, dan aturan merge.
-- [`plan-md/erd_growvia.md`](./plan-md/erd_growvia.md) : Diagram ERD Mermaid & struktur seluruh tabel.
-- [`plan-md/erd_penjelasan.md`](./plan-md/erd_penjelasan.md) : Penjelasan mendalam kamus data dan relasi tabel.
-- [`plan-md/design_system.md`](./plan-md/design_system.md) : Panduan Design System, tipografi, warna, dan komponen UI.
