@@ -1,192 +1,137 @@
-# 🌱 Growvia — AI-Powered Skill Ecosystem
+# 📊 Feature: F05 — Skill Profile & Pattern Map
 
-> **Platform karier terintegrasi bagi mahasiswa dan fresh graduate untuk mengubah pengalaman organisasi, kepanitiaan, magang, dan proyek menjadi skill terstruktur, analisis kesiapan karier, rekomendasi belajar personalisasi, dan portofolio profesional.**
-
-Branch ini (`develop`) adalah **integration branch utama** tempat bertemunya seluruh fitur tim Growvia sebelum dirilis ke `main`.
-
----
-
-## 📑 Daftar Isi
-
-1. [Ringkasan Proyek](#1-ringkasan-proyek)
-2. [Tech Stack](#2-tech-stack)
-3. [Pembagian Tugas Tim](#3-pembagian-tugas-tim)
-4. [Strategi Branch & Alur Kerja Git](#4-strategi-branch--alur-kerja-git)
-5. [Matriks Kepemilikan Database (Anti-Konflik)](#5-matriks-kepemilikan-database-anti-konflik)
-6. [Roadmap Merge & Sprint](#6-roadmap-merge--sprint)
-7. [Katalog Fitur & Daftar Branch](#7-katalog-fitur--daftar-branch)
-8. [Panduan Menjalankan Proyek](#8-panduan-menjalankan-proyek)
-9. [Dokumentasi Perencanaan (`plan-md`)](#9-dokumentasi-perencanaan-plan-md)
+> **Branch:** `feature/f05-skill-profile`  
+> **PIC / Assignee:** Anggota B (Beban: 40% — *Intelligence & Career Engine*)  
+> **Prioritas:** P0 (Must Have)  
+> **Dependency:** F04 (AI Skill Extraction) harus sudah di-merge (`USER_SKILL` & `SKILL_EVIDENCE` tersedia)  
+> **Target Merge:** `develop` (Merge ke-5)  
+> **Dokumen Terkait:** [PRD (F05)](./plan-md/prd.md#f05--skill-profile) · [Task Management](./plan-md/task-management.md#f05--skill-profile) · [ERD](./plan-md/erd_growvia.md)
 
 ---
 
-## 1. Ringkasan Proyek
+## 📌 Deskripsi Fitur
 
-- **Visi**: Menjadi ekosistem karier terlengkap bagi generasi muda Indonesia yang menghubungkan **Pengalaman → Skill → Karier** dalam satu alur berbasis kecerdasan buatan (AI).
-- **Target Pengguna**:
-  - *Primary*: Mahasiswa aktif semester 4–8 (aktif berorganisasi & kepanitiaan).
-  - *Secondary*: Fresh graduate 0–2 tahun pengalaman kerja.
-  - *Tertiary*: Career switcher yang memetakan ulang skill set mereka.
-- **Problem Statement**:
-  1. Sulit mengidentifikasi skill konkret dari pengalaman non-formal/organisasi.
-  2. Tidak mengetahui skill gap terhadap karier impian.
-  3. Bingung memilih materi belajar yang tepat untuk menutup gap.
-  4. Belum memiliki portofolio profesional berbasis bukti (*evidence-based*).
+Skill Profile adalah ruang visualisasi komprehensif bagi mahasiswa untuk melihat, mengeksplorasi, dan mengelola inventaris keahlian (*skill inventory*) yang mereka miliki. Dilengkapi dengan **Skill Pattern Map** (graf interaktif node/edge) yang memperlihatkan bagaimana satu keahlian terhubung dengan keahlian lain melalui jejak pengalaman nyata.
 
 ---
 
-## 2. Tech Stack
+## 🎯 Spesifikasi Kebutuhan & Sub-Fitur (PRD)
 
-| Layer | Teknologi | Keterangan |
-|---|---|---|
-| **Framework** | Next.js 16.1.1 (App Router + Turbopack) | Server & Client Components hybrid |
-| **UI Library** | MUI (Material UI) v7.3.6 | `@mui/material`, `@mui/lab`, CSS Variables |
-| **Styling** | Emotion + Tailwind CSS 4.1 | Utility styling & modular themes |
-| **Language** | TypeScript 5.9 | Strict typing |
-| **Icons** | Iconify (Tabler Icons) | `src/assets/iconify-icons` |
-| **AI Intelligence** | Gemini / Groq LLM API | Ekstraksi skill & ranking rekomendasi belajar |
-| **Visualization** | D3.js / Vis.js / React Flow | Skill Pattern Map graph |
+### F05.1 Skill Overview (Statistik & Distribusi)
+- Menampilkan metrik utama:
+  - **Total Keahlian** yang dimiliki user.
+  - **Distribusi Kategori**: Grafik persentase keahlian dalam 4 ranah (`Hard Skill`, `Soft Skill`, `Technical`, `Leadership`).
+  - **Top 5 Skills**: Lima skill terkuat berdasarkan jumlah bukti pengalaman (*evidence count*) terbanyak.
+
+### F05.2 Skill Pattern Map (Visualisasi Graf Interaktif)
+- Peta visual berbasis graf keterhubungan (*knowledge graph*):
+  - **Node**: Merepresentasikan satu skill spesifik. Ukuran node proporsional dengan jumlah evidence atau level penguasaan.
+  - **Warna Node**: Dikodekan berdasarkan kategori (*color-coding*: Hijau untuk Technical, Ungu untuk Leadership, Biru untuk Hard Skill, Oranye untuk Soft Skill).
+  - **Edge (Garis Penghubung)**: Terbentuk otomatis antara dua skill yang sering muncul bersamaan (*co-occurrence*) dalam satu pengalaman yang sama.
+  - Interaktivitas: Zoom in/out, drag node, klik node untuk membuka panel rincian skill.
+  - Implementasi pustaka: D3.js, Vis.js, atau React Flow.
+
+### F05.3 Skill Detail & Bukti Portofolio (Evidence Link)
+- Panel detail saat sebuah skill diklik:
+  - Nama skill, kategori, tingkat kemahiran (`Beginner` | `Intermediate` | `Advanced`).
+  - **Daftar Bukti Nyata (*Evidence List*)**: Menampilkan card pengalaman mana saja yang mendasari skill ini. Kartu pengalaman dapat diklik untuk membuka modal rincian aktivitas aslinya.
+  - Aksi Pengguna:
+    - Ubah tingkat kemahiran (level) secara manual.
+    - Hapus skill dari profil (dengan dialog konfirmasi).
+
+### F05.4 Tambah Skill Mandiri (Manual Add Skill)
+- Formulir penambahan keahlian tanpa melalui ekstraksi narasi AI:
+  - Input: Nama Skill, Kategori, Tingkat Level, dan Bukti Opsional (pilih dari pengalaman yang ada).
+  - Skill yang ditambahkan manual diberi label `source = 'manual'` dan tidak memiliki AI Badge.
 
 ---
 
-## 3. Pembagian Tugas Tim
+## 🗄️ Lingkup Backend & Skema Basis Data
 
-Total Beban: **100%** | Skema Fullstack per Fitur (Frontend + Backend per orang):
+### Endpoint API
 
-| Anggota | Peran / Fokus | Fitur yang Dikerjakan | Beban |
+| Method | Endpoint | Deskripsi | Proteksi Auth |
 |---|---|---|---|
-| **Anggota A** | Foundation & Core AI Loop | **F01** Auth, **F02** Onboarding, **F03** Experience, **F04** AI Skill Extraction, **F10** Dashboard | **40%** |
-| **Anggota B** | Intelligence & Career Engine | **F05** Skill Profile, **F06** Career Target & Gap, **F07** Learning Recommendation, **F13** Admin Dashboard | **40%** |
-| **Anggota C** | Discovery & Identity | **F08** Career Opportunities, **F09** Portfolio Builder, **F12** Profile & Settings | **20%** |
+| `GET` | `/api/skills/profile` | Mengambil seluruh daftar skill user beserta bukti evidence & metrik | User Auth |
+| `GET` | `/api/skills/:id` | Detail spesifik suatu skill dan riwayat bukti pengalaman | User Auth |
+| `POST` | `/api/skills` | Menambahkan skill baru secara manual | User Auth |
+| `PUT` | `/api/skills/:id` | Memperbarui tingkat kemahiran (level) skill | User Auth |
+| `DELETE` | `/api/skills/:id` | Menghapus skill dari profil user | User Auth |
+| `GET` | `/api/skills/graph` | Format data nodes & edges untuk visualisasi Skill Pattern Map | User Auth |
 
----
+### Entitas Basis Data (Ownership: Anggota B untuk Read & Management)
 
-## 4. Strategi Branch & Alur Kerja Git
+```mermaid
+erDiagram
+    SKILL {
+        uuid id PK
+        string name
+        enum category "hard_skill | soft_skill | technical | leadership"
+        string normalized_name UK
+    }
 
-```text
-main (Production / Stable Release)
- └── develop (Integration Branch)
-      ├── feature/f01-authentication      (Sprint 1 - Anggota A)
-      ├── feature/f02-onboarding          (Sprint 2 - Anggota A)
-      ├── feature/f03-experience          (Sprint 2 - Anggota A)
-      ├── feature/f04-ai-skill-extraction (Sprint 3 - Anggota A)
-      ├── feature/f05-skill-profile       (Sprint 4 - Anggota B)
-      ├── feature/f06-career-gap          (Sprint 5 - Anggota B)
-      ├── feature/f07-learning            (Sprint 6 - Anggota B)
-      ├── feature/f08-opportunities       (Sprint 3 - Anggota C)
-      ├── feature/f09-portfolio           (Sprint 5 - Anggota C)
-      ├── feature/f10-dashboard           (Sprint 4 - Anggota A)
-      ├── feature/f12-profile-settings    (Sprint 1 - Anggota C)
-      └── feature/f13-admin               (Sprint 6 - Anggota B)
-```
+    USER_SKILL {
+        uuid id PK
+        uuid user_id FK
+        uuid skill_id FK
+        enum level "beginner | intermediate | advanced"
+        enum source "ai_extracted | manual"
+        timestamp created_at
+        timestamp updated_at
+    }
 
-### Aturan Branching & Pull Request:
-1. **Source Branch**: Setiap feature branch **wajib dibuat dari `develop` terbaru**:
-   ```bash
-   git checkout develop
-   git pull origin develop
-   git checkout -b feature/fXX-nama-fitur
-   ```
-2. **Merge Target**: Semua PR diarahkan ke **`develop`**, bukan ke `main`.
-3. **Branch `main`**: Hanya diperbarui saat rilis milestone stabil (Alpha/Beta/v1.0).
-4. **Shared Files**: File global seperti middleware auth, skema basis data inti, konfigurasi `.env`, dan layout root dikerjakan di `develop` sebelum didistribusikan ke branch fitur.
+    SKILL_EVIDENCE {
+        uuid id PK
+        uuid user_skill_id FK
+        uuid experience_id FK
+        timestamp created_at
+    }
 
----
+    EXPERIENCE {
+        uuid id PK
+        string title
+    }
 
-## 5. Matriks Kepemilikan Database (Anti-Konflik)
-
-Untuk menghindari *merge conflict* pada database logic dan schema:
-
-| Tabel Basis Data | PIC Pemilik (Write / Primary CRUD) | Keterangan Konsumsi |
-|---|---|---|
-| `USER`, `EMAIL_VERIFICATION`, `SESSION` | **Anggota A** | Digunakan middleware auth oleh semua anggota |
-| `PROFILE`, `CAREER_INTEREST`, `CAREER_FIELD` | **Anggota A** | Dibaca oleh F09 (Portofolio) & F12 (Settings) |
-| `EXPERIENCE` | **Anggota A** | Dibaca oleh F04 (AI), F05 (Evidence), F09 (Portofolio) |
-| `AI_ANALYSIS_JOB`, `AI_SKILL_SUGGESTION` | **Anggota A** | Khusus modul AI extraction |
-| `SKILL` | **Anggota A** (Inisiasi/Seed) → **Anggota B** (Admin CRUD & Read) | Master taxonomy skill sistem |
-| `USER_SKILL`, `SKILL_EVIDENCE` | **Anggota A** (Write saat ekstraksi) → **Anggota B** (Read & Manage) | Relasi skill user & bukti pengalaman |
-| `CAREER_ROLE`, `CAREER_ROLE_SKILL` | **Anggota B** | Master library peran karier & bobot skill |
-| `USER_CAREER_TARGET`, `SKILL_GAP_RESULT` | **Anggota B** | Data analisis gap & readiness score |
-| `LEARNING_RESOURCE`, `RESOURCE_SKILL_TAG` | **Anggota B** | Master data resource & tag skill |
-| `LEARNING_RECOMMENDATION`, `USER_SAVED_RESOURCE` | **Anggota B** | Hasil hybrid AI ranking belajar & bookmark |
-| `ADMIN` | **Anggota B** | Akun autentikasi portal admin |
-| `CAREER_OPPORTUNITY`, `OPPORTUNITY_SKILL_TAG` | **Anggota C** | Data lowongan karier & tag kualifikasi |
-| `USER_SAVED_OPPORTUNITY` | **Anggota C** | Bookmark lowongan pengguna |
-
----
-
-## 6. Roadmap Merge & Sprint
-
-```text
-Sprint 1  →  F01 (Auth - A) [FOUNDATION] ──> F12 (Profile & Settings - C) bisa mulai
-Sprint 2  →  F02 (Onboarding - A) ───────> F03 (Experience - A)
-Sprint 3  →  F04 (AI Skill Extraction - A) ──> F08 (Opportunities - C) paralel
-Sprint 4  →  F05 (Skill Profile - B) ────> F10 (Dashboard Shell & Widgets - A)
-Sprint 5  →  F06 (Career Gap - B) ───────> F09 (Portfolio Builder - C)
-Sprint 6  →  F07 (Learning Rec - B) ─────> F13 (Admin Dashboard - B)
-Sprint 7  →  Integrasi menyeluruh, End-to-End Testing, & Bug fixing
+    SKILL ||--o{ USER_SKILL : "instantiated as"
+    USER_SKILL ||--o{ SKILL_EVIDENCE : "has"
+    EXPERIENCE ||--o{ SKILL_EVIDENCE : "proves"
 ```
 
 ---
 
-## 7. Katalog Fitur & Daftar Branch
+## 💻 Lingkup Frontend
 
-| ID | Nama Fitur | Nama Branch | PIC | Prioritas PRD |
-|---|---|---|---|---|
-| **F01** | Authentication & Session | `feature/f01-authentication` | Anggota A | P0 (Must Have) |
-| **F02** | User Onboarding | `feature/f02-onboarding` | Anggota A | P0 (Must Have) |
-| **F03** | Experience Management | `feature/f03-experience` | Anggota A | P0 (Must Have) |
-| **F04** | AI Skill Extraction | `feature/f04-ai-skill-extraction` | Anggota A | P0 (Must Have) |
-| **F05** | Skill Profile & Pattern Map | `feature/f05-skill-profile` | Anggota B | P0 (Must Have) |
-| **F06** | Career Target & Gap Analysis | `feature/f06-career-gap` | Anggota B | P1 (Should Have) |
-| **F07** | Learning Recommendation | `feature/f07-learning` | Anggota B | P1 (Should Have) |
-| **F08** | Career Opportunities | `feature/f08-opportunities` | Anggota C | P1 (Should Have) |
-| **F09** | Portfolio Builder & Public View | `feature/f09-portfolio` | Anggota C | P1 (Should Have) |
-| **F10** | Core Dashboard | `feature/f10-dashboard` | Anggota A | P0 (Must Have) |
-| **F12** | Profile & Account Settings | `feature/f12-profile-settings` | Anggota C | P0 (Must Have) |
-| **F13** | Admin Dashboard & Master Data | `feature/f13-admin` | Anggota B | P1 (Should Have) |
+### Rute Halaman
+- `src/app/(dashboard)/skills/page.tsx` ➔ Halaman utama profil skill & pattern map.
 
-*Catatan: Setiap branch di atas memiliki `README.md` terdedikasi yang merinci flow, endpoint, skema, dan kriteria penerimaan sesuai PRD.*
+### Komponen UI
+- `SkillStatsOverview.tsx` ➔ Kartu metrik total skill, distribusi kategori, dan Top 5.
+- `SkillPatternMap.tsx` ➔ Kanvas visualisasi graf D3/vis.js responsif.
+- `SkillCard.tsx` ➔ Kartu skill individual dengan indikator level, jumlah evidence, dan badge AI/Manual.
+- `SkillDetailDrawer.tsx` ➔ Drawer/modal rincian riwayat bukti pengalaman.
+- `ManualAddSkillModal.tsx` ➔ Modal form tambah skill mandiri.
 
 ---
 
-## 8. Panduan Menjalankan Proyek
+## ✅ Kriteria Penerimaan (Acceptance Criteria)
 
-### Prasyarat
-- Node.js versi 18.x atau 20.x
-- npm / pnpm
+- [ ] Menampilkan seluruh skill user secara akurat lengkap dengan daftar pengalaman pembuktiannya.
+- [ ] Visualisasi graf interaktif berfungsi responsif (dapat di-zoom, digeser, dan diklik).
+- [ ] Pengguna dapat mengedit level kemahiran atau menghapus skill secara aman.
+- [ ] Bukti pengalaman yang terhubung dapat diklik untuk meninjau rincian pengalaman aslinya.
+- [ ] Penambahan skill manual tersimpan dengan penanda `source = 'manual'`.
 
-### Langkah Instalasi
+---
+
+## 🛠️ Panduan Pengembangan
+
 ```bash
-# 1. Pastikan berada di branch develop atau branch fitur tujuan
-git checkout develop
-
-# 2. Install dependencies
-npm install
-
-# 3. Siapkan environment file
-cp .env.example .env.local
-
-# 4. Jalankan development server dengan Turbopack
+# 1. Jalankan development server
 npm run dev
+
+# 2. Buka halaman skill profile:
+# http://localhost:3000/skills
+
+# 3. Jalankan pengujian linting
+npm run lint
 ```
-
-Aplikasi berjalan di [http://localhost:3000](http://localhost:3000).
-
-### Script Berguna
-- `npm run dev` : Menjalankan Next.js dev server.
-- `npm run build` : Memvalidasi bundle build Next.js.
-- `npm run lint` : Menjalankan audit ESLint.
-- `npm run lint:fix` : Memperbaiki pelanggaran linting secara otomatis.
-- `npm run build:icons` : Mengompilasi CSS ikon Iconify jika menambah ikon baru.
-
----
-
-## 9. Dokumentasi Perencanaan (`plan-md`)
-
-Detail arsitektur teknis dan panduan lengkap tersedia di folder `plan-md/`:
-- [`plan-md/prd.md`](./plan-md/prd.md) : Product Requirements Document lengkap (F01–F13).
-- [`plan-md/task-management.md`](./plan-md/task-management.md) : Panduan pembagian tugas, format Notion, dan aturan merge.
-- [`plan-md/erd_growvia.md`](./plan-md/erd_growvia.md) : Diagram ERD Mermaid & struktur seluruh tabel.
-- [`plan-md/erd_penjelasan.md`](./plan-md/erd_penjelasan.md) : Penjelasan mendalam kamus data dan relasi tabel.
-- [`plan-md/design_system.md`](./plan-md/design_system.md) : Panduan Design System, tipografi, warna, dan komponen UI.
