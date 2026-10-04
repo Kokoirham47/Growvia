@@ -1,192 +1,135 @@
-# 🌱 Growvia — AI-Powered Skill Ecosystem
+# ⚙️ Feature: F12 — Profile & Account Settings
 
-> **Platform karier terintegrasi bagi mahasiswa dan fresh graduate untuk mengubah pengalaman organisasi, kepanitiaan, magang, dan proyek menjadi skill terstruktur, analisis kesiapan karier, rekomendasi belajar personalisasi, dan portofolio profesional.**
-
-Branch ini (`develop`) adalah **integration branch utama** tempat bertemunya seluruh fitur tim Growvia sebelum dirilis ke `main`.
-
----
-
-## 📑 Daftar Isi
-
-1. [Ringkasan Proyek](#1-ringkasan-proyek)
-2. [Tech Stack](#2-tech-stack)
-3. [Pembagian Tugas Tim](#3-pembagian-tugas-tim)
-4. [Strategi Branch & Alur Kerja Git](#4-strategi-branch--alur-kerja-git)
-5. [Matriks Kepemilikan Database (Anti-Konflik)](#5-matriks-kepemilikan-database-anti-konflik)
-6. [Roadmap Merge & Sprint](#6-roadmap-merge--sprint)
-7. [Katalog Fitur & Daftar Branch](#7-katalog-fitur--daftar-branch)
-8. [Panduan Menjalankan Proyek](#8-panduan-menjalankan-proyek)
-9. [Dokumentasi Perencanaan (`plan-md`)](#9-dokumentasi-perencanaan-plan-md)
+> **Branch:** `feature/f12-profile-settings`  
+> **PIC / Assignee:** Anggota C (Beban: 20% — *Discovery & Identity*)  
+> **Prioritas:** P0 (Must Have)  
+> **Dependency:** F01 (Authentication) selesai (dapat dikerjakan secara independen)  
+> **Target Merge:** `develop` (Merge Paralel)  
+> **Dokumen Terkait:** [PRD (F12)](./plan-md/prd.md#f12--profile--settings) · [Task Management](./plan-md/task-management.md#f12--profile--settings) · [ERD](./plan-md/erd_growvia.md)
 
 ---
 
-## 1. Ringkasan Proyek
+## 📌 Deskripsi Fitur
 
-- **Visi**: Menjadi ekosistem karier terlengkap bagi generasi muda Indonesia yang menghubungkan **Pengalaman → Skill → Karier** dalam satu alur berbasis kecerdasan buatan (AI).
-- **Target Pengguna**:
-  - *Primary*: Mahasiswa aktif semester 4–8 (aktif berorganisasi & kepanitiaan).
-  - *Secondary*: Fresh graduate 0–2 tahun pengalaman kerja.
-  - *Tertiary*: Career switcher yang memetakan ulang skill set mereka.
-- **Problem Statement**:
-  1. Sulit mengidentifikasi skill konkret dari pengalaman non-formal/organisasi.
-  2. Tidak mengetahui skill gap terhadap karier impian.
-  3. Bingung memilih materi belajar yang tepat untuk menutup gap.
-  4. Belum memiliki portofolio profesional berbasis bukti (*evidence-based*).
+Fitur Profile & Settings memfasilitasi pengguna untuk mengelola identitas pribadi, foto profil, preferensi akun, keamanan kredensial, kontrol privasi publik, hingga penghapusan akun secara aman (*Soft Delete*). Fitur ini berdiri secara independen dan dapat mulai dikembangkan segera setelah modul autentikasi dasar (F01) tersedia.
 
 ---
 
-## 2. Tech Stack
+## 🎯 Spesifikasi Kebutuhan & Sub-Fitur (PRD)
 
-| Layer | Teknologi | Keterangan |
-|---|---|---|
-| **Framework** | Next.js 16.1.1 (App Router + Turbopack) | Server & Client Components hybrid |
-| **UI Library** | MUI (Material UI) v7.3.6 | `@mui/material`, `@mui/lab`, CSS Variables |
-| **Styling** | Emotion + Tailwind CSS 4.1 | Utility styling & modular themes |
-| **Language** | TypeScript 5.9 | Strict typing |
-| **Icons** | Iconify (Tabler Icons) | `src/assets/iconify-icons` |
-| **AI Intelligence** | Gemini / Groq LLM API | Ekstraksi skill & ranking rekomendasi belajar |
-| **Visualization** | D3.js / Vis.js / React Flow | Skill Pattern Map graph |
+### F12.1 Pengelolaan Profil (Edit Profile)
+- Pengguna dapat memperbarui informasi diri:
+  - **Nama Lengkap**
+  - **Institusi Pendidikan & Jurusan**
+  - **Tahun Kelulusan / Angkatan**
+  - **Headline Profesional** (contoh: *"Informatics Student \| Aspiring AI Engineer"*).
+  - **Biografi Singkat** (ringkasan ketertarikan karier).
+- **Unggah Foto Avatar**:
+  - Dukungan format: JPEG, PNG, WebP (maksimal 2MB).
+  - Integrasi penyimpanan awan (*Cloud Storage*: S3 / Supabase Storage / GCS).
+  - Pratinjau gambar instan sebelum disimpan.
+
+### F12.2 Keamanan Akun (Account Settings)
+- **Ganti Password**:
+  - Input: Password saat ini, Password baru, Konfirmasi password baru.
+  - Validasi ketat sama seperti pendaftaran (min. 8 karakter, 1 huruf besar, 1 angka).
+  - Pesan error informatif jika password lama salah.
+- **Ubah Alamat Email**:
+  - Input alamat email baru.
+  - Sistem mengirimkan email konfirmasi ke alamat baru; status email berganti setelah link verifikasi di alamat baru diakses.
+
+### F12.3 Pengaturan Privasi (Privacy Settings)
+- **Visibilitas Portofolio Publik**:
+  - *Toggle switch*: `Publik` (portofolio dapat dilihat via link `/u/:slug`) vs `Privat` (halaman publik dinonaktifkan sementara dan mengembalikan 404).
+
+### F12.4 Penghapusan Akun (Delete Account / Danger Zone)
+- Mekanisme **Soft Delete** demi keamanan data:
+  - Pengguna harus melewati konfirmasi 2 langkah: mengetik kata konfirmasi (e.g. *"HAPUS AKUN SAYA"*) dan memasukkan password akun.
+  - Status user diubah menjadi `deleted` dan kolom `deleted_at` diisi timestamp saat ini.
+  - Data dipertahankan selama masa tenggang retensi 30 hari sebelum dihapus permanen.
+  - Session user langsung dihanguskan dan diarahkan ke halaman login.
 
 ---
 
-## 3. Pembagian Tugas Tim
+## 🗄️ Lingkup Backend & Skema Basis Data
 
-Total Beban: **100%** | Skema Fullstack per Fitur (Frontend + Backend per orang):
+### Endpoint API
 
-| Anggota | Peran / Fokus | Fitur yang Dikerjakan | Beban |
+| Method | Endpoint | Deskripsi | Proteksi Auth |
 |---|---|---|---|
-| **Anggota A** | Foundation & Core AI Loop | **F01** Auth, **F02** Onboarding, **F03** Experience, **F04** AI Skill Extraction, **F10** Dashboard | **40%** |
-| **Anggota B** | Intelligence & Career Engine | **F05** Skill Profile, **F06** Career Target & Gap, **F07** Learning Recommendation, **F13** Admin Dashboard | **40%** |
-| **Anggota C** | Discovery & Identity | **F08** Career Opportunities, **F09** Portfolio Builder, **F12** Profile & Settings | **20%** |
+| `GET` | `/api/profile` | Mengambil data profil lengkap pengguna yang sedang login | User Auth |
+| `PUT` | `/api/profile` | Memperbarui data profil (nama, bio, headline, institusi, jurusan) | User Auth |
+| `POST` | `/api/profile/avatar` | Upload file gambar avatar ke Cloud Storage & simpan URL | User Auth |
+| `PUT` | `/api/account/password` | Mengubah password akun dengan validasi password lama | User Auth |
+| `PUT` | `/api/account/email` | Mengajukan perubahan email akun | User Auth |
+| `PUT` | `/api/account/privacy` | Mengubah pengaturan privasi portofolio | User Auth |
+| `DELETE` | `/api/account` | Melakukan soft delete terhadap akun pengguna | User Auth |
 
----
+### Entitas Basis Data (Ownership: Anggota C & Anggota A)
 
-## 4. Strategi Branch & Alur Kerja Git
+```mermaid
+erDiagram
+    USER {
+        uuid id PK
+        string name
+        string email UK
+        string password_hash
+        string avatar_url
+        enum status "active | unverified | suspended | deleted"
+        timestamp deleted_at
+    }
 
-```text
-main (Production / Stable Release)
- └── develop (Integration Branch)
-      ├── feature/f01-authentication      (Sprint 1 - Anggota A)
-      ├── feature/f02-onboarding          (Sprint 2 - Anggota A)
-      ├── feature/f03-experience          (Sprint 2 - Anggota A)
-      ├── feature/f04-ai-skill-extraction (Sprint 3 - Anggota A)
-      ├── feature/f05-skill-profile       (Sprint 4 - Anggota B)
-      ├── feature/f06-career-gap          (Sprint 5 - Anggota B)
-      ├── feature/f07-learning            (Sprint 6 - Anggota B)
-      ├── feature/f08-opportunities       (Sprint 3 - Anggota C)
-      ├── feature/f09-portfolio           (Sprint 5 - Anggota C)
-      ├── feature/f10-dashboard           (Sprint 4 - Anggota A)
-      ├── feature/f12-profile-settings    (Sprint 1 - Anggota C)
-      └── feature/f13-admin               (Sprint 6 - Anggota B)
-```
+    PROFILE {
+        uuid id PK
+        uuid user_id FK "1-to-1"
+        string institution
+        string major
+        int graduation_year
+        text bio
+        string headline
+        string portfolio_slug UK
+    }
 
-### Aturan Branching & Pull Request:
-1. **Source Branch**: Setiap feature branch **wajib dibuat dari `develop` terbaru**:
-   ```bash
-   git checkout develop
-   git pull origin develop
-   git checkout -b feature/fXX-nama-fitur
-   ```
-2. **Merge Target**: Semua PR diarahkan ke **`develop`**, bukan ke `main`.
-3. **Branch `main`**: Hanya diperbarui saat rilis milestone stabil (Alpha/Beta/v1.0).
-4. **Shared Files**: File global seperti middleware auth, skema basis data inti, konfigurasi `.env`, dan layout root dikerjakan di `develop` sebelum didistribusikan ke branch fitur.
-
----
-
-## 5. Matriks Kepemilikan Database (Anti-Konflik)
-
-Untuk menghindari *merge conflict* pada database logic dan schema:
-
-| Tabel Basis Data | PIC Pemilik (Write / Primary CRUD) | Keterangan Konsumsi |
-|---|---|---|
-| `USER`, `EMAIL_VERIFICATION`, `SESSION` | **Anggota A** | Digunakan middleware auth oleh semua anggota |
-| `PROFILE`, `CAREER_INTEREST`, `CAREER_FIELD` | **Anggota A** | Dibaca oleh F09 (Portofolio) & F12 (Settings) |
-| `EXPERIENCE` | **Anggota A** | Dibaca oleh F04 (AI), F05 (Evidence), F09 (Portofolio) |
-| `AI_ANALYSIS_JOB`, `AI_SKILL_SUGGESTION` | **Anggota A** | Khusus modul AI extraction |
-| `SKILL` | **Anggota A** (Inisiasi/Seed) → **Anggota B** (Admin CRUD & Read) | Master taxonomy skill sistem |
-| `USER_SKILL`, `SKILL_EVIDENCE` | **Anggota A** (Write saat ekstraksi) → **Anggota B** (Read & Manage) | Relasi skill user & bukti pengalaman |
-| `CAREER_ROLE`, `CAREER_ROLE_SKILL` | **Anggota B** | Master library peran karier & bobot skill |
-| `USER_CAREER_TARGET`, `SKILL_GAP_RESULT` | **Anggota B** | Data analisis gap & readiness score |
-| `LEARNING_RESOURCE`, `RESOURCE_SKILL_TAG` | **Anggota B** | Master data resource & tag skill |
-| `LEARNING_RECOMMENDATION`, `USER_SAVED_RESOURCE` | **Anggota B** | Hasil hybrid AI ranking belajar & bookmark |
-| `ADMIN` | **Anggota B** | Akun autentikasi portal admin |
-| `CAREER_OPPORTUNITY`, `OPPORTUNITY_SKILL_TAG` | **Anggota C** | Data lowongan karier & tag kualifikasi |
-| `USER_SAVED_OPPORTUNITY` | **Anggota C** | Bookmark lowongan pengguna |
-
----
-
-## 6. Roadmap Merge & Sprint
-
-```text
-Sprint 1  →  F01 (Auth - A) [FOUNDATION] ──> F12 (Profile & Settings - C) bisa mulai
-Sprint 2  →  F02 (Onboarding - A) ───────> F03 (Experience - A)
-Sprint 3  →  F04 (AI Skill Extraction - A) ──> F08 (Opportunities - C) paralel
-Sprint 4  →  F05 (Skill Profile - B) ────> F10 (Dashboard Shell & Widgets - A)
-Sprint 5  →  F06 (Career Gap - B) ───────> F09 (Portfolio Builder - C)
-Sprint 6  →  F07 (Learning Rec - B) ─────> F13 (Admin Dashboard - B)
-Sprint 7  →  Integrasi menyeluruh, End-to-End Testing, & Bug fixing
+    USER ||--|| PROFILE : "maintains"
 ```
 
 ---
 
-## 7. Katalog Fitur & Daftar Branch
+## 💻 Lingkup Frontend
 
-| ID | Nama Fitur | Nama Branch | PIC | Prioritas PRD |
-|---|---|---|---|---|
-| **F01** | Authentication & Session | `feature/f01-authentication` | Anggota A | P0 (Must Have) |
-| **F02** | User Onboarding | `feature/f02-onboarding` | Anggota A | P0 (Must Have) |
-| **F03** | Experience Management | `feature/f03-experience` | Anggota A | P0 (Must Have) |
-| **F04** | AI Skill Extraction | `feature/f04-ai-skill-extraction` | Anggota A | P0 (Must Have) |
-| **F05** | Skill Profile & Pattern Map | `feature/f05-skill-profile` | Anggota B | P0 (Must Have) |
-| **F06** | Career Target & Gap Analysis | `feature/f06-career-gap` | Anggota B | P1 (Should Have) |
-| **F07** | Learning Recommendation | `feature/f07-learning` | Anggota B | P1 (Should Have) |
-| **F08** | Career Opportunities | `feature/f08-opportunities` | Anggota C | P1 (Should Have) |
-| **F09** | Portfolio Builder & Public View | `feature/f09-portfolio` | Anggota C | P1 (Should Have) |
-| **F10** | Core Dashboard | `feature/f10-dashboard` | Anggota A | P0 (Must Have) |
-| **F12** | Profile & Account Settings | `feature/f12-profile-settings` | Anggota C | P0 (Must Have) |
-| **F13** | Admin Dashboard & Master Data | `feature/f13-admin` | Anggota B | P1 (Should Have) |
+### Rute Halaman
+- `src/app/(dashboard)/profile/page.tsx` ➔ Halaman tampilan & edit profil.
+- `src/app/(dashboard)/settings/page.tsx` ➔ Halaman pengaturan akun, privasi, dan danger zone.
 
-*Catatan: Setiap branch di atas memiliki `README.md` terdedikasi yang merinci flow, endpoint, skema, dan kriteria penerimaan sesuai PRD.*
+### Komponen UI
+- `ProfileEditForm.tsx` ➔ Formulir data identitas diri dan pendidikan.
+- `AvatarUploader.tsx` ➔ Komponen upload foto dengan drag & drop dan pratinjau.
+- `SecuritySettings.tsx` ➔ Form ubah password dan email.
+- `PrivacySettings.tsx` ➔ Saklar pengaturan visibilitas portofolio publik.
+- `DeleteAccountModal.tsx` ➔ Dialog peringatan konfirmasi hapus akun dua langkah.
 
 ---
 
-## 8. Panduan Menjalankan Proyek
+## ✅ Kriteria Penerimaan (Acceptance Criteria)
 
-### Prasyarat
-- Node.js versi 18.x atau 20.x
-- npm / pnpm
+- [ ] Pengguna dapat mengedit profil biodata dan foto avatar terunggah dengan benar.
+- [ ] Validasi penggantian password mewajibkan verifikasi password lama yang sesuai.
+- [ ] Pengaturan privasi portofolio efektif mengatur akses publik URL `/u/:slug`.
+- [ ] Penghapusan akun menerapkan sistem soft delete dengan konfirmasi pengamanan ganda.
+- [ ] Feedback notifikasi sukses atau error ditampilkan secara interaktif.
 
-### Langkah Instalasi
+---
+
+## 🛠️ Panduan Pengembangan
+
 ```bash
-# 1. Pastikan berada di branch develop atau branch fitur tujuan
-git checkout develop
-
-# 2. Install dependencies
-npm install
-
-# 3. Siapkan environment file
-cp .env.example .env.local
-
-# 4. Jalankan development server dengan Turbopack
+# 1. Jalankan development server
 npm run dev
+
+# 2. Buka pengaturan akun & profil:
+# http://localhost:3000/profile
+# http://localhost:3000/settings
+
+# 3. Validasi kode
+npm run lint
 ```
-
-Aplikasi berjalan di [http://localhost:3000](http://localhost:3000).
-
-### Script Berguna
-- `npm run dev` : Menjalankan Next.js dev server.
-- `npm run build` : Memvalidasi bundle build Next.js.
-- `npm run lint` : Menjalankan audit ESLint.
-- `npm run lint:fix` : Memperbaiki pelanggaran linting secara otomatis.
-- `npm run build:icons` : Mengompilasi CSS ikon Iconify jika menambah ikon baru.
-
----
-
-## 9. Dokumentasi Perencanaan (`plan-md`)
-
-Detail arsitektur teknis dan panduan lengkap tersedia di folder `plan-md/`:
-- [`plan-md/prd.md`](./plan-md/prd.md) : Product Requirements Document lengkap (F01–F13).
-- [`plan-md/task-management.md`](./plan-md/task-management.md) : Panduan pembagian tugas, format Notion, dan aturan merge.
-- [`plan-md/erd_growvia.md`](./plan-md/erd_growvia.md) : Diagram ERD Mermaid & struktur seluruh tabel.
-- [`plan-md/erd_penjelasan.md`](./plan-md/erd_penjelasan.md) : Penjelasan mendalam kamus data dan relasi tabel.
-- [`plan-md/design_system.md`](./plan-md/design_system.md) : Panduan Design System, tipografi, warna, dan komponen UI.
