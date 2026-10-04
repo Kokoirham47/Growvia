@@ -1,192 +1,189 @@
-# 🌱 Growvia — AI-Powered Skill Ecosystem
+# 🛡️ Feature: F13 — Admin Dashboard & Master Data Management
 
-> **Platform karier terintegrasi bagi mahasiswa dan fresh graduate untuk mengubah pengalaman organisasi, kepanitiaan, magang, dan proyek menjadi skill terstruktur, analisis kesiapan karier, rekomendasi belajar personalisasi, dan portofolio profesional.**
-
-Branch ini (`develop`) adalah **integration branch utama** tempat bertemunya seluruh fitur tim Growvia sebelum dirilis ke `main`.
-
----
-
-## 📑 Daftar Isi
-
-1. [Ringkasan Proyek](#1-ringkasan-proyek)
-2. [Tech Stack](#2-tech-stack)
-3. [Pembagian Tugas Tim](#3-pembagian-tugas-tim)
-4. [Strategi Branch & Alur Kerja Git](#4-strategi-branch--alur-kerja-git)
-5. [Matriks Kepemilikan Database (Anti-Konflik)](#5-matriks-kepemilikan-database-anti-konflik)
-6. [Roadmap Merge & Sprint](#6-roadmap-merge--sprint)
-7. [Katalog Fitur & Daftar Branch](#7-katalog-fitur--daftar-branch)
-8. [Panduan Menjalankan Proyek](#8-panduan-menjalankan-proyek)
-9. [Dokumentasi Perencanaan (`plan-md`)](#9-dokumentasi-perencanaan-plan-md)
+> **Branch:** `feature/f13-admin`  
+> **PIC / Assignee:** Anggota B (Beban: 40% — *Intelligence & Career Engine*)  
+> **Prioritas:** P1 (Should Have — *Katalis Master Data Ekosistem*)  
+> **Dependency:** F01 (Auth), F05 (Skill Profile), dan F06 (Career Gap) sudah di-merge  
+> **Target Merge:** `develop` (Merge ke-12)  
+> **Dokumen Terkait:** [PRD (F13)](./plan-md/prd.md#f13--admin-dashboard) · [Task Management](./plan-md/task-management.md#f13--admin-dashboard) · [ERD](./plan-md/erd_growvia.md)
 
 ---
 
-## 1. Ringkasan Proyek
+## 📌 Deskripsi Fitur
 
-- **Visi**: Menjadi ekosistem karier terlengkap bagi generasi muda Indonesia yang menghubungkan **Pengalaman → Skill → Karier** dalam satu alur berbasis kecerdasan buatan (AI).
-- **Target Pengguna**:
-  - *Primary*: Mahasiswa aktif semester 4–8 (aktif berorganisasi & kepanitiaan).
-  - *Secondary*: Fresh graduate 0–2 tahun pengalaman kerja.
-  - *Tertiary*: Career switcher yang memetakan ulang skill set mereka.
-- **Problem Statement**:
-  1. Sulit mengidentifikasi skill konkret dari pengalaman non-formal/organisasi.
-  2. Tidak mengetahui skill gap terhadap karier impian.
-  3. Bingung memilih materi belajar yang tepat untuk menutup gap.
-  4. Belum memiliki portofolio profesional berbasis bukti (*evidence-based*).
+Admin Dashboard adalah antarmuka internal terpisah bagi tim pengelola Growvia untuk mengurasi dan memelihara seluruh **Master Data** (Taksonomi Keahlian, Peran Karier, Standar Kebutuhan Keahlian Industri, Sumber Belajar, dan Peluang Magang/Kerja). Master data ini merupakan fondasi wajib agar algoritma rekomendasi pembelajaran (F07) dan kecocokan peluang karier (F08) dapat beroperasi secara presisi.
+
+> ⚠️ **Scope Admin MVP:** Dirancang khusus untuk pengelolaan data master. Akses autentikasi terisolasi dari aplikasi umum pengguna dan tidak mencakup modul analitik rumit atau CMS publik.
 
 ---
 
-## 2. Tech Stack
+## 🎯 Spesifikasi Kebutuhan & Modul Admin (PRD)
 
-| Layer | Teknologi | Keterangan |
-|---|---|---|
-| **Framework** | Next.js 16.1.1 (App Router + Turbopack) | Server & Client Components hybrid |
-| **UI Library** | MUI (Material UI) v7.3.6 | `@mui/material`, `@mui/lab`, CSS Variables |
-| **Styling** | Emotion + Tailwind CSS 4.1 | Utility styling & modular themes |
-| **Language** | TypeScript 5.9 | Strict typing |
-| **Icons** | Iconify (Tabler Icons) | `src/assets/iconify-icons` |
-| **AI Intelligence** | Gemini / Groq LLM API | Ekstraksi skill & ranking rekomendasi belajar |
-| **Visualization** | D3.js / Vis.js / React Flow | Skill Pattern Map graph |
+```text
+                               ┌───────────────────────────┐
+                               │     F13.1 Admin Login     │
+                               └─────────────┬─────────────┘
+                                             │ (Session 8 Jam)
+                                             ▼
+                               ┌───────────────────────────┐
+                               │   F13.2 Admin Overview    │
+                               │  (Statistik 4 Master Data)│
+                               └─────────────┬─────────────┘
+                                             │
+      ┌───────────────────┬──────────────────┴────────────────┬───────────────────┐
+      ▼                   ▼                                   ▼                   ▼
+[ F13.3 Manage      [ F13.4 & F13.5                     [ F13.6 Manage      [ F13.7 Manage
+    Skills ]         Career Paths & Required Skills ]      Resources ]         Opportunities ]
+```
+
+### F13.1 Admin Authentication & Session
+- Form login khusus di rute `/admin/login` (email + password).
+- Tidak ada opsi registrasi mandiri publik (akun admin didaftarkan internal/seed).
+- Token sesi admin terpisah secara independen dari sesi pengguna biasa.
+- Masa aktif sesi: **8 jam inaktif**.
+- Dilindungi oleh middleware keamanan khusus `adminAuthMiddleware`.
+
+### F13.2 Admin Overview Dashboard
+- Ringkasan kartu statistik metrik real-time:
+  - **Total Skills** terdaftar.
+  - **Total Career Paths** aktif.
+  - **Total Learning Resources** aktif.
+  - **Total Career Opportunities** aktif.
+
+### F13.3 Pengelolaan Taksonomi Skill (Manage Skills)
+- Tabel data skill: Nama, Kategori (`hard_skill` | `soft_skill` | `technical` | `leadership`), Normalized Name, Tanggal Dibuat.
+- Pencarian dan filter kategori.
+- Operasi CRUD: Tambah, edit, dan **Safe Delete** (sistem menolak penghapusan skill jika skill tersebut sedang digunakan oleh profil user, target karier, atau materi belajar).
+- Auto-generate `normalized_name` (huruf kecil tanpa spasi) saat mengetik nama skill.
+
+### F13.4 Pengelolaan Peran Karier (Manage Career Paths)
+- Tabel peran karier: Nama Posisi, Industri, Jumlah Required Skills terikat, Status Aktif.
+- CRUD Peran Karier: Nama peran, Slug URL, Deskripsi, Industri.
+- Fitur penonaktifan (*Soft Delete*): Peran yang sudah dipilih oleh mahasiswa tidak dihapus permanen, melainkan dinonaktifkan (`is_active = false`).
+
+### F13.5 Pengelolaan Kebutuhan Keahlian Karier (Manage Required Skills)
+- Mengatur relasi antara peran karier dengan daftar keahlian yang disyaratkan.
+- Menentukan tingkat kepentingan (*Importance*): `must_have` | `important` | `nice_to_have`.
+- Menentukan standar minimum kemahiran (*Min Level*): `beginner` | `intermediate` | `advanced`.
+- *Trigger Otomatis*: Perubahan required skill memicu pembaruan analisis gap pada sesi user berikutnya.
+
+### F13.6 Pengelolaan Sumber Belajar (Manage Learning Resources)
+- CRUD materi belajar kandidat rekomendasi:
+  - Judul, Platform (Coursera, Dicoding, YouTube, dsb), URL Sumber, Tipe, Durasi, Tingkat Kesulitan, Rating.
+  - Multi-select Tagging Keahlian (minimal terhubung ke 1 skill dari master `SKILL`).
+  - Saklar status aktif (materi nonaktif otomatis dikeluarkan dari pool rekomendasi pengguna).
+
+### F13.7 Pengelolaan Lowongan Karier (Manage Opportunities)
+- CRUD lowongan magang dan kerja:
+  - Judul Pekerjaan, Nama Perusahaan, Lokasi, Model Kerja (Remote/Onsite), URL Pendaftaran, Tanggal Deadline, Tag Keahlian.
+  - Penandaan kedaluwarsa otomatis jika tanggal melewati deadline (`is_active = false`).
 
 ---
 
-## 3. Pembagian Tugas Tim
+## 🗄️ Lingkup Backend & Skema Basis Data
 
-Total Beban: **100%** | Skema Fullstack per Fitur (Frontend + Backend per orang):
+### Endpoint API
 
-| Anggota | Peran / Fokus | Fitur yang Dikerjakan | Beban |
+| Method | Endpoint | Deskripsi | Proteksi Auth |
 |---|---|---|---|
-| **Anggota A** | Foundation & Core AI Loop | **F01** Auth, **F02** Onboarding, **F03** Experience, **F04** AI Skill Extraction, **F10** Dashboard | **40%** |
-| **Anggota B** | Intelligence & Career Engine | **F05** Skill Profile, **F06** Career Target & Gap, **F07** Learning Recommendation, **F13** Admin Dashboard | **40%** |
-| **Anggota C** | Discovery & Identity | **F08** Career Opportunities, **F09** Portfolio Builder, **F12** Profile & Settings | **20%** |
+| `POST` | `/api/admin/auth/login` | Login admin & issue admin JWT session | Publik |
+| `POST` | `/api/admin/auth/logout` | Mengakhiri sesi login admin | Admin Auth |
+| `GET` | `/api/admin/overview` | Mengambil data metrik ringkasan master data | Admin Auth |
+| `GET/POST/PUT/DELETE` | `/api/admin/skills` | Operasi CRUD master taksonomi skill | Admin Auth |
+| `GET/POST/PUT/DELETE` | `/api/admin/career-roles` | Operasi CRUD master peran karier | Admin Auth |
+| `GET/POST/PUT/DELETE` | `/api/admin/career-roles/:id/skills` | Operasi mapping skill wajib per peran karier | Admin Auth |
+| `GET/POST/PUT/DELETE` | `/api/admin/learning-resources` | Operasi CRUD materi pembelajaran & tags | Admin Auth |
+| `GET/POST/PUT/DELETE` | `/api/admin/opportunities` | Operasi CRUD lowongan karier & tags | Admin Auth |
 
----
+### Middleware Khusus (`adminAuthMiddleware`)
+- Memvalidasi token sesi admin dan memastikan klaim otorisasi `role = 'admin'`.
+- Mengembalikan `403 Forbidden` jika pengguna umum mencoba mengakses endpoint admin.
 
-## 4. Strategi Branch & Alur Kerja Git
+### Entitas Basis Data (Ownership: Anggota B)
 
-```text
-main (Production / Stable Release)
- └── develop (Integration Branch)
-      ├── feature/f01-authentication      (Sprint 1 - Anggota A)
-      ├── feature/f02-onboarding          (Sprint 2 - Anggota A)
-      ├── feature/f03-experience          (Sprint 2 - Anggota A)
-      ├── feature/f04-ai-skill-extraction (Sprint 3 - Anggota A)
-      ├── feature/f05-skill-profile       (Sprint 4 - Anggota B)
-      ├── feature/f06-career-gap          (Sprint 5 - Anggota B)
-      ├── feature/f07-learning            (Sprint 6 - Anggota B)
-      ├── feature/f08-opportunities       (Sprint 3 - Anggota C)
-      ├── feature/f09-portfolio           (Sprint 5 - Anggota C)
-      ├── feature/f10-dashboard           (Sprint 4 - Anggota A)
-      ├── feature/f12-profile-settings    (Sprint 1 - Anggota C)
-      └── feature/f13-admin               (Sprint 6 - Anggota B)
-```
+```mermaid
+erDiagram
+    ADMIN {
+        uuid id PK
+        string name
+        string email UK
+        string password_hash
+        timestamp last_login_at
+        timestamp created_at
+    }
 
-### Aturan Branching & Pull Request:
-1. **Source Branch**: Setiap feature branch **wajib dibuat dari `develop` terbaru**:
-   ```bash
-   git checkout develop
-   git pull origin develop
-   git checkout -b feature/fXX-nama-fitur
-   ```
-2. **Merge Target**: Semua PR diarahkan ke **`develop`**, bukan ke `main`.
-3. **Branch `main`**: Hanya diperbarui saat rilis milestone stabil (Alpha/Beta/v1.0).
-4. **Shared Files**: File global seperti middleware auth, skema basis data inti, konfigurasi `.env`, dan layout root dikerjakan di `develop` sebelum didistribusikan ke branch fitur.
+    SKILL {
+        uuid id PK
+        string name
+        enum category
+        string normalized_name UK
+    }
 
----
+    CAREER_ROLE {
+        uuid id PK
+        string title
+        string slug UK
+        string industry
+        boolean is_active
+    }
 
-## 5. Matriks Kepemilikan Database (Anti-Konflik)
+    LEARNING_RESOURCE {
+        uuid id PK
+        string title
+        string platform
+        string url
+        boolean is_active
+    }
 
-Untuk menghindari *merge conflict* pada database logic dan schema:
-
-| Tabel Basis Data | PIC Pemilik (Write / Primary CRUD) | Keterangan Konsumsi |
-|---|---|---|
-| `USER`, `EMAIL_VERIFICATION`, `SESSION` | **Anggota A** | Digunakan middleware auth oleh semua anggota |
-| `PROFILE`, `CAREER_INTEREST`, `CAREER_FIELD` | **Anggota A** | Dibaca oleh F09 (Portofolio) & F12 (Settings) |
-| `EXPERIENCE` | **Anggota A** | Dibaca oleh F04 (AI), F05 (Evidence), F09 (Portofolio) |
-| `AI_ANALYSIS_JOB`, `AI_SKILL_SUGGESTION` | **Anggota A** | Khusus modul AI extraction |
-| `SKILL` | **Anggota A** (Inisiasi/Seed) → **Anggota B** (Admin CRUD & Read) | Master taxonomy skill sistem |
-| `USER_SKILL`, `SKILL_EVIDENCE` | **Anggota A** (Write saat ekstraksi) → **Anggota B** (Read & Manage) | Relasi skill user & bukti pengalaman |
-| `CAREER_ROLE`, `CAREER_ROLE_SKILL` | **Anggota B** | Master library peran karier & bobot skill |
-| `USER_CAREER_TARGET`, `SKILL_GAP_RESULT` | **Anggota B** | Data analisis gap & readiness score |
-| `LEARNING_RESOURCE`, `RESOURCE_SKILL_TAG` | **Anggota B** | Master data resource & tag skill |
-| `LEARNING_RECOMMENDATION`, `USER_SAVED_RESOURCE` | **Anggota B** | Hasil hybrid AI ranking belajar & bookmark |
-| `ADMIN` | **Anggota B** | Akun autentikasi portal admin |
-| `CAREER_OPPORTUNITY`, `OPPORTUNITY_SKILL_TAG` | **Anggota C** | Data lowongan karier & tag kualifikasi |
-| `USER_SAVED_OPPORTUNITY` | **Anggota C** | Bookmark lowongan pengguna |
-
----
-
-## 6. Roadmap Merge & Sprint
-
-```text
-Sprint 1  →  F01 (Auth - A) [FOUNDATION] ──> F12 (Profile & Settings - C) bisa mulai
-Sprint 2  →  F02 (Onboarding - A) ───────> F03 (Experience - A)
-Sprint 3  →  F04 (AI Skill Extraction - A) ──> F08 (Opportunities - C) paralel
-Sprint 4  →  F05 (Skill Profile - B) ────> F10 (Dashboard Shell & Widgets - A)
-Sprint 5  →  F06 (Career Gap - B) ───────> F09 (Portfolio Builder - C)
-Sprint 6  →  F07 (Learning Rec - B) ─────> F13 (Admin Dashboard - B)
-Sprint 7  →  Integrasi menyeluruh, End-to-End Testing, & Bug fixing
+    CAREER_OPPORTUNITY {
+        uuid id PK
+        string title
+        string company
+        date deadline
+        boolean is_active
+    }
 ```
 
 ---
 
-## 7. Katalog Fitur & Daftar Branch
+## 💻 Lingkup Frontend
 
-| ID | Nama Fitur | Nama Branch | PIC | Prioritas PRD |
-|---|---|---|---|---|
-| **F01** | Authentication & Session | `feature/f01-authentication` | Anggota A | P0 (Must Have) |
-| **F02** | User Onboarding | `feature/f02-onboarding` | Anggota A | P0 (Must Have) |
-| **F03** | Experience Management | `feature/f03-experience` | Anggota A | P0 (Must Have) |
-| **F04** | AI Skill Extraction | `feature/f04-ai-skill-extraction` | Anggota A | P0 (Must Have) |
-| **F05** | Skill Profile & Pattern Map | `feature/f05-skill-profile` | Anggota B | P0 (Must Have) |
-| **F06** | Career Target & Gap Analysis | `feature/f06-career-gap` | Anggota B | P1 (Should Have) |
-| **F07** | Learning Recommendation | `feature/f07-learning` | Anggota B | P1 (Should Have) |
-| **F08** | Career Opportunities | `feature/f08-opportunities` | Anggota C | P1 (Should Have) |
-| **F09** | Portfolio Builder & Public View | `feature/f09-portfolio` | Anggota C | P1 (Should Have) |
-| **F10** | Core Dashboard | `feature/f10-dashboard` | Anggota A | P0 (Must Have) |
-| **F12** | Profile & Account Settings | `feature/f12-profile-settings` | Anggota C | P0 (Must Have) |
-| **F13** | Admin Dashboard & Master Data | `feature/f13-admin` | Anggota B | P1 (Should Have) |
+### Rute Halaman Terisolasi
+- `src/app/(admin)/admin/login/page.tsx` ➔ Halaman masuk khusus admin.
+- `src/app/(admin)/admin/dashboard/page.tsx` ➔ Ringkasan statistik master data.
+- `src/app/(admin)/admin/skills/page.tsx` ➔ Pengelolaan taksonomi skill.
+- `src/app/(admin)/admin/career-roles/page.tsx` ➔ Pengelolaan peran karier & required skills.
+- `src/app/(admin)/admin/learning-resources/page.tsx` ➔ Pengelolaan sumber materi belajar.
+- `src/app/(admin)/admin/opportunities/page.tsx` ➔ Pengelolaan peluang lowongan karier.
 
-*Catatan: Setiap branch di atas memiliki `README.md` terdedikasi yang merinci flow, endpoint, skema, dan kriteria penerimaan sesuai PRD.*
+### Komponen UI
+- `AdminLayout.tsx` ➔ Template tata letak terpisah khusus dashboard admin (sidebar navigasi admin).
+- `AdminDataTable.tsx` ➔ Komponen tabel dinamis terstandarisasi dengan pagination, search, dan tombol aksi.
+- `AdminCRUDModal.tsx` ➔ Dialog formulir tambah/edit generik responsif.
+- `AdminStatCard.tsx` ➔ Kartu ringkasan metrik statistik.
 
 ---
 
-## 8. Panduan Menjalankan Proyek
+## ✅ Kriteria Penerimaan (Acceptance Criteria)
 
-### Prasyarat
-- Node.js versi 18.x atau 20.x
-- npm / pnpm
+- [ ] Seluruh rute `/admin/*` terlindungi ketat dari akses pengguna publik/biasa.
+- [ ] CRUD untuk seluruh 5 kategori master data berfungsi dengan validasi input yang solid.
+- [ ] Safe-delete mencegah penghapusan skill yang masih memiliki ketergantungan relasi data.
+- [ ] Perubahan pada required skill karier secara otomatis terintegrasi ke kalkulasi gap di F06.
+- [ ] Sesi admin kadaluarsa otomatis setelah 8 jam tidak aktif.
 
-### Langkah Instalasi
+---
+
+## 🛠️ Panduan Pengembangan
+
 ```bash
-# 1. Pastikan berada di branch develop atau branch fitur tujuan
-git checkout develop
-
-# 2. Install dependencies
-npm install
-
-# 3. Siapkan environment file
-cp .env.example .env.local
-
-# 4. Jalankan development server dengan Turbopack
+# 1. Jalankan development server
 npm run dev
+
+# 2. Buka portal login admin:
+# http://localhost:3000/admin/login
+# http://localhost:3000/admin/dashboard
+
+# 3. Lakukan audit kode
+npm run lint
 ```
-
-Aplikasi berjalan di [http://localhost:3000](http://localhost:3000).
-
-### Script Berguna
-- `npm run dev` : Menjalankan Next.js dev server.
-- `npm run build` : Memvalidasi bundle build Next.js.
-- `npm run lint` : Menjalankan audit ESLint.
-- `npm run lint:fix` : Memperbaiki pelanggaran linting secara otomatis.
-- `npm run build:icons` : Mengompilasi CSS ikon Iconify jika menambah ikon baru.
-
----
-
-## 9. Dokumentasi Perencanaan (`plan-md`)
-
-Detail arsitektur teknis dan panduan lengkap tersedia di folder `plan-md/`:
-- [`plan-md/prd.md`](./plan-md/prd.md) : Product Requirements Document lengkap (F01–F13).
-- [`plan-md/task-management.md`](./plan-md/task-management.md) : Panduan pembagian tugas, format Notion, dan aturan merge.
-- [`plan-md/erd_growvia.md`](./plan-md/erd_growvia.md) : Diagram ERD Mermaid & struktur seluruh tabel.
-- [`plan-md/erd_penjelasan.md`](./plan-md/erd_penjelasan.md) : Penjelasan mendalam kamus data dan relasi tabel.
-- [`plan-md/design_system.md`](./plan-md/design_system.md) : Panduan Design System, tipografi, warna, dan komponen UI.
