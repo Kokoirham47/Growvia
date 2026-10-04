@@ -1,614 +1,192 @@
-Aplikasi dashboard **Growvia** dibangun dengan **Next.js 16 (App Router)** dan **MUI v7**, di atas template Vuexy.
-Dokumen ini menjelaskan cara menjalankan proyek, struktur folder, serta **cara memanggil (menggunakan) setiap komponen** yang tersedia di proyek ini.
+# 🌱 Growvia — AI-Powered Skill Ecosystem
 
-> Hanya komponen yang benar-benar dipakai yang disisakan di repo ini. Daftar file yang dihapus ada di bagian [Catatan Pembersihan](#10-catatan-pembersihan).
+> **Platform karier terintegrasi bagi mahasiswa dan fresh graduate untuk mengubah pengalaman organisasi, kepanitiaan, magang, dan proyek menjadi skill terstruktur, analisis kesiapan karier, rekomendasi belajar personalisasi, dan portofolio profesional.**
 
-## Daftar Isi
-
-1. [Tech Stack](#1-tech-stack)
-2. [Menjalankan Proyek](#2-menjalankan-proyek)
-3. [Environment](#3-environment)
-4. [Struktur Folder](#4-struktur-folder)
-5. [Alias Path](#5-alias-path)
-6. [Routing & Layout](#6-routing--layout)
-7. [Pemanggilan Komponen](#7-pemanggilan-komponen)
-8. [Menambah Halaman Baru](#8-menambah-halaman-baru)
-9. [Tema & Pengaturan](#9-tema--pengaturan)
-10. [Catatan Pembersihan](#10-catatan-pembersihan)
+Branch ini (`develop`) adalah **integration branch utama** tempat bertemunya seluruh fitur tim Growvia sebelum dirilis ke `main`.
 
 ---
 
-## 1. Tech Stack
+## 📑 Daftar Isi
 
-| Teknologi | Versi | Keterangan |
-| --- | --- | --- |
-| Next.js | 16.1.1 | App Router + Turbopack |
-| React | 19.2.3 | Server & Client Components |
-| MUI (Material UI) | 7.3.6 | `@mui/material`, `@mui/lab`, CSS Variables |
-| Emotion | 11.14 | Styling engine MUI + `@emotion/styled` |
-| TypeScript | 5.9 | Strict mode |
-| Tailwind CSS | 4.1 | Utility class (layout/spacing) |
-| CSS Modules | - | Styling lokal komponen (`*.module.css`) |
-| Iconify | - | Ikon Tabler (`tabler-*`) |
-| Lainnya | - | `classnames`, `react-use`, `react-perfect-scrollbar`, `react-colorful` |
+1. [Ringkasan Proyek](#1-ringkasan-proyek)
+2. [Tech Stack](#2-tech-stack)
+3. [Pembagian Tugas Tim](#3-pembagian-tugas-tim)
+4. [Strategi Branch & Alur Kerja Git](#4-strategi-branch--alur-kerja-git)
+5. [Matriks Kepemilikan Database (Anti-Konflik)](#5-matriks-kepemilikan-database-anti-konflik)
+6. [Roadmap Merge & Sprint](#6-roadmap-merge--sprint)
+7. [Katalog Fitur & Daftar Branch](#7-katalog-fitur--daftar-branch)
+8. [Panduan Menjalankan Proyek](#8-panduan-menjalankan-proyek)
+9. [Dokumentasi Perencanaan (`plan-md`)](#9-dokumentasi-perencanaan-plan-md)
 
 ---
 
-## 2. Menjalankan Proyek
+## 1. Ringkasan Proyek
 
+- **Visi**: Menjadi ekosistem karier terlengkap bagi generasi muda Indonesia yang menghubungkan **Pengalaman → Skill → Karier** dalam satu alur berbasis kecerdasan buatan (AI).
+- **Target Pengguna**:
+  - *Primary*: Mahasiswa aktif semester 4–8 (aktif berorganisasi & kepanitiaan).
+  - *Secondary*: Fresh graduate 0–2 tahun pengalaman kerja.
+  - *Tertiary*: Career switcher yang memetakan ulang skill set mereka.
+- **Problem Statement**:
+  1. Sulit mengidentifikasi skill konkret dari pengalaman non-formal/organisasi.
+  2. Tidak mengetahui skill gap terhadap karier impian.
+  3. Bingung memilih materi belajar yang tepat untuk menutup gap.
+  4. Belum memiliki portofolio profesional berbasis bukti (*evidence-based*).
+
+---
+
+## 2. Tech Stack
+
+| Layer | Teknologi | Keterangan |
+|---|---|---|
+| **Framework** | Next.js 16.1.1 (App Router + Turbopack) | Server & Client Components hybrid |
+| **UI Library** | MUI (Material UI) v7.3.6 | `@mui/material`, `@mui/lab`, CSS Variables |
+| **Styling** | Emotion + Tailwind CSS 4.1 | Utility styling & modular themes |
+| **Language** | TypeScript 5.9 | Strict typing |
+| **Icons** | Iconify (Tabler Icons) | `src/assets/iconify-icons` |
+| **AI Intelligence** | Gemini / Groq LLM API | Ekstraksi skill & ranking rekomendasi belajar |
+| **Visualization** | D3.js / Vis.js / React Flow | Skill Pattern Map graph |
+
+---
+
+## 3. Pembagian Tugas Tim
+
+Total Beban: **100%** | Skema Fullstack per Fitur (Frontend + Backend per orang):
+
+| Anggota | Peran / Fokus | Fitur yang Dikerjakan | Beban |
+|---|---|---|---|
+| **Anggota A** | Foundation & Core AI Loop | **F01** Auth, **F02** Onboarding, **F03** Experience, **F04** AI Skill Extraction, **F10** Dashboard | **40%** |
+| **Anggota B** | Intelligence & Career Engine | **F05** Skill Profile, **F06** Career Target & Gap, **F07** Learning Recommendation, **F13** Admin Dashboard | **40%** |
+| **Anggota C** | Discovery & Identity | **F08** Career Opportunities, **F09** Portfolio Builder, **F12** Profile & Settings | **20%** |
+
+---
+
+## 4. Strategi Branch & Alur Kerja Git
+
+```text
+main (Production / Stable Release)
+ └── develop (Integration Branch)
+      ├── feature/f01-authentication      (Sprint 1 - Anggota A)
+      ├── feature/f02-onboarding          (Sprint 2 - Anggota A)
+      ├── feature/f03-experience          (Sprint 2 - Anggota A)
+      ├── feature/f04-ai-skill-extraction (Sprint 3 - Anggota A)
+      ├── feature/f05-skill-profile       (Sprint 4 - Anggota B)
+      ├── feature/f06-career-gap          (Sprint 5 - Anggota B)
+      ├── feature/f07-learning            (Sprint 6 - Anggota B)
+      ├── feature/f08-opportunities       (Sprint 3 - Anggota C)
+      ├── feature/f09-portfolio           (Sprint 5 - Anggota C)
+      ├── feature/f10-dashboard           (Sprint 4 - Anggota A)
+      ├── feature/f12-profile-settings    (Sprint 1 - Anggota C)
+      └── feature/f13-admin               (Sprint 6 - Anggota B)
+```
+
+### Aturan Branching & Pull Request:
+1. **Source Branch**: Setiap feature branch **wajib dibuat dari `develop` terbaru**:
+   ```bash
+   git checkout develop
+   git pull origin develop
+   git checkout -b feature/fXX-nama-fitur
+   ```
+2. **Merge Target**: Semua PR diarahkan ke **`develop`**, bukan ke `main`.
+3. **Branch `main`**: Hanya diperbarui saat rilis milestone stabil (Alpha/Beta/v1.0).
+4. **Shared Files**: File global seperti middleware auth, skema basis data inti, konfigurasi `.env`, dan layout root dikerjakan di `develop` sebelum didistribusikan ke branch fitur.
+
+---
+
+## 5. Matriks Kepemilikan Database (Anti-Konflik)
+
+Untuk menghindari *merge conflict* pada database logic dan schema:
+
+| Tabel Basis Data | PIC Pemilik (Write / Primary CRUD) | Keterangan Konsumsi |
+|---|---|---|
+| `USER`, `EMAIL_VERIFICATION`, `SESSION` | **Anggota A** | Digunakan middleware auth oleh semua anggota |
+| `PROFILE`, `CAREER_INTEREST`, `CAREER_FIELD` | **Anggota A** | Dibaca oleh F09 (Portofolio) & F12 (Settings) |
+| `EXPERIENCE` | **Anggota A** | Dibaca oleh F04 (AI), F05 (Evidence), F09 (Portofolio) |
+| `AI_ANALYSIS_JOB`, `AI_SKILL_SUGGESTION` | **Anggota A** | Khusus modul AI extraction |
+| `SKILL` | **Anggota A** (Inisiasi/Seed) → **Anggota B** (Admin CRUD & Read) | Master taxonomy skill sistem |
+| `USER_SKILL`, `SKILL_EVIDENCE` | **Anggota A** (Write saat ekstraksi) → **Anggota B** (Read & Manage) | Relasi skill user & bukti pengalaman |
+| `CAREER_ROLE`, `CAREER_ROLE_SKILL` | **Anggota B** | Master library peran karier & bobot skill |
+| `USER_CAREER_TARGET`, `SKILL_GAP_RESULT` | **Anggota B** | Data analisis gap & readiness score |
+| `LEARNING_RESOURCE`, `RESOURCE_SKILL_TAG` | **Anggota B** | Master data resource & tag skill |
+| `LEARNING_RECOMMENDATION`, `USER_SAVED_RESOURCE` | **Anggota B** | Hasil hybrid AI ranking belajar & bookmark |
+| `ADMIN` | **Anggota B** | Akun autentikasi portal admin |
+| `CAREER_OPPORTUNITY`, `OPPORTUNITY_SKILL_TAG` | **Anggota C** | Data lowongan karier & tag kualifikasi |
+| `USER_SAVED_OPPORTUNITY` | **Anggota C** | Bookmark lowongan pengguna |
+
+---
+
+## 6. Roadmap Merge & Sprint
+
+```text
+Sprint 1  →  F01 (Auth - A) [FOUNDATION] ──> F12 (Profile & Settings - C) bisa mulai
+Sprint 2  →  F02 (Onboarding - A) ───────> F03 (Experience - A)
+Sprint 3  →  F04 (AI Skill Extraction - A) ──> F08 (Opportunities - C) paralel
+Sprint 4  →  F05 (Skill Profile - B) ────> F10 (Dashboard Shell & Widgets - A)
+Sprint 5  →  F06 (Career Gap - B) ───────> F09 (Portfolio Builder - C)
+Sprint 6  →  F07 (Learning Rec - B) ─────> F13 (Admin Dashboard - B)
+Sprint 7  →  Integrasi menyeluruh, End-to-End Testing, & Bug fixing
+```
+
+---
+
+## 7. Katalog Fitur & Daftar Branch
+
+| ID | Nama Fitur | Nama Branch | PIC | Prioritas PRD |
+|---|---|---|---|---|
+| **F01** | Authentication & Session | `feature/f01-authentication` | Anggota A | P0 (Must Have) |
+| **F02** | User Onboarding | `feature/f02-onboarding` | Anggota A | P0 (Must Have) |
+| **F03** | Experience Management | `feature/f03-experience` | Anggota A | P0 (Must Have) |
+| **F04** | AI Skill Extraction | `feature/f04-ai-skill-extraction` | Anggota A | P0 (Must Have) |
+| **F05** | Skill Profile & Pattern Map | `feature/f05-skill-profile` | Anggota B | P0 (Must Have) |
+| **F06** | Career Target & Gap Analysis | `feature/f06-career-gap` | Anggota B | P1 (Should Have) |
+| **F07** | Learning Recommendation | `feature/f07-learning` | Anggota B | P1 (Should Have) |
+| **F08** | Career Opportunities | `feature/f08-opportunities` | Anggota C | P1 (Should Have) |
+| **F09** | Portfolio Builder & Public View | `feature/f09-portfolio` | Anggota C | P1 (Should Have) |
+| **F10** | Core Dashboard | `feature/f10-dashboard` | Anggota A | P0 (Must Have) |
+| **F12** | Profile & Account Settings | `feature/f12-profile-settings` | Anggota C | P0 (Must Have) |
+| **F13** | Admin Dashboard & Master Data | `feature/f13-admin` | Anggota B | P1 (Should Have) |
+
+*Catatan: Setiap branch di atas memiliki `README.md` terdedikasi yang merinci flow, endpoint, skema, dan kriteria penerimaan sesuai PRD.*
+
+---
+
+## 8. Panduan Menjalankan Proyek
+
+### Prasyarat
+- Node.js versi 18.x atau 20.x
+- npm / pnpm
+
+### Langkah Instalasi
 ```bash
-# 1. Install dependency
+# 1. Pastikan berada di branch develop atau branch fitur tujuan
+git checkout develop
+
+# 2. Install dependencies
 npm install
 
-# 2. Jalankan development server
+# 3. Siapkan environment file
+cp .env.example .env.local
+
+# 4. Jalankan development server dengan Turbopack
 npm run dev
 ```
 
-Buka [http://localhost:3000](http://localhost:3000). Halaman `/` otomatis di-redirect ke `/home`.
+Aplikasi berjalan di [http://localhost:3000](http://localhost:3000).
 
-### Scripts
-
-| Script | Perintah | Fungsi |
-| --- | --- | --- |
-| `dev` | `next dev --turbopack` | Menjalankan server development |
-| `build` | `next build` | Build produksi |
-| `start` | `next start` | Menjalankan hasil build |
-| `lint` | `eslint . --ext .js,.jsx,.ts,.tsx` | Cek kualitas kode |
-| `lint:fix` | `eslint ... --fix` | Perbaiki otomatis |
-| `format` | `prettier --write "src/**/*.{js,jsx,ts,tsx}"` | Format kode |
-| `build:icons` | `tsx src/assets/iconify-icons/bundle-icons-css.ts` | Generate CSS ikon Iconify |
-
-> `npm install` menjalankan `postinstall` yang otomatis mem-build CSS ikon. Jika ikon baru tidak muncul, jalankan `npm run build:icons`.
+### Script Berguna
+- `npm run dev` : Menjalankan Next.js dev server.
+- `npm run build` : Memvalidasi bundle build Next.js.
+- `npm run lint` : Menjalankan audit ESLint.
+- `npm run lint:fix` : Memperbaiki pelanggaran linting secara otomatis.
+- `npm run build:icons` : Mengompilasi CSS ikon Iconify jika menambah ikon baru.
 
 ---
 
-## 3. Environment
-
-Salin `.env.example` menjadi `.env.local` lalu sesuaikan bila perlu:
-
-```bash
-NEXT_PUBLIC_APP_URL=http://localhost:3000
-BASEPATH=            # opsional, untuk deploy di sub-path
-```
-
-`BASEPATH` dibaca oleh `next.config.ts` sebagai `basePath`.
-
----
-
-## 4. Struktur Folder
-
-```
-src/
-├── app/                         # Next.js App Router (routing)
-│   ├── layout.tsx               # Root layout (html/body, theme script)
-│   ├── globals.css              # CSS global
-│   ├── (dashboard)/             # Grup route dengan layout dashboard
-│   │   ├── layout.tsx           # Providers + LayoutWrapper + Navbar/Sidebar/Footer
-│   │   ├── home/page.tsx        # Halaman /home
-│   │   └── about/page.tsx       # Halaman /about
-│   ├── (blank-layout-pages)/    # Grup route tanpa navbar/sidebar
-│   │   ├── layout.tsx           # Providers + BlankLayout
-│   │   └── login/page.tsx       # Halaman /login
-│   └── [...not-found]/page.tsx  # Halaman 404
-│
-├── views/                       # Konten halaman (Login.tsx, NotFound.tsx)
-├── components/                  # Komponen aplikasi
-│   ├── Link.tsx                 # Pembungkus next/link
-│   ├── Providers.tsx            # Provider global (theme, settings, nav)
-│   ├── GenerateMenu.tsx         # Generator menu dari data array
-│   ├── theme/                   # ThemeProvider + ModeChanger + deklarasi tipe theme
-│   └── layout/                  # Komponen layout vertikal/horizontal/shared
-│
-├── @core/                       # Inti template (jangan diubah sembarangan)
-│   ├── components/
-│   │   ├── mui/                 # Pembungkus komponen MUI (TextField, Chip)
-│   │   ├── custom-inputs/       # Custom input radio/checkbox (Horizontal/Vertical/Image)
-│   │   └── scroll-to-top/       # Tombol scroll ke atas
-│   ├── contexts/settingsContext.tsx
-│   ├── hooks/                   # useSettings, useImageVariant, useObjectCookie, useLayoutInit
-│   ├── styles/                  # Style menu horizontal & vertikal
-│   ├── svg/Logo.tsx             # Logo SVG
-│   ├── theme/                   # Theme MUI (colorSchemes, overrides, typography, dll)
-│   ├── utils/serverHelpers.ts   # Helper server-side (cookie, mode)
-│   └── types.ts                 # Tipe dasar (Mode, Skin, Layout, ThemeColor, ...)
-│
-├── @layouts/                    # Kerangka layout (VerticalLayout, HorizontalLayout, BlankLayout, LayoutWrapper)
-├── @menu/                       # Sistem menu (vertical-menu & horizontal-menu + hooks)
-├── configs/                     # themeConfig.ts, primaryColorConfig.ts
-├── types/menuTypes.ts           # Tipe data menu
-└── assets/iconify-icons/        # Build script + CSS ikon yang di-generate
-```
-
----
-
-## 5. Alias Path
-
-Dikonfigurasi di `tsconfig.json`:
-
-| Alias | Mengarah ke |
-| --- | --- |
-| `@/*` | `src/*` |
-| `@core/*` | `src/@core/*` |
-| `@layouts/*` | `src/@layouts/*` |
-| `@menu/*` | `src/@menu/*` |
-| `@assets/*` | `src/assets/*` |
-| `@components/*` | `src/components/*` |
-| `@configs/*` | `src/configs/*` |
-| `@views/*` | `src/views/*` |
-
-Contoh: `import Link from '@components/Link'`.
-
----
-
-## 6. Routing & Layout
-
-Proyek menggunakan **App Router** dengan *route groups*:
-
-| Route | Layout yang dipakai | Keterangan |
-| --- | --- | --- |
-| `/home` | `(dashboard)/layout.tsx` | Memakai sidebar/navbar + footer |
-| `/about` | `(dashboard)/layout.tsx` | Memakai sidebar/navbar + footer |
-| `/login` | `(blank-layout-pages)/layout.tsx` | Tanpa navbar/sidebar |
-| `*` (404) | `[...not-found]/page.tsx` | Halaman tidak ditemukan |
-
-Alur provider global (lihat `src/app/(dashboard)/layout.tsx`):
-
-```
-Providers  →  LayoutWrapper  →  (VerticalLayout | HorizontalLayout)  →  halaman
-```
-
-- **`Providers`** menyuntikkan `VerticalNavProvider`, `SettingsProvider`, dan `ThemeProvider`.
-- **`LayoutWrapper`** memilih layout **vertical** atau **horizontal** berdasarkan `settings.layout`.
-- `settings.layout` dapat diubah kapan saja lewat hook `useSettings` (mis. dari tombol di UI).
-
----
-
-## 7. Pemanggilan Komponen
-
-Semua contoh di bawah siap pakai. Perhatikan apakah komponen bersifat *client* (`'use client'`) atau *server*.
-
-### 7.1 Komponen Dasar
-
-#### `Link` — pembungkus `next/link`
-
-```tsx
-import Link from '@components/Link'
-
-// Link biasa
-<Link href='/about'>Tentang</Link>
-
-// Dipakai sebagai komponen alternatif MUI (mis. pada Typography)
-import Typography from '@mui/material/Typography'
-<Typography component={Link} href='/login' color='primary.main'>
-  Login
-</Typography>
-```
-
-`Link` aman dipakai tanpa `href` (otomatis mencegah navigasi default).
-
-#### `Providers` — provider global
-
-Dipakai sekali di level layout. **Ini adalah Server Component (async).**
-
-```tsx
-import Providers from '@components/Providers'
-
-export default async function Layout({ children }) {
-  return <Providers direction='ltr'>{children}</Providers>
-}
-```
-
-#### `ThemeProvider` — `@components/theme`
-
-Biasanya tidak dipanggil manual karena sudah ada di dalam `Providers`. Tetap tersedia bila perlu:
-
-```tsx
-import ThemeProvider from '@components/theme'
-import type { SystemMode } from '@core/types'
-
-<ThemeProvider direction='ltr' systemMode={'light' as SystemMode}>
-  {children}
-</ThemeProvider>
-```
-
-#### `ScrollToTop` — tombol kembali ke atas
-
-```tsx
-import ScrollToTop from '@core/components/scroll-to-top'
-import Button from '@mui/material/Button'
-
-<ScrollToTop className='mui-fixed'>
-  <Button variant='contained' className='is-10 bs-10 rounded-full p-0 min-is-0'>
-    <i className='tabler-arrow-up' />
-  </Button>
-</ScrollToTop>
-```
-
----
-
-### 7.2 Komponen Input & Form
-
-#### `CustomTextField` — `@core/components/mui/TextField`
-
-Pembungkus MUI `TextField` dengan gaya template (variant `filled` + label di atas). Default `size='small'`.
-
-```tsx
-import CustomTextField from '@core/components/mui/TextField'
-import InputAdornment from '@mui/material/InputAdornment'
-import IconButton from '@mui/material/IconButton'
-
-// Sederhana
-<CustomTextField fullWidth label='Email' placeholder='Masukkan email' />
-
-// Dengan ikon di akhir input (mis. toggle password)
-<CustomTextField
-  fullWidth
-  label='Password'
-  type='password'
-  slotProps={{
-    input: {
-      endAdornment: (
-        <InputAdornment position='end'>
-          <IconButton edge='end'>
-            <i className='tabler-eye' />
-          </IconButton>
-        </InputAdornment>
-      )
-    }
-  }}
-/>
-
-// Sebagai Select
-<CustomTextField select fullWidth label='Kategori' defaultValue=''>
-  <MenuItem value='a'>A</MenuItem>
-  <MenuItem value='b'>B</MenuItem>
-</CustomTextField>
-```
-
-#### `CustomChip` — `@core/components/mui/Chip`
-
-MUI `Chip` dengan tambahan prop `round` (`'true' | 'false'`).
-
-```tsx
-import CustomChip from '@core/components/mui/Chip'
-
-<CustomChip label='Baru' size='small' round='true' color='primary' variant='tonal' />
-<CustomChip label='Selesai' size='small' color='success' />
-```
-
-#### Custom Input (Radio/Checkbox) — `@core/components/custom-inputs`
-
-Kartu pilihan berbentuk **horizontal**, **vertical**, atau **gambar**. Ketiganya mendukung `type='radio'` atau `type='checkbox'`.
-
-```tsx
-import CustomInputHorizontal from '@core/components/custom-inputs/Horizontal'
-import CustomInputVertical from '@core/components/custom-inputs/Vertical'
-import CustomCheckboxImg from '@core/components/custom-inputs/Image'
-
-// Contoh state (di dalam komponen client)
-const [selected, setSelected] = useState('')
-const handleChange = (value: string) => setSelected(value)
-
-<CustomInputHorizontal
-  type='radio'
-  name='paket'
-  selected={selected}
-  handleChange={handleChange}
-  gridProps={{ size: { xs: 12, sm: 6 } }}
-  data={{ title: 'Paket A', meta: 'Rp100.000', value: 'a', content: 'Deskripsi paket A' }}
-/>
-
-<CustomInputVertical
-  type='radio'
-  name='tema'
-  selected={selected}
-  handleChange={handleChange}
-  gridProps={{ size: 6 }}
-  data={{ title: 'Terang', value: 'light', asset: <i className='tabler-sun text-2xl' /> }}
-/>
-
-<CustomCheckboxImg
-  type='checkbox'
-  name='gambar'
-  selected={['1']}
-  handleChange={handleChange}
-  gridProps={{ size: 4 }}
-  data={{ alt: 'contoh', img: '/images/avatars/1.png', value: '1' }}
-/>
-```
-
-> **Catatan tipe:** untuk `type='checkbox'` gunakan `selected: string[]`; untuk `type='radio'` gunakan `selected: string`. Definisi tipe ada di `@core/components/custom-inputs/types`.
-
----
-
-### 7.3 Menu & Navigasi (`@menu`)
-
-#### Menu Vertikal (default `@menu/vertical-menu`)
-
-```tsx
-import VerticalNav, { Menu, MenuItem, SubMenu, MenuSection, NavHeader, NavCollapseIcons } from '@menu/vertical-menu'
-
-<VerticalNav collapsedWidth={71} backgroundColor='var(--mui-palette-background-paper)'>
-  <NavHeader>
-    {/* logo / tombol collapse */}
-  </NavHeader>
-  <Menu>
-    <MenuItem href='/home' icon={<i className='tabler-smart-home' />}>Home</MenuItem>
-
-    <SubMenu label='Akun' icon={<i className='tabler-user' />}>
-      <MenuItem href='/profile'>Profil</MenuItem>
-      <MenuItem href='/settings'>Pengaturan</MenuItem>
-    </SubMenu>
-  </Menu>
-</VerticalNav>
-```
-
-#### Menu Horizontal (default `@menu/horizontal-menu`)
-
-```tsx
-import HorizontalNav, { Menu, MenuItem, SubMenu } from '@menu/horizontal-menu'
-
-<HorizontalNav switchToVertical verticalNavContent={VerticalNavContent}>
-  <Menu>
-    <MenuItem href='/home'>Home</MenuItem>
-    <MenuItem href='/about'>About</MenuItem>
-  </Menu>
-</HorizontalNav>
-```
-
-> `VerticalNavContent` adalah komponen `@components/layout/horizontal/VerticalNavContent` (dipakai untuk mengubah menu horizontal menjadi vertikal di layar kecil).
-
-#### `GenerateMenu` — membuat menu dari data array
-
-Jika menu didefinisikan sebagai data (bukan JSX manual), gunakan generator dari `@components/GenerateMenu`:
-
-```tsx
-import { GenerateVerticalMenu, GenerateHorizontalMenu } from '@components/GenerateMenu'
-import type { VerticalMenuDataType } from '@/types/menuTypes'
-import { Menu } from '@menu/vertical-menu'
-
-const menuData: VerticalMenuDataType[] = [
-  { label: 'Home', href: '/home', icon: 'tabler-smart-home' },
-  { label: 'About', href: '/about', icon: 'tabler-info-circle' },
-  {
-    label: 'Transaksi',
-    icon: 'tabler-credit-card',
-    children: [{ label: 'Baru', href: '/transaksi/baru' }]
-  }
-]
-
-<Menu>
-  <GenerateVerticalMenu menuData={menuData} />
-</Menu>
-```
-
-Tipe data menu (`VerticalMenuDataType`, `HorizontalMenuDataType`, dll.) ada di `@/types/menuTypes`.
-`prefix` / `suffix` dapat berupa `ReactNode` atau objek `ChipProps` (otomatis dirender sebagai `CustomChip`).
-
-#### Hook navigasi
-
-```tsx
-import useVerticalNav from '@menu/hooks/useVerticalNav'
-import useHorizontalNav from '@menu/hooks/useHorizontalNav'
-
-const { isCollapsed, isHovered, toggleVerticalNav, collapseVerticalNav, isBreakpointReached } = useVerticalNav()
-const { isBreakpointReached: horizontalBreakpoint } = useHorizontalNav()
-```
-
-| Hook | Nilai penting |
-| --- | --- |
-| `useVerticalNav()` | `isCollapsed`, `isHovered`, `isBreakpointReached`, `transitionDuration`, `toggleVerticalNav()`, `collapseVerticalNav(bool)` |
-| `useHorizontalNav()` | `isBreakpointReached` |
-
----
-
-### 7.4 Komponen Layout
-
-#### Kerangka layout (`@layouts`)
-
-```tsx
-import LayoutWrapper from '@layouts/LayoutWrapper'
-import VerticalLayout from '@layouts/VerticalLayout'
-import HorizontalLayout from '@layouts/HorizontalLayout'
-import BlankLayout from '@layouts/BlankLayout'
-
-<LayoutWrapper
-  systemMode='light'
-  verticalLayout={
-    <VerticalLayout navigation={<Navigation />} navbar={<Navbar />} footer={<Footer />}>
-      {children}
-    </VerticalLayout>
-  }
-  horizontalLayout={
-    <HorizontalLayout header={<Header />} footer={<Footer />}>
-      {children}
-    </HorizontalLayout>
-  }
-/>
-```
-
-| Komponen | Props | Keterangan |
-| --- | --- | --- |
-| `LayoutWrapper` | `systemMode`, `verticalLayout`, `horizontalLayout` | Memilih layout sesuai `settings.layout` |
-| `VerticalLayout` | `navigation`, `navbar`, `footer` | Layout sidebar vertikal |
-| `HorizontalLayout` | `header`, `footer` | Layout header horizontal |
-| `BlankLayout` | `systemMode` | Layout polos tanpa chrome |
-
-#### Komponen layout siap pakai (`@components/layout/...`)
-
-```tsx
-// Vertikal
-import Navigation from '@components/layout/vertical/Navigation'
-import Navbar from '@components/layout/vertical/Navbar'
-import NavbarContent from '@components/layout/vertical/NavbarContent'
-import NavToggle from '@components/layout/vertical/NavToggle'
-import VerticalMenu from '@components/layout/vertical/VerticalMenu'
-import VerticalFooter from '@components/layout/vertical/Footer'
-
-// Horizontal
-import Header from '@components/layout/horizontal/Header'
-import HorizontalMenu from '@components/layout/horizontal/HorizontalMenu'
-import HorizontalFooter from '@components/layout/horizontal/Footer'
-
-// Shared
-import Logo from '@components/layout/shared/Logo'
-import ModeDropdown from '@components/layout/shared/ModeDropdown'
-import UserDropdown from '@components/layout/shared/UserDropdown'
-```
-
-- `Navigation` (vertikal) butuh prop `mode`: `<Navigation mode='light' />`.
-- `NavbarContent`, `NavToggle`, `ModeDropdown`, `UserDropdown`, `Logo`, `Footer` dapat dipanggil tanpa prop: `<UserDropdown />`.
-- `ModeDropdown` menampilkan pilihan tema **Light / Dark / System** (mengubah `settings.mode`).
-- `Logo` menampilkan ikon `@core/svg/Logo` + nama dari `themeConfig.templateName`.
-
----
-
-### 7.5 Hooks (`@core/hooks`)
-
-#### `useSettings`
-
-```tsx
-import { useSettings } from '@core/hooks/useSettings'
-
-const { settings, updateSettings, resetSettings, updatePageSettings, isSettingsChanged } = useSettings()
-
-updateSettings({ mode: 'dark' })            // simpan ke cookie
-updateSettings({ layout: 'horizontal' })    // 'vertical' | 'collapsed' | 'horizontal'
-```
-
-Nilai `settings`: `mode`, `skin`, `semiDark`, `layout`, `navbarContentWidth`, `contentWidth`, `footerContentWidth`, `primaryColor`.
-
-> Harus dipanggil di dalam `SettingsProvider` (sudah otomatis lewat `Providers`).
-
-#### `useImageVariant`
-
-Memilih path gambar sesuai mode terang/gelap (dan skin bordered).
-
-```tsx
-import { useImageVariant } from '@core/hooks/useImageVariant'
-
-const img = useImageVariant(mode, lightImg, darkImg)
-const imgBordered = useImageVariant(mode, lightImg, darkImg, lightBordered, darkBordered)
-
-<img src={img} alt='ilustrasi' />
-```
-
-#### `useObjectCookie`
-
-Menyimpan objek ke cookie.
-
-```tsx
-import { useObjectCookie } from '@core/hooks/useObjectCookie'
-
-const [value, setValue] = useObjectCookie<{ name: string }>('my-key', { name: 'default' })
-setValue({ name: 'baru' })
-```
-
-#### `useLayoutInit`
-
-Menginisialisasi preferensi warna pada pemuatan pertama. Sudah dipanggil otomatis di `LayoutWrapper` / `BlankLayout`.
-
----
-
-### 7.6 Helper Server (`@core/utils/serverHelpers`)
-
-Modul ini berjalan **hanya di server** (`import 'server-only'`) dan dipakai di Server Components/layout untuk membaca mode & cookie.
-
-```tsx
-import { getMode, getSystemMode, getServerMode, getSettingsFromCookie, getSkin } from '@core/utils/serverHelpers'
-
-const mode = await getMode()          // 'system' | 'light' | 'dark'
-const systemMode = await getSystemMode() // 'light' | 'dark'
-const serverMode = await getServerMode() // mode efektif untuk render awal
-const settings = await getSettingsFromCookie()
-const skin = await getSkin()
-```
-
-> Jangan import modul ini di Client Component (`'use client'`).
-
----
-
-### 7.7 Konfigurasi (`@configs`)
-
-```tsx
-import themeConfig from '@configs/themeConfig'
-import primaryColorConfig from '@configs/primaryColorConfig'
-
-themeConfig.templateName       // 'Vuexy' — nama brand
-themeConfig.mode               // default mode saat awal
-themeConfig.layout             // 'vertical' | 'collapsed' | 'horizontal'
-themeConfig.settingsCookieName // nama cookie pengaturan
-
-primaryColorConfig[0].main     // warna primary default (#7367F0)
-```
-
-Ubah warna brand default dengan mengedit `primaryColorConfig` / mengubah `settings.primaryColor` lewat `useSettings`.
-
----
-
-## 8. Menambah Halaman Baru
-
-1. **Halaman dengan dashboard** (navbar + sidebar): buat folder baru di dalam `src/app/(dashboard)/`.
-
-   Contoh `src/app/(dashboard)/produk/page.tsx` → URL `/produk`:
-
-   ```tsx
-   export default function Page() {
-     return <h1>Halaman Produk</h1>
-   }
-   ```
-
-2. **Halaman tanpa dashboard** (login/register): buat folder di `src/app/(blank-layout-pages)/`.
-
-3. **Tambahkan ke menu**: edit `src/components/layout/vertical/VerticalMenu.tsx` (dan `horizontal/HorizontalMenu.tsx`), tambahkan `<MenuItem>`:
-
-   ```tsx
-   <MenuItem href='/produk' icon={<i className='tabler-box' />}>
-     Produk
-   </MenuItem>
-   ```
-
-   Atau gunakan `GenerateVerticalMenu` dengan array data menu (lihat bagian 7.3).
-
-> Disarankan menaruh markup halaman di `src/views/` (seperti `Login.tsx`, `NotFound.tsx`) lalu `page.tsx` hanya me-render view tersebut. Halaman yang memakai hook/state harus diawali `'use client'`.
-
----
-
-## 9. Tema & Pengaturan
-
-- **Tema MUI** dibangun di `src/@core/theme/index.ts` (color schemes, typography, shadows, overrides) lalu digabung dengan warna primary dari settings di `src/components/theme/index.tsx`.
-- **Deklarasi tipe theme** ada di `src/components/theme/types.ts` (mis. `theme.shape.customBorderRadius`, `theme.customShadows`). Jangan dihapus karena dipakai di banyak komponen.
-- **Mode (light/dark/system)** diatur lewat `settings.mode`; gunakan `ModeDropdown` atau hook `useSettings`.
-- **Layout (vertical/horizontal/collapsed)** diatur lewat `settings.layout`.
-- **Warna brand** diambil dari `settings.primaryColor` (default `primaryColorConfig[0].main`).
-- Nilai awal pengaturan disimpan di cookie `themeConfig.settingsCookieName`; untuk mereset ke nilai `themeConfig`, panggil `resetSettings()` dari `useSettings`.
-
----
-
-## 10. Catatan Pembersihan
-
-Repo ini disisakan **hanya file yang dipakai aplikasi**. Berikut file bawaan template yang telah dihapus:
-
-| File / Folder dihapus | Alasan |
-| --- | --- |
-| `src/@core/components/customizer/*` | Panel pengubah tema (demo) — tidak dipakai |
-| `src/@core/svg/*` (kecuali `Logo.tsx`) | Ikon hanya untuk customizer |
-| `src/@core/components/option-menu/*` | Tidak dipakai |
-| `src/@core/components/mui/Autocomplete.tsx`, `Avatar.tsx`, `Badge.tsx`, `IconButton.tsx`, `TabList.tsx` | Tidak dipakai |
-| `src/@core/styles/stepper.ts`, `src/@core/styles/table.module.css` | Tidak dipakai |
-| `src/components/stepper-dot/*` | Tidak dipakai |
-| `src/components/theme/mergedTheme.ts`, `userTheme.ts` | Contoh override tema yang tidak aktif |
-| `src/data/navigation/*` | Data menu tidak dipakai (menu kini ditulis langsung) |
-| `src/utils/getInitials.ts`, `string.ts` | Utilitas demo |
-
-**Dipertahankan meski tidak diimport langsung** (karena dibutuhkan sistem):
-
-- `src/components/theme/types.ts` — deklarasi tipe global untuk MUI theme.
-- `src/@core/components/custom-inputs/*` — tipe-nya dipakai oleh `theme/types.ts`.
-- `src/assets/iconify-icons/bundle-icons-css.ts` — dipakai oleh script `postinstall` / `build:icons`.
-
----
-
-## Lisensi
-
-Template dasar: **Vuexy — MUI Next.js Admin Dashboard** (Commercial). Proyek Growvia dibangun di atasnya untuk keperluan Lomba UIN.
+## 9. Dokumentasi Perencanaan (`plan-md`)
+
+Detail arsitektur teknis dan panduan lengkap tersedia di folder `plan-md/`:
+- [`plan-md/prd.md`](./plan-md/prd.md) : Product Requirements Document lengkap (F01–F13).
+- [`plan-md/task-management.md`](./plan-md/task-management.md) : Panduan pembagian tugas, format Notion, dan aturan merge.
+- [`plan-md/erd_growvia.md`](./plan-md/erd_growvia.md) : Diagram ERD Mermaid & struktur seluruh tabel.
+- [`plan-md/erd_penjelasan.md`](./plan-md/erd_penjelasan.md) : Penjelasan mendalam kamus data dan relasi tabel.
+- [`plan-md/design_system.md`](./plan-md/design_system.md) : Panduan Design System, tipografi, warna, dan komponen UI.
