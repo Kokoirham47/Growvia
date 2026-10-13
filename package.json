@@ -15,22 +15,32 @@
     "clean": "rm -rf .next",
     "clear": "rm -rf node_modules .next"
   },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
   "dependencies": {
     "@emotion/cache": "11.14.0",
     "@emotion/react": "11.14.0",
     "@emotion/styled": "11.14.1",
     "@floating-ui/react": "0.27.16",
+    "@google/generative-ai": "^0.24.1",
     "@mui/lab": "7.0.1-beta.19",
     "@mui/material": "7.3.6",
     "@mui/material-nextjs": "7.3.6",
+    "@prisma/client": "^6.19.3",
+    "@supabase/ssr": "^0.12.7",
+    "@supabase/supabase-js": "^2.117.3",
+    "bcryptjs": "^3.0.3",
     "classnames": "2.5.1",
+    "jose": "^6.2.12",
     "next": "16.1.1",
     "react": "19.2.3",
     "react-colorful": "5.6.1",
     "react-dom": "19.2.3",
     "react-perfect-scrollbar": "1.5.8",
     "react-use": "17.6.0",
-    "server-only": "0.0.1"
+    "server-only": "0.0.1",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@iconify/json": "2.2.408",
@@ -38,6 +48,7 @@
     "@iconify/types": "2.0.0",
     "@iconify/utils": "3.0.2",
     "@tailwindcss/postcss": "4.1.17",
+    "@types/bcryptjs": "^2.4.6",
     "@types/node": "24.10.1",
     "@types/react": "19.2.7",
     "@types/react-dom": "19.2.3",
@@ -52,6 +63,7 @@
     "postcss": "8.5.6",
     "postcss-styled-syntax": "0.7.1",
     "prettier": "3.6.2",
+    "prisma": "^6.19.3",
     "stylelint": "16.25.0",
     "stylelint-use-logical-spec": "5.0.1",
     "stylis": "4.3.6",
