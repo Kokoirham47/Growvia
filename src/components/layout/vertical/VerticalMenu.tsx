@@ -1,3 +1,5 @@
+'use client'
+
 // MUI Imports
 import { useTheme } from '@mui/material/styles'
 
@@ -8,7 +10,7 @@ import PerfectScrollbar from 'react-perfect-scrollbar'
 import type { VerticalMenuContextProps } from '@menu/components/vertical-menu/Menu'
 
 // Component Imports
-import { Menu, MenuItem } from '@menu/vertical-menu'
+import { Menu, MenuItem, MenuSection } from '@menu/vertical-menu'
 
 // Hook Imports
 import useVerticalNav from '@menu/hooks/useVerticalNav'
@@ -41,50 +43,72 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
   const verticalNavOptions = useVerticalNav()
 
   // Vars
-  const { isBreakpointReached, transitionDuration } = verticalNavOptions
-
+  const { isBreakpointReached, transitionDuration, isCollapsed, isHovered } = verticalNavOptions
   const ScrollWrapper = isBreakpointReached ? 'div' : PerfectScrollbar
 
   return (
-    // eslint-disable-next-line lines-around-comment
-    /* Custom scrollbar instead of browser scroll, remove if you want browser scroll only */
-    <ScrollWrapper
-      {...(isBreakpointReached
-        ? {
-            className: 'bs-full overflow-y-auto overflow-x-hidden',
-            onScroll: container => scrollMenu(container, false)
-          }
-        : {
-            options: { wheelPropagation: false, suppressScrollX: true },
-            onScrollY: container => scrollMenu(container, true)
-          })}
-    >
-      {/* Incase you also want to scroll NavHeader to scroll with Vertical Menu, remove NavHeader from above and paste it below this comment */}
-      {/* Vertical Menu */}
-      <Menu
-        popoutMenuOffset={{ mainAxis: 23 }}
-        menuItemStyles={menuItemStyles(verticalNavOptions, theme)}
-        renderExpandIcon={({ open }) => <RenderExpandIcon open={open} transitionDuration={transitionDuration} />}
-        renderExpandedMenuItemIcon={{ icon: <i className='tabler-circle text-xs' /> }}
-        menuSectionStyles={menuSectionStyles(verticalNavOptions, theme)}
+    <div className='flex flex-col justify-between bs-full'>
+      <ScrollWrapper
+        {...(isBreakpointReached
+          ? {
+              className: 'bs-full overflow-y-auto overflow-x-hidden',
+              onScroll: container => scrollMenu(container, false)
+            }
+          : {
+              options: { wheelPropagation: false, suppressScrollX: true },
+              onScrollY: container => scrollMenu(container, true)
+            })}
       >
-        <MenuItem href='/home' icon={<i className='tabler-smart-home' />}>
-          Home
-        </MenuItem>
-        <MenuItem href='/about' icon={<i className='tabler-info-circle' />}>
-          About
-        </MenuItem>
-      </Menu>
-      {/* <Menu
-        popoutMenuOffset={{ mainAxis: 23 }}
-        menuItemStyles={menuItemStyles(verticalNavOptions, theme)}
-        renderExpandIcon={({ open }) => <RenderExpandIcon open={open} transitionDuration={transitionDuration} />}
-        renderExpandedMenuItemIcon={{ icon: <i className='tabler-circle text-xs' /> }}
-        menuSectionStyles={menuSectionStyles(verticalNavOptions, theme)}
-      >
-        <GenerateVerticalMenu menuData={menuData(dictionary)} />
-      </Menu> */}
-    </ScrollWrapper>
+        <Menu
+          popoutMenuOffset={{ mainAxis: 23 }}
+          menuItemStyles={menuItemStyles(verticalNavOptions, theme)}
+          renderExpandIcon={({ open }) => <RenderExpandIcon open={open} transitionDuration={transitionDuration} />}
+          renderExpandedMenuItemIcon={{ icon: <i className='tabler-circle text-xs' /> }}
+          menuSectionStyles={menuSectionStyles(verticalNavOptions, theme)}
+        >
+          <MenuSection label='NAVIGASI UTAMA'>
+            <MenuItem href='/home' icon={<i className='tabler-layout-grid text-xl' />}>
+              Dashboard
+            </MenuItem>
+            <MenuItem href='/experience' icon={<i className='tabler-briefcase text-xl' />}>
+              Pengalaman
+            </MenuItem>
+            <MenuItem href='/skills' icon={<i className='tabler-circles-relation text-xl' />}>
+              Skill Matrix
+            </MenuItem>
+            <MenuItem href='/career' icon={<i className='tabler-trending-up text-xl' />}>
+              Karier & Gap
+            </MenuItem>
+            <MenuItem href='/learning' icon={<i className='tabler-school text-xl' />}>
+              Rekomendasi Belajar
+            </MenuItem>
+            <MenuItem href='/portfolio' icon={<i className='tabler-sparkles text-xl' />}>
+              Portofolio AI
+            </MenuItem>
+          </MenuSection>
+        </Menu>
+      </ScrollWrapper>
+
+      {/* AI Readiness Sidebar Widget */}
+      {!(isCollapsed && !isHovered) && (
+        <div className='p-4 pb-6'>
+          <div className='p-3.5 rounded-2xl bg-[#F0F5FF] border border-[#DBEAFE] transition-all hover:shadow-sm'>
+            <div className='flex items-center gap-2'>
+              <div className='w-6 h-6 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600 shrink-0'>
+                <i className='tabler-sparkles text-sm' />
+              </div>
+              <span className='font-bold text-xs text-[#1E3A8A]'>AI Readiness</span>
+            </div>
+            <p className='text-[11px] text-[#64748B] mt-1.5 leading-snug font-normal'>
+              Profil siap kerja mencapai 78% berdasarkan target UI/UX.
+            </p>
+            <div className='mt-2.5 w-full bg-slate-200 h-1.5 rounded-full overflow-hidden'>
+              <div className='bg-[#2563EB] h-full rounded-full' style={{ width: '78%' }} />
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   )
 }
 
