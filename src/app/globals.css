@@ -1,7 +1,10 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 @layer theme, base, components, utilities;
 @import 'tailwindcss/theme.css' layer(theme) important;
 @import 'tailwindcss/utilities.css' layer(utilities) important;
 @plugin 'tailwindcss-logical';
+
+@custom-variant dark (&:where([data-mui-color-scheme="dark"], [data-mui-color-scheme="dark"] *, [data-theme="dark"], [data-theme="dark"] *, .dark, .dark *));
 
 @theme {
   --radius-none: 0px;
@@ -217,4 +220,9 @@ code {
   color: var(--mui-palette-info-main);
   background-color: rgb(var(--mui-palette-info-mainChannel) / 0.08);
   border: 0;
+}
+
+.font-poppins,
+.font-poppins * {
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
 }
