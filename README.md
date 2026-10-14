@@ -162,9 +162,9 @@ erDiagram
 # 1. Konfigurasi API Key LLM pada .env.local
 # GROQ_API_KEY=gsk_... atau GEMINI_API_KEY=AIza...
 
-# 2. Jalankan server dev
+# 2. Jalankan development server
 npm run dev
 
 # 3. Uji integrasi AI dengan submit pengalaman baru di:
-# http://localhost:3000/experience/new
+# http://localhost:3000/experience
 ```
