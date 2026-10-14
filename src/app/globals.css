@@ -253,3 +253,40 @@ input[type='password']::-ms-clear {
   display: none !important;
 }
 
+/* Sleek custom scrollbar utility */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.4);
+  border-radius: 9999px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.7);
+}
+.dark .custom-scrollbar::-webkit-scrollbar-thumb,
+[data-mui-color-scheme='dark'] .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(100, 116, 139, 0.4);
+}
+.dark .custom-scrollbar::-webkit-scrollbar-thumb:hover,
+[data-mui-color-scheme='dark'] .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 116, 139, 0.7);
+}
+
+/* Global Button Reset:
+ * Menghapus background-color default browser (buttonface / abu-abu) dan border default
+ * agar icon, link button, dan teks button tanpa styling tetap bersih dan transparan.
+ * Tombol dengan class latar eksplisit (misal: bg-*, MuiButton-contained) tetap mempertahankan warnanya.
+ */
+button:not([class*='bg-']):not([class*='MuiButton-contained']),
+[type='button']:not([class*='bg-']):not([class*='MuiButton-contained']),
+[type='reset']:not([class*='bg-']):not([class*='MuiButton-contained']),
+[type='submit']:not([class*='bg-']):not([class*='MuiButton-contained']) {
+  background-color: transparent;
+  border-style: none;
+}
+

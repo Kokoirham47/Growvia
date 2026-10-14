@@ -102,17 +102,17 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
       {/* AI Readiness Sidebar Widget */}
       {!(isCollapsed && !isHovered) && (
         <div className='p-4 pb-6'>
-          <div className='p-3.5 rounded-2xl bg-[#F0F5FF] border border-[#DBEAFE] transition-all hover:shadow-sm'>
+          <div className='p-3.5 rounded-2xl bg-[#F0F5FF] dark:bg-blue-950/40 border border-[#DBEAFE] dark:border-blue-900/50 transition-all hover:shadow-sm'>
             <div className='flex items-center gap-2'>
-              <div className='w-6 h-6 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600 shrink-0'>
+              <div className='w-6 h-6 rounded-lg bg-blue-100 dark:bg-blue-900/60 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0'>
                 <Sparkles className='w-3.5 h-3.5' />
               </div>
-              <span className='font-bold text-xs text-[#1E3A8A]'>AI Readiness</span>
+              <span className='font-bold text-xs text-[#1E3A8A] dark:text-blue-300'>AI Readiness</span>
             </div>
-            <p className='text-[11px] text-[#64748B] mt-1.5 leading-snug font-normal'>
+            <p className='text-[11px] text-[#64748B] dark:text-slate-400 mt-1.5 leading-snug font-normal'>
               Profil siap kerja mencapai 78% berdasarkan target UI/UX.
             </p>
-            <div className='mt-2.5 w-full bg-slate-200 h-1.5 rounded-full overflow-hidden'>
+            <div className='mt-2.5 w-full bg-slate-200 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden'>
               <div className='bg-[#2563EB] h-full rounded-full' style={{ width: '78%' }} />
             </div>
           </div>
