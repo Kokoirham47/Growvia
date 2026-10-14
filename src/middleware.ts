@@ -46,8 +46,8 @@ export async function middleware(request: NextRequest) {
   const session = token ? await verifyToken(token) : null
   const isAuthenticated = Boolean(session)
 
-  // 2. Bypass public auth API endpoints
-  if (pathname.startsWith('/api/auth/')) {
+  // 2. Bypass public auth API endpoints & master data career-fields
+  if (pathname.startsWith('/api/auth/') || pathname === '/api/career-fields') {
     return NextResponse.next()
   }
 

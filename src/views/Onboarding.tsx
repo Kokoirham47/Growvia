@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import {
@@ -16,68 +16,80 @@ import {
   ChevronDown,
   Sparkles,
   Lock,
-  Compass
+  Compass,
+  Briefcase,
+  Code2,
+  Palette,
+  BarChart3,
+  TrendingUp,
+  DollarSign,
+  Users,
+  PenTool,
+  Settings,
+  Plus,
+  Building2,
+  Clock,
+  FileText,
+  AlertCircle,
+  Loader2,
+  Layers
 } from 'lucide-react'
 import { useSettings } from '@core/hooks/useSettings'
+import { useAuth } from '@/contexts/AuthContext'
+import SearchableSelect, { SelectOption } from '@/components/ui/SearchableSelect'
+import { INDONESIAN_UNIVERSITIES, INDONESIAN_MAJORS } from '@/data/indonesianEducation'
 
-interface EducationOption {
-  id: string
-  name: string
-}
-
-interface MajorOption {
-  id: string
-  name: string
-}
-
-const UNIVERSITIES: EducationOption[] = [
-  { id: 'ui', name: 'Universitas Indonesia' },
-  { id: 'itb', name: 'Institut Teknologi Bandung' },
-  { id: 'ugm', name: 'Universitas Gadjah Mada' },
-  { id: 'its', name: 'Institut Teknologi Sepuluh Nopember' },
-  { id: 'unpad', name: 'Universitas Padjadjaran' },
-  { id: 'undip', name: 'Universitas Diponegoro' },
-  { id: 'ub', name: 'Universitas Brawijaya' },
-  { id: 'unair', name: 'Universitas Airlangga' },
-  { id: 'uin-jkt', name: 'UIN Syarif Hidayatullah Jakarta' },
-  { id: 'binus', name: 'Bina Nusantara University' },
-  { id: 'telkom', name: 'Telkom University' }
+const GRADUATION_YEARS = [
+  '2023',
+  '2024',
+  '2025 (Tahun ini)',
+  '2026',
+  '2027',
+  '2028',
+  '2029+'
 ]
 
-const MAJORS: MajorOption[] = [
-  { id: 'si', name: 'Sistem Informasi' },
-  { id: 'ti', name: 'Teknik Informatika / Ilmu Komputer' },
-  { id: 'te', name: 'Teknik Elektro' },
-  { id: 'mn', name: 'Manajemen / Bisnis' },
-  { id: 'ak', name: 'Akuntansi / Keuangan' },
-  { id: 'dkv', name: 'Desain Komunikasi Visual' },
-  { id: 'ilkom', name: 'Ilmu Komunikasi' },
-  { id: 'psikologi', name: 'Psikologi' }
-]
-
-const GRADUATION_YEARS = ['2024', '2025 (Tahun ini)', '2026', '2027', '2028', '2029+']
-
-interface CareerField {
+interface DbCareerField {
   id: string
   name: string
+  slug: string
+  icon?: string | null
 }
 
-const CAREER_FIELDS: CareerField[] = [
-  { id: 'pm', name: 'Product Management' },
-  { id: 'uiux', name: 'UI/UX Design' },
-  { id: 'se', name: 'Software Engineering' },
-  { id: 'data', name: 'Data & AI' },
-  { id: 'marketing', name: 'Marketing' },
-  { id: 'finance', name: 'Finance' },
-  { id: 'bizdev', name: 'Business Dev' },
-  { id: 'hr', name: 'Human Resources' },
-  { id: 'content', name: 'Content & Creative' },
-  { id: 'operations', name: 'Operations' }
+const FALLBACK_CAREER_FIELDS: DbCareerField[] = [
+  { id: '1', name: 'UI/UX & Product Design', slug: 'ui-ux-design', icon: 'palette' },
+  { id: '2', name: 'Software Engineering', slug: 'software-engineering', icon: 'code' },
+  { id: '3', name: 'Product Management', slug: 'product-management', icon: 'briefcase' },
+  { id: '4', name: 'Data Science & AI', slug: 'data-science-ai', icon: 'chart-bar' },
+  { id: '5', name: 'Digital Marketing & Growth', slug: 'digital-marketing', icon: 'trending-up' },
+  { id: '6', name: 'Finance & Business', slug: 'finance-business', icon: 'dollar-sign' },
+  { id: '7', name: 'Human Resources & People', slug: 'human-resources', icon: 'users' },
+  { id: '8', name: 'Content & Creative Writing', slug: 'content-creative', icon: 'feather' },
+  { id: '9', name: 'Operations & Strategy', slug: 'operations-strategy', icon: 'settings' }
 ]
 
 export default function Onboarding() {
   const router = useRouter()
   const { settings, updateSettings } = useSettings()
+  const { user, profile, refreshUser } = useAuth()
+
+  // Memoized options for searchable selects
+  const universityOptions: SelectOption[] = useMemo(() => {
+    return INDONESIAN_UNIVERSITIES.map(u => ({
+      id: u.id,
+      label: u.name,
+      subtext: `${u.shortName ? u.shortName + ' • ' : ''}${u.city || ''}`,
+      badge: u.type
+    }))
+  }, [])
+
+  const majorOptions: SelectOption[] = useMemo(() => {
+    return INDONESIAN_MAJORS.map(m => ({
+      id: m.id,
+      label: m.name,
+      badge: m.facultyGroup
+    }))
+  }, [])
 
   // Theme support
   const [systemIsDark, setSystemIsDark] = useState(false)
@@ -93,48 +105,291 @@ export default function Onboarding() {
 
   const isDark = settings.mode === 'dark' || (settings.mode === 'system' && systemIsDark)
 
-  // Onboarding Step: 1 = Profil Dasar, 2 = Minat Karier
-  const [currentStep, setCurrentStep] = useState<1 | 2>(1)
+  // Stepper state: 1 = Basic Profile, 2 = Career Interest, 3 = First Experience Prompt
+  const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
-  // Step 1 Form States
-  const [fullName, setFullName] = useState('Nabila Safitri')
-  const [institution, setInstitution] = useState('Universitas Indonesia')
-  const [major, setMajor] = useState('Sistem Informasi')
-  const [graduationYear, setGraduationYear] = useState('2025 (Tahun ini)')
+  // Step 1: Basic Profile States
+  const [fullName, setFullName] = useState('')
+  const [selectedInstitution, setSelectedInstitution] = useState('Universitas Indonesia')
+  const [selectedMajor, setSelectedMajor] = useState('Sistem Informasi')
+  const [graduationYear, setGraduationYear] = useState('2026')
 
-  // Step 2 Form States (Career Interests, max 3)
-  const [selectedCareers, setSelectedCareers] = useState<string[]>(['uiux', 'data'])
+  // Step 2: Career Interests States
+  const [careerFields, setCareerFields] = useState<DbCareerField[]>(FALLBACK_CAREER_FIELDS)
+  const [selectedCareerIds, setSelectedCareerIds] = useState<string[]>([])
 
-  const toggleCareer = (careerId: string) => {
-    if (selectedCareers.includes(careerId)) {
-      setSelectedCareers(prev => prev.filter(id => id !== careerId))
-    } else {
-      if (selectedCareers.length < 3) {
-        setSelectedCareers(prev => [...prev, careerId])
+  // Step 3: Experience Form States
+  const [showExperienceForm, setShowExperienceForm] = useState(false)
+  const [experienceData, setExperienceData] = useState({
+    title: '',
+    type: 'organisation',
+    role: '',
+    institutionName: '',
+    startDate: '',
+    endDate: '',
+    isOngoing: false,
+    description: ''
+  })
+
+  // Pre-fill user data once auth loads
+  useEffect(() => {
+    if (user?.name && !fullName) {
+      setFullName(user.name)
+    }
+    if (profile?.institution) {
+      setSelectedInstitution(profile.institution)
+    }
+    if (profile?.major) {
+      setSelectedMajor(profile.major)
+    }
+    if (profile?.graduationYear) {
+      setGraduationYear(String(profile.graduationYear))
+    }
+  }, [user, profile, fullName])
+
+  // Fetch career fields from database
+  useEffect(() => {
+    const fetchCareerFields = async () => {
+      try {
+        const res = await fetch('/api/career-fields')
+        if (res.ok) {
+          const json = await res.json()
+          if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+            setCareerFields(json.data)
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load career fields:', err)
       }
     }
+
+    const checkExistingStatus = async () => {
+      try {
+        const res = await fetch('/api/onboarding/status')
+        if (res.ok) {
+          const json = await res.json()
+          if (json.success && json.data) {
+            if (Array.isArray(json.data.interests) && json.data.interests.length > 0) {
+              setSelectedCareerIds(json.data.interests.map((ci: DbCareerField) => ci.id))
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load onboarding status:', err)
+      }
+    }
+
+    fetchCareerFields()
+    checkExistingStatus()
+  }, [])
+
+  // Toggle selection for Career Interests (Max 3)
+  const toggleCareer = (careerId: string) => {
+    setErrorMessage(null)
+    if (selectedCareerIds.includes(careerId)) {
+      setSelectedCareerIds(prev => prev.filter(id => id !== careerId))
+    } else {
+      if (selectedCareerIds.length >= 3) {
+        setErrorMessage('Kamu hanya dapat memilih maksimal 3 bidang karier utama.')
+        return
+      }
+      setSelectedCareerIds(prev => [...prev, careerId])
+    }
   }
 
-  // Handle Navigation
+  // Handle Back in Stepper
   const handleBack = () => {
-    if (currentStep === 2) {
+    setErrorMessage(null)
+    if (currentStep === 3) {
+      if (showExperienceForm) {
+        setShowExperienceForm(false)
+      } else {
+        setCurrentStep(2)
+      }
+    } else if (currentStep === 2) {
       setCurrentStep(1)
     } else {
-      router.push('/register')
+      router.push('/login')
     }
   }
 
-  const handleNextStep = () => {
-    if (currentStep === 1) {
+  // Submit Step 1: Basic Profile
+  const handleSaveStep1 = async () => {
+    setErrorMessage(null)
+
+    if (!fullName.trim()) {
+      setErrorMessage('Nama lengkap tidak boleh kosong.')
+      return
+    }
+
+    if (!selectedInstitution.trim()) {
+      setErrorMessage('Silakan pilih atau ketik nama institusi pendidikan Anda.')
+      return
+    }
+
+    if (!selectedMajor.trim()) {
+      setErrorMessage('Silakan pilih atau ketik jurusan/program studi Anda.')
+      return
+    }
+
+    const gradYearNum = parseInt(graduationYear.replace(/\D/g, ''), 10) || 2026
+
+    setIsSubmitting(true)
+    try {
+      const res = await fetch('/api/onboarding/profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: fullName.trim(),
+          institution: selectedInstitution.trim(),
+          major: selectedMajor.trim(),
+          graduationYear: gradYearNum
+        })
+      })
+
+      const data = await res.json()
+      if (!res.ok || !data.success) {
+        setErrorMessage(data.message || 'Gagal menyimpan profil dasar. Silakan coba lagi.')
+        return
+      }
+
+      await refreshUser()
       setCurrentStep(2)
-    } else {
-      // Selesai onboarding, arahkan ke dashboard
-      router.push('/home')
+    } catch {
+      setErrorMessage('Terjadi gangguan jaringan saat menyimpan profil.')
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
-  const handleSkip = () => {
+  // Submit Step 2: Career Interests
+  const handleSaveStep2 = async () => {
+    setErrorMessage(null)
+
+    if (selectedCareerIds.length === 0) {
+      setErrorMessage('Pilih minimal 1 bidang karier atau klik "Lewati untuk sekarang".')
+      return
+    }
+
+    setIsSubmitting(true)
+    try {
+      const res = await fetch('/api/onboarding/interests', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          careerFieldIds: selectedCareerIds
+        })
+      })
+
+      const data = await res.json()
+      if (!res.ok || !data.success) {
+        setErrorMessage(data.message || 'Gagal menyimpan pilihan bidang karier.')
+        return
+      }
+
+      await refreshUser()
+      setCurrentStep(3)
+    } catch {
+      setErrorMessage('Terjadi gangguan jaringan saat menyimpan bidang minat karier.')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  // Skip Step 2 -> advance to Step 3
+  const handleSkipStep2 = () => {
+    setErrorMessage(null)
+    setCurrentStep(3)
+  }
+
+  // Submit Step 3: Optional First Experience
+  const handleSaveFirstExperience = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setErrorMessage(null)
+
+    if (!experienceData.title.trim()) {
+      setErrorMessage('Judul pengalaman wajib diisi.')
+      return
+    }
+    if (!experienceData.role.trim()) {
+      setErrorMessage('Peran / posisi wajib diisi.')
+      return
+    }
+    if (!experienceData.institutionName.trim()) {
+      setErrorMessage('Nama organisasi / institusi wajib diisi.')
+      return
+    }
+    if (!experienceData.startDate) {
+      setErrorMessage('Tanggal / bulan mulai wajib ditentukan.')
+      return
+    }
+
+    setIsSubmitting(true)
+    try {
+      const res = await fetch('/api/onboarding/experience', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: experienceData.title.trim(),
+          type: experienceData.type,
+          role: experienceData.role.trim(),
+          institutionName: experienceData.institutionName.trim(),
+          startDate: experienceData.startDate,
+          endDate: experienceData.isOngoing ? null : experienceData.endDate || null,
+          isOngoing: experienceData.isOngoing,
+          description: experienceData.description.trim() || undefined
+        })
+      })
+
+      const data = await res.json()
+      if (!res.ok || !data.success) {
+        setErrorMessage(data.message || 'Gagal menyimpan pengalaman.')
+        return
+      }
+
+      await refreshUser()
+      // Selesai onboarding, langsung ke Dashboard
+      router.push('/home')
+    } catch {
+      setErrorMessage('Terjadi gangguan jaringan saat menyimpan pengalaman.')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  // Finish Onboarding without adding experience (Option B in PRD F02.3)
+  const handleFinishWithoutExperience = async () => {
+    setIsSubmitting(true)
+    await refreshUser()
     router.push('/home')
+  }
+
+  // Render icon for career field
+  const renderCareerIcon = (slug: string) => {
+    switch (slug) {
+      case 'ui-ux-design':
+        return <Palette className='w-4 h-4' />
+      case 'software-engineering':
+        return <Code2 className='w-4 h-4' />
+      case 'product-management':
+        return <Briefcase className='w-4 h-4' />
+      case 'data-science-ai':
+        return <BarChart3 className='w-4 h-4' />
+      case 'digital-marketing':
+        return <TrendingUp className='w-4 h-4' />
+      case 'finance-business':
+        return <DollarSign className='w-4 h-4' />
+      case 'human-resources':
+        return <Users className='w-4 h-4' />
+      case 'content-creative':
+        return <PenTool className='w-4 h-4' />
+      case 'operations-strategy':
+        return <Settings className='w-4 h-4' />
+      default:
+        return <Layers className='w-4 h-4' />
+    }
   }
 
   return (
@@ -208,19 +463,19 @@ export default function Onboarding() {
       <main className='flex-1 flex flex-col items-center justify-center px-4 py-6 sm:py-10'>
         {/* ONBOARDING CARD */}
         <section
-          className={`w-full max-w-[500px] rounded-[24px] p-6 sm:p-[38px] border transition-all duration-200 ${
+          className={`w-full max-w-[540px] rounded-[24px] p-6 sm:p-[38px] border transition-all duration-200 shadow-xl ${
             isDark
-              ? 'bg-[#111827] border-[#1F2937] shadow-[0_25px_50px_-12px_rgba(0,0,0,0.6)]'
-              : 'bg-white border-[#EDF2F7] shadow-[0_10px_25px_-5px_rgba(0,0,0,0.05),0_8px_10px_-6px_rgba(0,0,0,0.03)]'
+              ? 'bg-[#111827]/90 border-[#1F2937] shadow-[0_25px_50px_-12px_rgba(0,0,0,0.6)]'
+              : 'bg-white/95 border-[#EDF2F7] shadow-[0_10px_25px_-5px_rgba(0,0,0,0.05),0_8px_10px_-6px_rgba(0,0,0,0.03)]'
           }`}
           aria-labelledby='onboarding-heading'
         >
-          {/* STEP PROGRESS INDICATOR */}
+          {/* STEP PROGRESS INDICATOR (3 STEPS) */}
           <div className='flex items-center justify-center mb-6'>
-            <div className='flex items-center w-full max-w-[280px]'>
+            <div className='flex items-center w-full max-w-[320px]'>
               {/* Step 1 Circle */}
               <div
-                className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold transition-all ${
+                className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold transition-all shadow-xs ${
                   currentStep >= 1
                     ? 'bg-[#2563EB] text-white'
                     : isDark
@@ -228,11 +483,11 @@ export default function Onboarding() {
                     : 'bg-slate-100 text-slate-400'
                 }`}
               >
-                1
+                {currentStep > 1 ? <Check className='w-4 h-4 stroke-[3]' /> : '1'}
               </div>
 
               {/* Progress Line 1-2 */}
-              <div className='flex-1 h-0.5 mx-2 bg-slate-200 dark:bg-slate-800 relative overflow-hidden'>
+              <div className='flex-1 h-1 mx-2 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden'>
                 <div
                   className={`h-full bg-[#2563EB] transition-all duration-300 ${
                     currentStep >= 2 ? 'w-full' : 'w-0'
@@ -242,7 +497,7 @@ export default function Onboarding() {
 
               {/* Step 2 Circle */}
               <div
-                className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold transition-all ${
+                className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold transition-all shadow-xs ${
                   currentStep >= 2
                     ? 'bg-[#2563EB] text-white'
                     : isDark
@@ -250,18 +505,26 @@ export default function Onboarding() {
                     : 'bg-slate-100 text-slate-400'
                 }`}
               >
-                2
+                {currentStep > 2 ? <Check className='w-4 h-4 stroke-[3]' /> : '2'}
               </div>
 
               {/* Progress Line 2-3 */}
-              <div className='flex-1 h-0.5 mx-2 bg-slate-200 dark:bg-slate-800 relative overflow-hidden'>
-                <div className='h-full bg-[#2563EB] transition-all duration-300 w-0' />
+              <div className='flex-1 h-1 mx-2 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden'>
+                <div
+                  className={`h-full bg-[#2563EB] transition-all duration-300 ${
+                    currentStep >= 3 ? 'w-full' : 'w-0'
+                  }`}
+                />
               </div>
 
-              {/* Step 3 Circle (Dashboard/Next) */}
+              {/* Step 3 Circle */}
               <div
-                className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold ${
-                  isDark ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-400'
+                className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold transition-all shadow-xs ${
+                  currentStep === 3
+                    ? 'bg-[#2563EB] text-white'
+                    : isDark
+                    ? 'bg-slate-800 text-slate-400'
+                    : 'bg-slate-100 text-slate-400'
                 }`}
               >
                 3
@@ -269,19 +532,29 @@ export default function Onboarding() {
             </div>
           </div>
 
-          {/* STEP 1: PROFIL DASAR */}
+          {/* ERROR ALERT BANNER */}
+          {errorMessage && (
+            <div className='p-3.5 mb-5 rounded-xl border text-xs font-medium bg-rose-50 border-rose-200 text-rose-800 dark:bg-rose-950/40 dark:border-rose-900 dark:text-rose-300 flex items-center gap-2 animate-fadeIn'>
+              <AlertCircle className='w-4 h-4 shrink-0' />
+              <span>{errorMessage}</span>
+            </div>
+          )}
+
+          {/* ============================================================ */}
+          {/* STEP 1: PROFIL DASAR (F02.1)                                  */}
+          {/* ============================================================ */}
           {currentStep === 1 && (
-            <div>
+            <div className='animate-fadeIn'>
               {/* Badge: Step 1 dari 3 • Profil Dasar */}
               <div className='text-center mb-3'>
                 <span
-                  className={`inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-[11.5px] font-medium ${
+                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[12px] font-medium ${
                     isDark
                       ? 'bg-blue-950/40 text-blue-400'
                       : 'bg-blue-50 text-[#2563EB]'
                   }`}
                 >
-                  <span className='w-1.5 h-1.5 rounded-full bg-[#2563EB]' />
+                  <span className='w-2 h-2 rounded-full bg-[#2563EB]' />
                   Step 1 dari 3 • Profil Dasar
                 </span>
               </div>
@@ -294,13 +567,13 @@ export default function Onboarding() {
                     isDark ? 'text-white' : 'text-[#0F2864]'
                   }`}
                 >
-                  <span>Hei, kenalan dulu yuk!</span>
+                  <span>Hai, kenalan dulu yuk!</span>
                   <span>👋</span>
                 </h1>
-                <p className={`text-[13px] sm:text-[13.5px] leading-relaxed max-w-[420px] mx-auto ${
+                <p className={`text-[13px] sm:text-[13.5px] leading-relaxed max-w-[440px] mx-auto ${
                   isDark ? 'text-slate-400' : 'text-[#64748B]'
                 }`}>
-                  Kami butuh beberapa info untuk mulai memetakan tolok ukur dan perjalanan kariermu.
+                  Lengkapi data akademikmu untuk mulai memetakan tolok ukur kompetensi dan kurikulum karier Growvia.
                 </p>
               </div>
 
@@ -319,7 +592,7 @@ export default function Onboarding() {
                     </label>
                     <span className='inline-flex items-center gap-1 text-[11.5px] text-[#10B981] font-medium'>
                       <CheckCircle2 className='w-3.5 h-3.5' />
-                      Terverifikasi
+                      Data Akun Terverifikasi
                     </span>
                   </div>
                   <div className='relative'>
@@ -327,11 +600,12 @@ export default function Onboarding() {
                       id='fullName'
                       type='text'
                       value={fullName}
+                      placeholder='Masukkan nama lengkapmu'
                       onChange={e => setFullName(e.target.value)}
                       className={`w-full h-[44px] px-3.5 pr-10 text-[14px] rounded-[12px] transition-all outline-none border ${
                         isDark
-                          ? 'bg-[#0B0F19] border-[#1F2937] text-white hover:border-[#374151] focus:border-[#3B82F6]'
-                          : 'bg-white border-[#DCE3EF] text-[#1E293B] hover:border-[#CBD5E1] focus:border-[#2563EB]'
+                          ? 'bg-[#0B0F19] border-[#1F2937] text-white hover:border-[#374151] focus:border-[#3B82F6] focus:ring-4 focus:ring-[#3B82F6]/20'
+                          : 'bg-white border-[#DCE3EF] text-[#1E293B] hover:border-[#CBD5E1] focus:border-[#2563EB] focus:ring-4 focus:ring-[#2563EB]/15'
                       }`}
                     />
                     <div className='absolute right-3.5 top-1/2 -translate-y-1/2 text-[#10B981]'>
@@ -340,77 +614,33 @@ export default function Onboarding() {
                   </div>
                 </div>
 
-                {/* 2. Institusi Pendidikan */}
-                <div>
-                  <label
-                    htmlFor='institution'
-                    className={`block text-[13px] font-medium mb-1.5 ${
-                      isDark ? 'text-slate-200' : 'text-[#334155]'
-                    }`}
-                  >
-                    Institusi Pendidikan
-                  </label>
-                  <div className='relative'>
-                    <div className='absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400'>
-                      <GraduationCap className='w-4 h-4' />
-                    </div>
-                    <select
-                      id='institution'
-                      value={institution}
-                      onChange={e => setInstitution(e.target.value)}
-                      className={`w-full h-[44px] pl-10 pr-9 text-[14px] rounded-[12px] transition-all outline-none border appearance-none cursor-pointer ${
-                        isDark
-                          ? 'bg-[#0B0F19] border-[#1F2937] text-white hover:border-[#374151] focus:border-[#3B82F6]'
-                          : 'bg-white border-[#DCE3EF] text-[#1E293B] hover:border-[#CBD5E1] focus:border-[#2563EB]'
-                      }`}
-                    >
-                      {UNIVERSITIES.map(u => (
-                        <option key={u.id} value={u.name} className={isDark ? 'bg-[#111827]' : 'bg-white'}>
-                          {u.name}
-                        </option>
-                      ))}
-                    </select>
-                    <div className='absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400'>
-                      <ChevronDown className='w-4 h-4' />
-                    </div>
-                  </div>
-                </div>
+                {/* 2. Institusi Pendidikan / Universitas (Searchable Combobox) */}
+                <SearchableSelect
+                  id='institution'
+                  label='Institusi Pendidikan / Perguruan Tinggi'
+                  placeholder='Cari kampus (contoh: UI, ITB, UIN, BINUS, Telkom...)'
+                  value={selectedInstitution}
+                  onChange={setSelectedInstitution}
+                  options={universityOptions}
+                  icon={<GraduationCap className='w-4 h-4' />}
+                  isDark={isDark}
+                  allowCustom={true}
+                  required={true}
+                />
 
-                {/* 3. Jurusan / Program Studi */}
-                <div>
-                  <label
-                    htmlFor='major'
-                    className={`block text-[13px] font-medium mb-1.5 ${
-                      isDark ? 'text-slate-200' : 'text-[#334155]'
-                    }`}
-                  >
-                    Jurusan / Program Studi
-                  </label>
-                  <div className='relative'>
-                    <div className='absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400'>
-                      <BookOpen className='w-4 h-4' />
-                    </div>
-                    <select
-                      id='major'
-                      value={major}
-                      onChange={e => setMajor(e.target.value)}
-                      className={`w-full h-[44px] pl-10 pr-9 text-[14px] rounded-[12px] transition-all outline-none border appearance-none cursor-pointer ${
-                        isDark
-                          ? 'bg-[#0B0F19] border-[#1F2937] text-white hover:border-[#374151] focus:border-[#3B82F6]'
-                          : 'bg-white border-[#DCE3EF] text-[#1E293B] hover:border-[#CBD5E1] focus:border-[#2563EB]'
-                      }`}
-                    >
-                      {MAJORS.map(m => (
-                        <option key={m.id} value={m.name} className={isDark ? 'bg-[#111827]' : 'bg-white'}>
-                          {m.name}
-                        </option>
-                      ))}
-                    </select>
-                    <div className='absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400'>
-                      <ChevronDown className='w-4 h-4' />
-                    </div>
-                  </div>
-                </div>
+                {/* 3. Jurusan / Program Studi (Searchable Combobox) */}
+                <SearchableSelect
+                  id='major'
+                  label='Jurusan / Program Studi'
+                  placeholder='Cari prodi (contoh: Sistem Informasi, DKV, Bisnis...)'
+                  value={selectedMajor}
+                  onChange={setSelectedMajor}
+                  options={majorOptions}
+                  icon={<BookOpen className='w-4 h-4' />}
+                  isDark={isDark}
+                  allowCustom={true}
+                  required={true}
+                />
 
                 {/* 4. Tahun Kelulusan */}
                 <div>
@@ -450,7 +680,7 @@ export default function Onboarding() {
 
                 {/* AI Privacy & Helper Banner */}
                 <div
-                  className={`p-3 rounded-xl border flex items-start gap-2.5 text-[12px] leading-relaxed transition-colors ${
+                  className={`p-3.5 rounded-xl border flex items-start gap-2.5 text-[12px] leading-relaxed transition-colors ${
                     isDark
                       ? 'bg-blue-950/20 border-blue-900/40 text-blue-300'
                       : 'bg-[#EFF6FF] border-[#DBEAFE] text-[#1E40AF]'
@@ -458,7 +688,7 @@ export default function Onboarding() {
                 >
                   <Sparkles className='w-4 h-4 shrink-0 mt-0.5 text-blue-500' />
                   <span>
-                    Data ini membantu AI kami menyesuaikan tolok ukur magang & kualifikasi fresh graduate yang paling akurat dengan kurikulum kampusmu.
+                    Data ini membantu AI Growvia menyesuaikan tolok ukur kesiapan kerja dan rekomendasi magang yang selaras dengan kurikulum kampusmu.
                   </span>
                 </div>
 
@@ -466,11 +696,21 @@ export default function Onboarding() {
                 <div className='pt-2'>
                   <button
                     type='button'
-                    onClick={handleNextStep}
-                    className='w-full h-[44px] bg-[#2563EB] hover:bg-[#1D4ED8] dark:hover:bg-[#3B82F6] active:bg-[#1E40AF] text-white font-medium text-[14px] rounded-[12px] transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer'
+                    onClick={handleSaveStep1}
+                    disabled={isSubmitting}
+                    className='w-full h-[44px] bg-[#2563EB] hover:bg-[#1D4ED8] dark:hover:bg-[#3B82F6] active:bg-[#1E40AF] text-white font-medium text-[14.5px] rounded-[12px] transition-all flex items-center justify-center gap-2 shadow-sm cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed'
                   >
-                    <span>Lanjut ke Minat Karier</span>
-                    <ArrowRight className='w-4 h-4' />
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className='w-4 h-4 animate-spin' />
+                        <span>Menyimpan Profil...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>Lanjut ke Minat Karier</span>
+                        <ArrowRight className='w-4 h-4' />
+                      </>
+                    )}
                   </button>
                 </div>
 
@@ -478,26 +718,28 @@ export default function Onboarding() {
                 <div className='text-center pt-1'>
                   <span className={`text-[11.5px] inline-flex items-center gap-1.5 ${isDark ? 'text-slate-500' : 'text-[#94A3B8]'}`}>
                     <Lock className='w-3 h-3' />
-                    Informasimu dienkripsi & hanya dipakai untuk kalibrasi karier.
+                    Data aman dan dilindungi enkripsi standar industri Growvia.
                   </span>
                 </div>
               </div>
             </div>
           )}
 
-          {/* STEP 2: MINAT KARIER */}
+          {/* ============================================================ */}
+          {/* STEP 2: MINAT KARIER (F02.2)                                  */}
+          {/* ============================================================ */}
           {currentStep === 2 && (
-            <div>
+            <div className='animate-fadeIn'>
               {/* Badge: Step 2 dari 3 • Pilihan Minat Karier */}
               <div className='text-center mb-3'>
                 <span
-                  className={`inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-[11.5px] font-medium ${
+                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[12px] font-medium ${
                     isDark
                       ? 'bg-blue-950/40 text-blue-400'
                       : 'bg-blue-50 text-[#2563EB]'
                   }`}
                 >
-                  <span className='w-1.5 h-1.5 rounded-full bg-[#2563EB]' />
+                  <span className='w-2 h-2 rounded-full bg-[#2563EB]' />
                   Step 2 dari 3 • Pilihan Minat Karier
                 </span>
               </div>
@@ -512,38 +754,38 @@ export default function Onboarding() {
                 >
                   Bidang apa yang paling kamu minati?
                 </h1>
-                <p className={`text-[13px] sm:text-[13.5px] leading-relaxed max-w-[420px] mx-auto ${
+                <p className={`text-[13px] sm:text-[13.5px] leading-relaxed max-w-[440px] mx-auto ${
                   isDark ? 'text-slate-400' : 'text-[#64748B]'
                 }`}>
-                  Pilih 1–3 bidang. Ini akan membantu Growvia memetakan kurikulum belajar dan rekomendasi karier yang tepat.
+                  Pilih <strong>1 hingga 3 bidang karier</strong>. Ini membantu Growvia merancang kurikulum skill gap dan peluang magang yang terarah.
                 </p>
               </div>
 
               {/* Counter Pill */}
               <div className='flex items-center justify-between mb-3 text-[12px]'>
-                <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full font-medium ${
-                  selectedCareers.length > 0
+                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full font-medium ${
+                  selectedCareerIds.length > 0
                     ? 'bg-blue-50 text-[#2563EB] dark:bg-blue-950/40 dark:text-blue-300'
                     : isDark ? 'text-slate-400' : 'text-slate-500'
                 }`}>
                   <Compass className='w-3.5 h-3.5' />
-                  {selectedCareers.length} dari 3 dipilih
+                  {selectedCareerIds.length} dari 3 dipilih
                 </span>
-                <span className={`text-[11.5px] ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
+                <span className={`text-[11.5px] ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
                   Maksimal 3 preferensi utama
                 </span>
               </div>
 
-              {/* Career Option Chips (Grid 3 cols) */}
-              <div className='grid grid-cols-2 sm:grid-cols-3 gap-2.5 mb-5'>
-                {CAREER_FIELDS.map(career => {
-                  const isSelected = selectedCareers.includes(career.id)
+              {/* Career Option Chips (Grid 2 cols mobile, 3 cols tablet/desktop) */}
+              <div className='grid grid-cols-1 sm:grid-cols-2 gap-2.5 mb-5 max-h-[300px] overflow-y-auto pr-1'>
+                {careerFields.map(career => {
+                  const isSelected = selectedCareerIds.includes(career.id)
                   return (
                     <button
                       key={career.id}
                       type='button'
                       onClick={() => toggleCareer(career.id)}
-                      className={`h-[42px] px-3 rounded-[12px] text-[13px] font-medium transition-all flex items-center justify-center gap-1.5 border cursor-pointer ${
+                      className={`min-h-[46px] px-3.5 py-2.5 rounded-[12px] text-[13px] font-medium transition-all flex items-center justify-between gap-2 border text-left cursor-pointer ${
                         isSelected
                           ? 'bg-[#EFF6FF] border-[#2563EB] text-[#2563EB] font-semibold dark:bg-blue-950/50 dark:border-blue-500 dark:text-blue-300 ring-2 ring-blue-500/10'
                           : isDark
@@ -551,8 +793,23 @@ export default function Onboarding() {
                           : 'bg-white border-[#E2E8F0] text-[#334155] hover:border-slate-300 hover:bg-slate-50/50'
                       }`}
                     >
-                      {isSelected && <Check className='w-3.5 h-3.5' />}
-                      <span>{career.name}</span>
+                      <div className='flex items-center gap-2.5 truncate'>
+                        <span className={`shrink-0 ${isSelected ? 'text-[#2563EB] dark:text-blue-400' : 'text-slate-400'}`}>
+                          {renderCareerIcon(career.slug)}
+                        </span>
+                        <span className='truncate'>{career.name}</span>
+                      </div>
+                      <div
+                        className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 border transition-all ${
+                          isSelected
+                            ? 'bg-[#2563EB] border-[#2563EB] text-white'
+                            : isDark
+                            ? 'border-slate-700'
+                            : 'border-slate-300'
+                        }`}
+                      >
+                        {isSelected && <Check className='w-3 h-3 stroke-[3]' />}
+                      </div>
                     </button>
                   )
                 })}
@@ -571,9 +828,9 @@ export default function Onboarding() {
                 </div>
                 <div>
                   <strong className='font-semibold block mb-0.5 text-[#1E3A8A] dark:text-blue-200'>
-                    Rekomendasi AI Sesuai Profil
+                    Saran Berdasarkan Program Studi
                   </strong>
-                  Berdasarkan program studi dan minat awalmu, pilihan terpopuler alumni serupa adalah <strong>UI/UX Design</strong> & <strong>Data & AI</strong>.
+                  Mahasiswa jurusan <strong>{selectedMajor || 'terkait'}</strong> umumnya memilih kombinasi <strong>Software Engineering</strong>, <strong>UI/UX Design</strong>, atau <strong>Product Management</strong>.
                 </div>
               </div>
 
@@ -581,7 +838,7 @@ export default function Onboarding() {
               <div className='flex items-center justify-between gap-3 pt-1'>
                 <button
                   type='button'
-                  onClick={handleSkip}
+                  onClick={handleSkipStep2}
                   className={`text-[13px] font-medium transition-colors px-2 py-1.5 cursor-pointer ${
                     isDark ? 'text-slate-400 hover:text-white' : 'text-[#64748B] hover:text-[#1E293B]'
                   }`}
@@ -590,14 +847,320 @@ export default function Onboarding() {
                 </button>
                 <button
                   type='button'
-                  onClick={handleNextStep}
-                  disabled={selectedCareers.length === 0}
-                  className='h-[44px] px-6 bg-[#2563EB] hover:bg-[#1D4ED8] dark:hover:bg-[#3B82F6] active:bg-[#1E40AF] text-white font-medium text-[14px] rounded-[12px] transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed'
+                  onClick={handleSaveStep2}
+                  disabled={isSubmitting || selectedCareerIds.length === 0}
+                  className='h-[44px] px-6 bg-[#2563EB] hover:bg-[#1D4ED8] dark:hover:bg-[#3B82F6] active:bg-[#1E40AF] text-white font-medium text-[14px] rounded-[12px] transition-all flex items-center justify-center gap-2 shadow-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed'
                 >
-                  <span>Lanjut</span>
-                  <ArrowRight className='w-4 h-4' />
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className='w-4 h-4 animate-spin' />
+                      <span>Menyimpan...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>Lanjut</span>
+                      <ArrowRight className='w-4 h-4' />
+                    </>
+                  )}
                 </button>
               </div>
+            </div>
+          )}
+
+          {/* ============================================================ */}
+          {/* STEP 3: FIRST EXPERIENCE PROMPT (F02.3)                        */}
+          {/* ============================================================ */}
+          {currentStep === 3 && (
+            <div className='animate-fadeIn'>
+              {/* Badge: Step 3 dari 3 • Pengalaman Pertama */}
+              <div className='text-center mb-3'>
+                <span
+                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[12px] font-medium ${
+                    isDark
+                      ? 'bg-blue-950/40 text-blue-400'
+                      : 'bg-blue-50 text-[#2563EB]'
+                  }`}
+                >
+                  <span className='w-2 h-2 rounded-full bg-[#2563EB]' />
+                  Step 3 dari 3 • Pengalaman Pertama (Opsional)
+                </span>
+              </div>
+
+              {!showExperienceForm ? (
+                /* Prompt Card: Option A or Option B */
+                <div>
+                  <div className='text-center mb-6'>
+                    <div className='w-14 h-14 rounded-2xl mx-auto flex items-center justify-center mb-3.5 bg-blue-500/10 text-[#2563EB] dark:bg-blue-950/60 dark:text-blue-400'>
+                      <Briefcase className='w-7 h-7' />
+                    </div>
+                    <h1
+                      id='onboarding-heading'
+                      className={`text-[23px] sm:text-[25px] font-bold tracking-tight mb-2 ${
+                        isDark ? 'text-white' : 'text-[#0F2864]'
+                      }`}
+                    >
+                      Punya pengalaman yang ingin kamu tambahkan sekarang?
+                    </h1>
+                    <p className={`text-[13.5px] leading-relaxed max-w-[440px] mx-auto ${
+                      isDark ? 'text-slate-400' : 'text-[#64748B]'
+                    }`}>
+                      Bisa berupa <strong>organisasi kampus</strong>, <strong>kepanitiaan</strong>, <strong>magang</strong>, <strong>proyek kelas</strong>, maupun <strong>freelance</strong>.
+                    </p>
+                  </div>
+
+                  {/* Highlights Card */}
+                  <div
+                    className={`p-4 rounded-xl border mb-6 space-y-2.5 text-[12.5px] leading-relaxed ${
+                      isDark
+                        ? 'bg-slate-900/40 border-slate-800 text-slate-300'
+                        : 'bg-slate-50 border-slate-200 text-slate-600'
+                    }`}
+                  >
+                    <div className='flex items-center gap-2 font-semibold text-[#2563EB] dark:text-blue-400'>
+                      <Sparkles className='w-4 h-4' />
+                      <span>Mengapa menambah pengalaman di awal?</span>
+                    </div>
+                    <p>
+                      AI Growvia dapat langsung mengekstraksi hard skill dan soft skill dari riwayatmu, menyusun tolok ukur readiness score, dan menyarankan materi belajar yang relevan.
+                    </p>
+                  </div>
+
+                  {/* Call to Actions (Option A & Option B) */}
+                  <div className='space-y-3'>
+                    <button
+                      type='button'
+                      onClick={() => setShowExperienceForm(true)}
+                      className='w-full h-[46px] bg-[#2563EB] hover:bg-[#1D4ED8] dark:hover:bg-[#3B82F6] active:bg-[#1E40AF] text-white font-medium text-[14.5px] rounded-[12px] transition-all flex items-center justify-center gap-2 shadow-sm cursor-pointer'
+                    >
+                      <Plus className='w-4 h-4' />
+                      <span>Ya, Tambah Pengalaman Sekarang</span>
+                    </button>
+
+                    <button
+                      type='button'
+                      onClick={handleFinishWithoutExperience}
+                      disabled={isSubmitting}
+                      className={`w-full h-[44px] border font-medium text-[14px] rounded-[12px] transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                        isDark
+                          ? 'border-slate-800 text-slate-300 hover:bg-slate-800'
+                          : 'border-slate-200 text-[#475569] hover:bg-slate-100'
+                      }`}
+                    >
+                      {isSubmitting ? (
+                        <>
+                          <Loader2 className='w-4 h-4 animate-spin' />
+                          <span>Mempersiapkan Dashboard...</span>
+                        </>
+                      ) : (
+                        <>
+                          <span>Nanti Saja, Masuk ke Dashboard</span>
+                          <ArrowRight className='w-4 h-4' />
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                /* Quick Experience Input Form */
+                <form onSubmit={handleSaveFirstExperience} className='space-y-3.5'>
+                  <div className='text-center mb-4'>
+                    <h2 className={`text-lg font-bold ${isDark ? 'text-white' : 'text-[#0F2864]'}`}>
+                      Input Pengalaman Pertama
+                    </h2>
+                    <p className={`text-xs mt-1 ${isDark ? 'text-slate-400' : 'text-[#64748B]'}`}>
+                      Kamu dapat melengkapi dan mengunggah portofolio bukti kapan saja nanti di menu Experience.
+                    </p>
+                  </div>
+
+                  {/* 1. Judul Pengalaman */}
+                  <div>
+                    <label className={`block text-[12.5px] font-medium mb-1 ${isDark ? 'text-slate-200' : 'text-[#334155]'}`}>
+                      Judul Pengalaman <span className='text-rose-500'>*</span>
+                    </label>
+                    <input
+                      type='text'
+                      required
+                      placeholder='Contoh: Ketua Tim Lomba 2025'
+                      value={experienceData.title}
+                      onChange={e => setExperienceData(prev => ({ ...prev, title: e.target.value }))}
+                      className={`w-full h-[40px] px-3 text-[13.5px] rounded-[10px] outline-none border transition-all ${
+                        isDark
+                          ? 'bg-[#0B0F19] border-[#1F2937] text-white focus:border-[#3B82F6]'
+                          : 'bg-white border-[#DCE3EF] text-[#1E293B] focus:border-[#2563EB]'
+                      }`}
+                    />
+                  </div>
+
+                  {/* 2. Tipe & Peran (2 Kolom) */}
+                  <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
+                    <div>
+                      <label className={`block text-[12.5px] font-medium mb-1 ${isDark ? 'text-slate-200' : 'text-[#334155]'}`}>
+                        Tipe Pengalaman <span className='text-rose-500'>*</span>
+                      </label>
+                      <select
+                        value={experienceData.type}
+                        onChange={e => setExperienceData(prev => ({ ...prev, type: e.target.value }))}
+                        className={`w-full h-[40px] px-3 text-[13.5px] rounded-[10px] outline-none border cursor-pointer ${
+                          isDark
+                            ? 'bg-[#0B0F19] border-[#1F2937] text-white focus:border-[#3B82F6]'
+                            : 'bg-white border-[#DCE3EF] text-[#1E293B] focus:border-[#2563EB]'
+                        }`}
+                      >
+                        <option value='organisation'>Organisasi</option>
+                        <option value='committee'>Kepanitiaan</option>
+                        <option value='internship'>Magang (Internship)</option>
+                        <option value='project'>Proyek Mandiri / Kelas</option>
+                        <option value='competition'>Kompetisi / Lomba</option>
+                        <option value='freelance'>Freelance</option>
+                        <option value='other'>Lainnya</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className={`block text-[12.5px] font-medium mb-1 ${isDark ? 'text-slate-200' : 'text-[#334155]'}`}>
+                        Peran / Posisi <span className='text-rose-500'>*</span>
+                      </label>
+                      <input
+                        type='text'
+                        required
+                        placeholder='Contoh: Project Lead / Staff'
+                        value={experienceData.role}
+                        onChange={e => setExperienceData(prev => ({ ...prev, role: e.target.value }))}
+                        className={`w-full h-[40px] px-3 text-[13.5px] rounded-[10px] outline-none border transition-all ${
+                          isDark
+                            ? 'bg-[#0B0F19] border-[#1F2937] text-white focus:border-[#3B82F6]'
+                            : 'bg-white border-[#DCE3EF] text-[#1E293B] focus:border-[#2563EB]'
+                        }`}
+                      />
+                    </div>
+                  </div>
+
+                  {/* 3. Nama Institusi / Perusahaan / Organisasi */}
+                  <div>
+                    <label className={`block text-[12.5px] font-medium mb-1 ${isDark ? 'text-slate-200' : 'text-[#334155]'}`}>
+                      Organisasi / Perusahaan / Lembaga <span className='text-rose-500'>*</span>
+                    </label>
+                    <div className='relative'>
+                      <div className='absolute left-3 top-1/2 -translate-y-1/2 text-slate-400'>
+                        <Building2 className='w-4 h-4' />
+                      </div>
+                      <input
+                        type='text'
+                        required
+                        placeholder='Contoh: BEM Fakultas / PT Digital Sejahtera'
+                        value={experienceData.institutionName}
+                        onChange={e => setExperienceData(prev => ({ ...prev, institutionName: e.target.value }))}
+                        className={`w-full h-[40px] pl-9 pr-3 text-[13.5px] rounded-[10px] outline-none border transition-all ${
+                          isDark
+                            ? 'bg-[#0B0F19] border-[#1F2937] text-white focus:border-[#3B82F6]'
+                            : 'bg-white border-[#DCE3EF] text-[#1E293B] focus:border-[#2563EB]'
+                        }`}
+                      />
+                    </div>
+                  </div>
+
+                  {/* 4. Periode (Mulai & Selesai) */}
+                  <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
+                    <div>
+                      <label className={`block text-[12.5px] font-medium mb-1 ${isDark ? 'text-slate-200' : 'text-[#334155]'}`}>
+                        Tanggal Mulai <span className='text-rose-500'>*</span>
+                      </label>
+                      <input
+                        type='date'
+                        required
+                        value={experienceData.startDate}
+                        onChange={e => setExperienceData(prev => ({ ...prev, startDate: e.target.value }))}
+                        className={`w-full h-[40px] px-3 text-[13px] rounded-[10px] outline-none border cursor-pointer ${
+                          isDark
+                            ? 'bg-[#0B0F19] border-[#1F2937] text-white focus:border-[#3B82F6]'
+                            : 'bg-white border-[#DCE3EF] text-[#1E293B] focus:border-[#2563EB]'
+                        }`}
+                      />
+                    </div>
+
+                    <div>
+                      <label className={`block text-[12.5px] font-medium mb-1 ${isDark ? 'text-slate-200' : 'text-[#334155]'}`}>
+                        Tanggal Selesai
+                      </label>
+                      <input
+                        type='date'
+                        disabled={experienceData.isOngoing}
+                        value={experienceData.endDate}
+                        onChange={e => setExperienceData(prev => ({ ...prev, endDate: e.target.value }))}
+                        className={`w-full h-[40px] px-3 text-[13px] rounded-[10px] outline-none border cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${
+                          isDark
+                            ? 'bg-[#0B0F19] border-[#1F2937] text-white focus:border-[#3B82F6]'
+                            : 'bg-white border-[#DCE3EF] text-[#1E293B] focus:border-[#2563EB]'
+                        }`}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Checkbox Masih Berlangsung */}
+                  <div className='flex items-center gap-2'>
+                    <input
+                      id='isOngoing'
+                      type='checkbox'
+                      checked={experienceData.isOngoing}
+                      onChange={e => setExperienceData(prev => ({ ...prev, isOngoing: e.target.checked }))}
+                      className='rounded text-blue-600 cursor-pointer'
+                    />
+                    <label htmlFor='isOngoing' className={`text-xs cursor-pointer select-none ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
+                      Masih berlangsung saat ini
+                    </label>
+                  </div>
+
+                  {/* 5. Deskripsi Singkat */}
+                  <div>
+                    <label className={`block text-[12.5px] font-medium mb-1 ${isDark ? 'text-slate-200' : 'text-[#334155]'}`}>
+                      Deskripsi Aktivitas & Pencapaian (Opsional)
+                    </label>
+                    <textarea
+                      rows={2}
+                      placeholder='Ceritakan secara ringkas tugas dan hasil yang kamu capai...'
+                      value={experienceData.description}
+                      onChange={e => setExperienceData(prev => ({ ...prev, description: e.target.value }))}
+                      className={`w-full p-2.5 text-[13px] rounded-[10px] outline-none border transition-all resize-none ${
+                        isDark
+                          ? 'bg-[#0B0F19] border-[#1F2937] text-white focus:border-[#3B82F6]'
+                          : 'bg-white border-[#DCE3EF] text-[#1E293B] focus:border-[#2563EB]'
+                      }`}
+                    />
+                  </div>
+
+                  {/* Form Action Buttons */}
+                  <div className='flex items-center gap-3 pt-2'>
+                    <button
+                      type='button'
+                      onClick={() => setShowExperienceForm(false)}
+                      className={`flex-1 h-[42px] border rounded-[10px] text-[13px] font-medium transition-colors ${
+                        isDark
+                          ? 'border-slate-800 text-slate-300 hover:bg-slate-800'
+                          : 'border-slate-200 text-slate-600 hover:bg-slate-100'
+                      }`}
+                    >
+                      Batal
+                    </button>
+                    <button
+                      type='submit'
+                      disabled={isSubmitting}
+                      className='flex-1 h-[42px] bg-[#2563EB] hover:bg-[#1D4ED8] dark:hover:bg-[#3B82F6] active:bg-[#1E40AF] text-white font-medium text-[13.5px] rounded-[10px] transition-all flex items-center justify-center gap-1.5 shadow-sm disabled:opacity-60 cursor-pointer'
+                    >
+                      {isSubmitting ? (
+                        <>
+                          <Loader2 className='w-4 h-4 animate-spin' />
+                          <span>Menyimpan...</span>
+                        </>
+                      ) : (
+                        <>
+                          <span>Simpan & Masuk Dashboard</span>
+                          <ArrowRight className='w-3.5 h-3.5' />
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </form>
+              )}
             </div>
           )}
         </section>
