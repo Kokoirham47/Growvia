@@ -8,8 +8,8 @@ import Login from '@views/Login'
 import { getServerMode } from '@core/utils/serverHelpers'
 
 export const metadata: Metadata = {
-  title: 'Login',
-  description: 'Login to your account'
+  title: 'Masuk ke Akun | Growvia',
+  description: 'Masuk ke akun Growvia Anda dan lanjutkan eksplorasi karier berbasis kecerdasan buatan.'
 }
 
 const LoginPage = async () => {

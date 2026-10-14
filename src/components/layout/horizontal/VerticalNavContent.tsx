@@ -17,6 +17,7 @@ import type { ChildrenType } from '@core/types'
 import NavHeader from '@menu/components/vertical-menu/NavHeader'
 import Logo from '@components/layout/shared/Logo'
 import NavCollapseIcons from '@menu/components/vertical-menu/NavCollapseIcons'
+import { CircleDot, Circle, X } from 'lucide-react'
 
 // Hook Imports
 import useHorizontalNav from '@menu/hooks/useHorizontalNav'
@@ -74,9 +75,9 @@ const VerticalNavContent = ({ children }: ChildrenType) => {
           <Logo />
         </Link>
         <NavCollapseIcons
-          lockedIcon={<i className='tabler-circle-dot text-xl' />}
-          unlockedIcon={<i className='tabler-circle text-xl' />}
-          closeIcon={<i className='tabler-x text-xl' />}
+          lockedIcon={<CircleDot className='w-5 h-5' />}
+          unlockedIcon={<Circle className='w-5 h-5' />}
+          closeIcon={<X className='w-5 h-5' />}
         />
       </NavHeader>
       <StyledBoxForShadow ref={shadowRef} />
