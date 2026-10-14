@@ -13,38 +13,27 @@ import useVerticalNav from '@menu/hooks/useVerticalNav'
 import { verticalLayoutClasses } from '@layouts/utils/layoutClasses'
 
 const FooterContent = () => {
-  // Hooks
   const { isBreakpointReached } = useVerticalNav()
 
   return (
     <div
-      className={classnames(verticalLayoutClasses.footerContent, 'flex items-center justify-between flex-wrap gap-4')}
+      className={classnames(verticalLayoutClasses.footerContent, 'flex items-center justify-between flex-wrap gap-4 text-xs text-slate-500 py-3')}
     >
-      <p>
-        <span className='text-textSecondary'>{`© ${new Date().getFullYear()}, Made with `}</span>
-        <span>{`❤️`}</span>
-        <span className='text-textSecondary'>{` by `}</span>
-        <Link href='https://pixinvent.com' target='_blank' className='text-primary uppercase'>
-          Pixinvent
-        </Link>
+      <p className='flex items-center gap-1.5'>
+        <span>© {new Date().getFullYear()}</span>
+        <strong className='font-semibold text-slate-700'>Growvia</strong>
+        <span>— Turn Experience Into Opportunity.</span>
       </p>
       {!isBreakpointReached && (
-        <div className='flex items-center gap-4'>
-          <Link href='https://themeforest.net/licenses/standard' target='_blank' className='text-primary'>
-            License
+        <div className='flex items-center gap-5 text-xs text-slate-500'>
+          <Link href='#' className='hover:text-blue-600 transition-colors'>
+            Pusat Bantuan
           </Link>
-          <Link href='https://themeforest.net/user/pixinvent/portfolio' target='_blank' className='text-primary'>
-            More Themes
+          <Link href='#' className='hover:text-blue-600 transition-colors'>
+            Kebijakan Privasi
           </Link>
-          <Link
-            href='https://demos.pixinvent.com/vuexy-nextjs-admin-template/documentation'
-            target='_blank'
-            className='text-primary'
-          >
-            Documentation
-          </Link>
-          <Link href='https://pixinvent.ticksy.com' target='_blank' className='text-primary'>
-            Support
+          <Link href='#' className='hover:text-blue-600 transition-colors'>
+            Syarat & Ketentuan
           </Link>
         </div>
       )}
