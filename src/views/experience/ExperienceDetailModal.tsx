@@ -25,6 +25,7 @@ interface ExperienceDetailModalProps {
   experience: ExperienceItem | null
   onEdit: (exp: ExperienceItem) => void
   onDelete: (exp: ExperienceItem) => void
+  onTriggerAI?: (exp: ExperienceItem) => void
 }
 
 export default function ExperienceDetailModal({
@@ -32,7 +33,8 @@ export default function ExperienceDetailModal({
   onClose,
   experience,
   onEdit,
-  onDelete
+  onDelete,
+  onTriggerAI
 }: ExperienceDetailModalProps) {
   if (!isOpen || !experience) return null
 
@@ -178,17 +180,32 @@ export default function ExperienceDetailModal({
                 ))}
               </div>
             ) : (
-              <div className='p-4 rounded-2xl bg-blue-50/50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/40 text-xs text-slate-600 dark:text-slate-400 flex items-start gap-3'>
-                <Sparkles className='w-5 h-5 text-blue-500 shrink-0 mt-0.5 animate-pulse' />
-                <div>
-                  <p className='font-semibold text-blue-800 dark:text-blue-300'>
-                    Status Analisis AI: {latestAiJob ? latestAiJob.status : 'Menunggu antrean'}
-                  </p>
-                  <p className='mt-0.5 leading-relaxed'>
-                    AI akan mengekstrak keterampilan secara otomatis dari deskripsi
-                    pengalaman ini pada fitur Skill Extraction (F04).
-                  </p>
+              <div className='p-4 rounded-2xl bg-blue-50/50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/40 text-xs text-slate-600 dark:text-slate-400 flex flex-col sm:flex-row sm:items-center justify-between gap-3'>
+                <div className='flex items-start gap-3'>
+                  <Sparkles className='w-5 h-5 text-blue-500 shrink-0 mt-0.5 animate-pulse' />
+                  <div>
+                    <p className='font-semibold text-blue-800 dark:text-blue-300'>
+                      Belum Ada Skill yang Divalidasi
+                    </p>
+                    <p className='mt-0.5 leading-relaxed'>
+                      Jalankan ekstraksi AI untuk mengidentifikasi keahlian terukur dari deskripsi pengalaman ini.
+                    </p>
+                  </div>
                 </div>
+
+                {onTriggerAI && (
+                  <button
+                    type='button'
+                    onClick={() => {
+                      onClose()
+                      onTriggerAI(experience)
+                    }}
+                    className='inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-500/20 active:scale-95 transition-all shrink-0 cursor-pointer'
+                  >
+                    <Sparkles className='w-3.5 h-3.5' />
+                    <span>Ekstrak Sekarang ✨</span>
+                  </button>
+                )}
               </div>
             )}
           </div>
@@ -202,7 +219,7 @@ export default function ExperienceDetailModal({
               onClose()
               onDelete(experience)
             }}
-            className='inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition-colors'
+            className='inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition-colors cursor-pointer'
           >
             <Trash2 className='w-4 h-4' />
             <span>Hapus</span>
@@ -215,7 +232,7 @@ export default function ExperienceDetailModal({
                 onClose()
                 onEdit(experience)
               }}
-              className='inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-750 transition-colors'
+              className='inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-750 transition-colors cursor-pointer'
             >
               <Pencil className='w-4 h-4' />
               <span>Edit</span>
@@ -223,7 +240,7 @@ export default function ExperienceDetailModal({
             <button
               type='button'
               onClick={onClose}
-              className='px-5 py-2 rounded-xl text-xs sm:text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-colors shadow-sm'
+              className='px-5 py-2 rounded-xl text-xs sm:text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-colors shadow-sm cursor-pointer'
             >
               Tutup
             </button>

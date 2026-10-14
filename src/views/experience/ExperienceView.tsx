@@ -27,6 +27,7 @@ import ExperienceFormModal from './ExperienceFormModal'
 import ExperienceDetailModal from './ExperienceDetailModal'
 import DeleteExperienceModal from './DeleteExperienceModal'
 import AiSmartExtractorPreview from './AiSmartExtractorPreview'
+import AISkillReviewModal from './AISkillReviewModal'
 import {
   ExperienceItem,
   ExperienceStats,
@@ -66,6 +67,28 @@ export default function ExperienceView() {
 
   const [isDeleteOpen, setIsDeleteOpen] = useState(false)
   const [deleteTargetExperience, setDeleteTargetExperience] = useState<ExperienceItem | null>(null)
+
+  // AI Skill Review Modal State (F04 Core)
+  const [isAiReviewOpen, setIsAiReviewOpen] = useState(false)
+  const [aiReviewExperience, setAiReviewExperience] = useState<ExperienceItem | null>(null)
+  const [aiCustomText, setAiCustomText] = useState<string | null>(null)
+
+  const handleOpenAiReview = (exp: ExperienceItem) => {
+    setAiReviewExperience(exp)
+    setAiCustomText(null)
+    setIsAiReviewOpen(true)
+  }
+
+  const handleOpenAiReviewCustomText = (text: string) => {
+    setAiReviewExperience(null)
+    setAiCustomText(text)
+    setIsAiReviewOpen(true)
+  }
+
+  const handleAiReviewSuccess = (savedCount: number) => {
+    fetchExperiences()
+    setToastMessage(`🎉 Berhasil memvalidasi ${savedCount} skill baru ke profil Anda!`)
+  }
 
   // Fetch experiences from API
   const fetchExperiences = useCallback(async () => {
@@ -151,8 +174,15 @@ export default function ExperienceView() {
     setToastMessage(
       isEdit
         ? `Pengalaman "${savedExp.title}" berhasil diperbarui.`
-        : `Pengalaman "${savedExp.title}" berhasil ditambahkan & diantrekan ke analisis AI.`
+        : `Pengalaman "${savedExp.title}" berhasil ditambahkan.`
     )
+
+    // Otomatis buka dialog ekstraksi AI jika baru ditambahkan dan memiliki narasi deskripsi
+    if (!isEdit && savedExp.description && savedExp.description.trim().length >= 30) {
+      setTimeout(() => {
+        handleOpenAiReview(savedExp)
+      }, 500)
+    }
   }
 
   const handleDeleteSuccess = (deletedId: string) => {
@@ -185,7 +215,7 @@ export default function ExperienceView() {
             <button
               type='button'
               onClick={() => setToastMessage(null)}
-              className='ml-2 p-1 hover:opacity-75 transition-opacity'
+              className='ml-2 p-1 hover:opacity-75 transition-opacity cursor-pointer'
             >
               <X className='w-3.5 h-3.5' />
             </button>
@@ -214,7 +244,7 @@ export default function ExperienceView() {
           <button
             type='button'
             onClick={handleOpenAdd}
-            className='inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-500/25 transition-all hover:scale-[1.02] active:scale-[0.98]'
+            className='inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-500/25 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer'
           >
             <Plus className='w-4 h-4' />
             <span>Tambah Pengalaman</span>
@@ -373,8 +403,10 @@ export default function ExperienceView() {
 
       {/* AI Smart Extractor Preview Component */}
       <AiSmartExtractorPreview
+        onOpenLiveAiModal={handleOpenAiReviewCustomText}
         onConfirmSkills={(count) => {
-          setToastMessage(`${count} rekomendasi skill AI berhasil dikonfirmasi ke profil!`)
+          setToastMessage(`🎉 ${count} rekomendasi skill AI berhasil dikonfirmasi ke profil!`)
+          fetchExperiences()
         }}
       />
 
@@ -478,7 +510,7 @@ export default function ExperienceView() {
           <button
             type='button'
             onClick={fetchExperiences}
-            className='inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-rose-600 text-white hover:bg-rose-700 transition-colors'
+            className='inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-rose-600 text-white hover:bg-rose-700 transition-colors cursor-pointer'
           >
             <RotateCcw className='w-3.5 h-3.5' />
             <span>Coba Lagi</span>
@@ -503,7 +535,7 @@ export default function ExperienceView() {
           <button
             type='button'
             onClick={handleOpenAdd}
-            className='inline-flex items-center gap-2 px-6 py-2.5 rounded-2xl text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-500/20 transition-all hover:scale-[1.02] active:scale-[0.98]'
+            className='inline-flex items-center gap-2 px-6 py-2.5 rounded-2xl text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-500/20 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer'
           >
             <Plus className='w-4 h-4' />
             <span>Tambah Pengalaman Pertama</span>
@@ -526,7 +558,7 @@ export default function ExperienceView() {
               setSearchQuery('')
               setActiveTab('all')
             }}
-            className='inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-750 transition-colors'
+            className='inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-750 transition-colors cursor-pointer'
           >
             <RotateCcw className='w-3.5 h-3.5' />
             <span>Reset Pencarian & Filter</span>
@@ -542,6 +574,7 @@ export default function ExperienceView() {
               onEdit={handleOpenEdit}
               onDelete={handleOpenDelete}
               onViewDetail={handleOpenDetail}
+              onTriggerAI={handleOpenAiReview}
             />
           ))}
         </div>
@@ -562,6 +595,7 @@ export default function ExperienceView() {
         experience={detailExperience}
         onEdit={handleOpenEdit}
         onDelete={handleOpenDelete}
+        onTriggerAI={handleOpenAiReview}
       />
 
       {/* Delete Confirmation Modal */}
@@ -570,6 +604,16 @@ export default function ExperienceView() {
         onClose={() => setIsDeleteOpen(false)}
         onSuccess={handleDeleteSuccess}
         experience={deleteTargetExperience}
+      />
+
+      {/* AI Skill Review Modal (F04 Core) */}
+      <AISkillReviewModal
+        isOpen={isAiReviewOpen}
+        onClose={() => setIsAiReviewOpen(false)}
+        onSuccess={handleAiReviewSuccess}
+        experienceId={aiReviewExperience?.id || null}
+        experienceData={aiReviewExperience}
+        customText={aiCustomText}
       />
     </div>
   )
