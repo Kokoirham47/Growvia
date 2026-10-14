@@ -2,6 +2,36 @@
 
 // React Imports
 import { useState } from 'react'
+import {
+  Settings,
+  Plus,
+  Rocket,
+  ShieldCheck,
+  TrendingUp,
+  Award,
+  AlertTriangle,
+  Share2,
+  ArrowUpRight,
+  RefreshCw,
+  Briefcase,
+  Brain,
+  Flame,
+  Compass,
+  Sparkles,
+  Check,
+  Sliders,
+  ChevronRight,
+  Laptop,
+  CheckCircle2,
+  ArrowRight,
+  Users,
+  Flag,
+  XCircle,
+  GraduationCap,
+  Zap,
+  Clock,
+  Download
+} from 'lucide-react'
 
 const DashboardView = () => {
   // State for interactive elements (dismissing AI insight, tab switching, etc.)
@@ -15,7 +45,7 @@ const DashboardView = () => {
         {/* Left: Status tag, Welcome greeting & summary */}
         <div className='flex flex-col gap-1.5'>
           <div className='inline-flex items-center gap-1.5 w-fit px-3 py-1 rounded-full bg-[#EFF6FF] border border-[#DBEAFE] text-[#2563EB] text-xs font-medium'>
-            <i className='tabler-settings text-sm animate-spin-slow' />
+            <Settings className='w-3.5 h-3.5 animate-spin-slow' />
             <span>Semester 7 Ready • Target Q3 2025</span>
           </div>
 
@@ -36,7 +66,7 @@ const DashboardView = () => {
             type='button'
             className='inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#2563EB] hover:bg-blue-700 text-white text-sm font-semibold transition-all shadow-sm hover:shadow active:scale-[0.98]'
           >
-            <i className='tabler-plus text-base' />
+            <Plus className='w-4 h-4' />
             <span>Tambah Pengalaman Baru</span>
           </button>
 
@@ -44,7 +74,7 @@ const DashboardView = () => {
             type='button'
             className='inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-[#1E293B] text-sm font-semibold transition-all shadow-xs hover:border-slate-300 active:scale-[0.98]'
           >
-            <i className='tabler-rocket text-base text-[#2563EB]' />
+            <Rocket className='w-4 h-4 text-[#2563EB]' />
             <span>Eksplor Skill Gap</span>
           </button>
         </div>
@@ -60,14 +90,14 @@ const DashboardView = () => {
                 Skor Kesiapan Karier
               </span>
               <div className='w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center'>
-                <i className='tabler-shield-check text-lg' />
+                <ShieldCheck className='w-4 h-4' />
               </div>
             </div>
 
             <div className='flex items-baseline gap-2.5 mt-3'>
               <span className='text-3xl font-extrabold text-[#1E293B] tracking-tight'>78%</span>
               <span className='inline-flex items-center gap-0.5 text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700'>
-                <i className='tabler-trending-up text-xs' />
+                <TrendingUp className='w-3 h-3' />
                 <span>+12% bulan ini</span>
               </span>
             </div>
@@ -90,7 +120,7 @@ const DashboardView = () => {
                 Skill Tervalidasi
               </span>
               <div className='w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center'>
-                <i className='tabler-award text-lg' />
+                <Award className='w-4 h-4' />
               </div>
             </div>
 
@@ -121,7 +151,7 @@ const DashboardView = () => {
                 Skill Gap Terdeteksi
               </span>
               <div className='w-7 h-7 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center'>
-                <i className='tabler-folder-exclamation text-lg' />
+                <AlertTriangle className='w-4 h-4' />
               </div>
             </div>
 
@@ -148,7 +178,7 @@ const DashboardView = () => {
                 className='text-slate-400 hover:text-slate-600 transition-colors'
                 title='Bagikan Portofolio'
               >
-                <i className='tabler-share text-lg' />
+                <Share2 className='w-4 h-4' />
               </button>
             </div>
 
@@ -169,7 +199,7 @@ const DashboardView = () => {
               className='inline-flex items-center gap-0.5 text-xs font-semibold text-blue-600 hover:text-blue-700 transition-colors'
             >
               <span>Preview</span>
-              <i className='tabler-arrow-up-right text-xs' />
+              <ArrowUpRight className='w-3 h-3' />
             </a>
           </div>
         </div>
@@ -192,7 +222,7 @@ const DashboardView = () => {
               </div>
 
               <span className='inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium text-indigo-600 bg-indigo-50 border border-indigo-100'>
-                <i className='tabler-refresh text-xs' />
+                <RefreshCw className='w-3 h-3' />
                 <span>Siklus Berkelanjutan</span>
               </span>
             </div>
@@ -204,7 +234,7 @@ const DashboardView = () => {
                 <div>
                   <div className='flex items-center justify-between text-[#6366F1]'>
                     <div className='w-7 h-7 rounded-lg bg-indigo-100/70 text-[#6366F1] flex items-center justify-center'>
-                      <i className='tabler-briefcase text-base' />
+                      <Briefcase className='w-4 h-4' />
                     </div>
                     <span className='text-xs font-bold text-slate-400'>1</span>
                   </div>
@@ -222,7 +252,7 @@ const DashboardView = () => {
                 <div>
                   <div className='flex items-center justify-between text-blue-600'>
                     <div className='w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center'>
-                      <i className='tabler-brain text-base' />
+                      <Brain className='w-4 h-4' />
                     </div>
                     <span className='text-xs font-bold text-slate-400'>2</span>
                   </div>
@@ -240,7 +270,7 @@ const DashboardView = () => {
                 <div>
                   <div className='flex items-center justify-between text-amber-600'>
                     <div className='w-7 h-7 rounded-lg bg-amber-100/70 text-amber-600 flex items-center justify-center'>
-                      <i className='tabler-flame text-base' />
+                      <Flame className='w-4 h-4' />
                     </div>
                     <span className='text-xs font-bold text-slate-400'>3</span>
                   </div>
@@ -258,7 +288,7 @@ const DashboardView = () => {
                 <div>
                   <div className='flex items-center justify-between text-emerald-600'>
                     <div className='w-7 h-7 rounded-lg bg-emerald-100/70 text-emerald-600 flex items-center justify-center'>
-                      <i className='tabler-compass text-base' />
+                      <Compass className='w-4 h-4' />
                     </div>
                     <span className='text-xs font-bold text-slate-400'>4</span>
                   </div>
@@ -279,7 +309,7 @@ const DashboardView = () => {
               <div className='flex items-start justify-between gap-4'>
                 <div className='flex items-center gap-3'>
                   <div className='w-9 h-9 rounded-xl bg-indigo-600/10 text-[#6366F1] flex items-center justify-center shrink-0'>
-                    <i className='tabler-sparkles text-xl' />
+                    <Sparkles className='w-5 h-5' />
                   </div>
                   <div>
                     <span className='text-xs font-bold text-[#6366F1] uppercase tracking-wider block'>
@@ -316,7 +346,7 @@ const DashboardView = () => {
                   onClick={() => setInsightAccepted(true)}
                   className='inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#2563EB] hover:bg-blue-700 text-white text-sm font-semibold transition-all shadow-sm active:scale-[0.98]'
                 >
-                  <i className='tabler-check text-base' />
+                  <Check className='w-4 h-4' />
                   <span>{insightAccepted ? 'Tersimpan ke Portfolio!' : 'Terima & Simpan'}</span>
                 </button>
 
@@ -324,7 +354,7 @@ const DashboardView = () => {
                   type='button'
                   className='inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 text-sm font-semibold transition-all active:scale-[0.98]'
                 >
-                  <i className='tabler-adjustments text-base' />
+                  <Sliders className='w-4 h-4' />
                   <span>Edit Skill</span>
                 </button>
 
@@ -356,7 +386,7 @@ const DashboardView = () => {
                 className='inline-flex items-center gap-1 text-sm font-semibold text-blue-600 hover:text-blue-700 transition-colors'
               >
                 <span>Lihat Semua (6)</span>
-                <i className='tabler-chevron-right text-base' />
+                <ChevronRight className='w-4 h-4' />
               </a>
             </div>
 
@@ -366,7 +396,7 @@ const DashboardView = () => {
               <div className='py-4 first:pt-1 last:pb-1 flex flex-col sm:flex-row sm:items-center justify-between gap-4'>
                 <div className='flex items-start gap-3.5'>
                   <div className='w-11 h-11 rounded-xl bg-[#F0F5FF] text-blue-600 flex items-center justify-center shrink-0 mt-0.5'>
-                    <i className='tabler-device-laptop text-2xl' />
+                    <Laptop className='w-5 h-5' />
                   </div>
                   <div>
                     <h4 className='text-base font-semibold text-[#1E293B] flex items-center gap-2'>
@@ -393,7 +423,7 @@ const DashboardView = () => {
 
                 <div className='flex sm:flex-col items-center sm:items-end justify-between gap-1.5 shrink-0 pl-14 sm:pl-0'>
                   <span className='inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700'>
-                    <i className='tabler-circle-check text-xs' />
+                    <CheckCircle2 className='w-3.5 h-3.5' />
                     <span>3 Skill Tervalidasi</span>
                   </span>
                   <a
@@ -401,7 +431,7 @@ const DashboardView = () => {
                     className='inline-flex items-center gap-1 text-xs font-medium text-slate-500 hover:text-slate-800 transition-colors'
                   >
                     <span>Detail Log</span>
-                    <i className='tabler-arrow-right text-xs' />
+                    <ArrowRight className='w-3 h-3' />
                   </a>
                 </div>
               </div>
@@ -410,7 +440,7 @@ const DashboardView = () => {
               <div className='py-4 last:pb-1 flex flex-col sm:flex-row sm:items-center justify-between gap-4'>
                 <div className='flex items-start gap-3.5'>
                   <div className='w-11 h-11 rounded-xl bg-[#F0F5FF] text-blue-600 flex items-center justify-center shrink-0 mt-0.5'>
-                    <i className='tabler-users text-2xl' />
+                    <Users className='w-5 h-5' />
                   </div>
                   <div>
                     <h4 className='text-base font-semibold text-[#1E293B] flex items-center gap-2'>
@@ -437,7 +467,7 @@ const DashboardView = () => {
 
                 <div className='flex sm:flex-col items-center sm:items-end justify-between gap-1.5 shrink-0 pl-14 sm:pl-0'>
                   <span className='inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700'>
-                    <i className='tabler-circle-check text-xs' />
+                    <CheckCircle2 className='w-3.5 h-3.5' />
                     <span>4 Skill Tervalidasi</span>
                   </span>
                   <a
@@ -445,7 +475,7 @@ const DashboardView = () => {
                     className='inline-flex items-center gap-1 text-xs font-medium text-slate-500 hover:text-slate-800 transition-colors'
                   >
                     <span>Detail Log</span>
-                    <i className='tabler-arrow-right text-xs' />
+                    <ArrowRight className='w-3 h-3' />
                   </a>
                 </div>
               </div>
@@ -462,7 +492,7 @@ const DashboardView = () => {
                 <span className='text-xs font-bold text-amber-500 uppercase tracking-wider'>
                   PRIORITAS UTAMA
                 </span>
-                <i className='tabler-flag text-lg text-slate-400' />
+                <Flag className='w-4 h-4 text-slate-400' />
               </div>
 
               <div className='mt-2'>
@@ -499,7 +529,7 @@ const DashboardView = () => {
                   {/* Item 1 */}
                   <div className='flex items-center justify-between py-1'>
                     <div className='flex items-center gap-2'>
-                      <i className='tabler-circle-x text-red-500 text-base' />
+                      <XCircle className='w-4 h-4 text-red-500' />
                       <span className='text-sm font-semibold text-slate-800'>
                         Design System Tokens
                       </span>
@@ -512,7 +542,7 @@ const DashboardView = () => {
                   {/* Item 2 */}
                   <div className='flex items-center justify-between py-1'>
                     <div className='flex items-center gap-2'>
-                      <i className='tabler-refresh text-amber-500 text-base' />
+                      <RefreshCw className='w-4 h-4 text-amber-500' />
                       <span className='text-sm font-semibold text-slate-800'>
                         Quantitative Analytics
                       </span>
@@ -530,7 +560,7 @@ const DashboardView = () => {
               type='button'
               className='w-full mt-5 inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-[#2563EB] hover:bg-blue-700 text-white text-sm font-semibold transition-all shadow-sm active:scale-[0.98]'
             >
-              <i className='tabler-school text-base' />
+              <GraduationCap className='w-4 h-4' />
               <span>Lihat Rekomendasi Belajar</span>
             </button>
           </div>
@@ -539,7 +569,7 @@ const DashboardView = () => {
           <div className='bg-white rounded-2xl border border-slate-100 p-6 shadow-xs'>
             <div>
               <div className='flex items-center gap-2'>
-                <i className='tabler-bolt text-lg text-blue-600' />
+                <Zap className='w-4 h-4 text-blue-600' />
                 <h3 className='text-base font-bold text-[#1E293B] tracking-tight'>
                   Modul Kilat AI
                 </h3>
@@ -557,7 +587,7 @@ const DashboardView = () => {
                     Mini Course
                   </span>
                   <span className='text-slate-400 flex items-center gap-1'>
-                    <i className='tabler-clock text-xs' />
+                    <Clock className='w-3 h-3' />
                     <span>45 menit</span>
                   </span>
                 </div>
@@ -580,7 +610,7 @@ const DashboardView = () => {
                     className='inline-flex items-center gap-1 text-xs font-bold text-blue-600 hover:text-blue-700'
                   >
                     <span>Mulai</span>
-                    <i className='tabler-arrow-right text-xs' />
+                    <ArrowRight className='w-3 h-3' />
                   </a>
                 </div>
               </div>
@@ -592,7 +622,7 @@ const DashboardView = () => {
                     Resource Kit
                   </span>
                   <span className='text-slate-400 flex items-center gap-1'>
-                    <i className='tabler-download text-xs' />
+                    <Download className='w-3 h-3' />
                     <span>Unduhan Gratis</span>
                   </span>
                 </div>
@@ -615,7 +645,7 @@ const DashboardView = () => {
                     className='inline-flex items-center gap-1 text-xs font-bold text-blue-600 hover:text-blue-700'
                   >
                     <span>Unduh Kit</span>
-                    <i className='tabler-download text-xs' />
+                    <Download className='w-3 h-3' />
                   </a>
                 </div>
               </div>

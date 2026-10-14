@@ -5,6 +5,16 @@ import { useTheme } from '@mui/material/styles'
 
 // Third-party Imports
 import PerfectScrollbar from 'react-perfect-scrollbar'
+import {
+  ChevronRight,
+  Circle,
+  LayoutGrid,
+  Briefcase,
+  Network,
+  TrendingUp,
+  GraduationCap,
+  Sparkles
+} from 'lucide-react'
 
 // Type Imports
 import type { VerticalMenuContextProps } from '@menu/components/vertical-menu/Menu'
@@ -33,7 +43,7 @@ type Props = {
 
 const RenderExpandIcon = ({ open, transitionDuration }: RenderExpandIconProps) => (
   <StyledVerticalNavExpandIcon open={open} transitionDuration={transitionDuration}>
-    <i className='tabler-chevron-right' />
+    <ChevronRight className='w-4 h-4' />
   </StyledVerticalNavExpandIcon>
 )
 
@@ -63,26 +73,26 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
           popoutMenuOffset={{ mainAxis: 23 }}
           menuItemStyles={menuItemStyles(verticalNavOptions, theme)}
           renderExpandIcon={({ open }) => <RenderExpandIcon open={open} transitionDuration={transitionDuration} />}
-          renderExpandedMenuItemIcon={{ icon: <i className='tabler-circle text-xs' /> }}
+          renderExpandedMenuItemIcon={{ icon: <Circle className='w-2 h-2 fill-current' /> }}
           menuSectionStyles={menuSectionStyles(verticalNavOptions, theme)}
         >
           <MenuSection label='NAVIGASI UTAMA'>
-            <MenuItem href='/home' icon={<i className='tabler-layout-grid text-xl' />}>
+            <MenuItem href='/home' icon={<LayoutGrid className='w-5 h-5' />}>
               Dashboard
             </MenuItem>
-            <MenuItem href='/experience' icon={<i className='tabler-briefcase text-xl' />}>
+            <MenuItem href='/experience' icon={<Briefcase className='w-5 h-5' />}>
               Pengalaman
             </MenuItem>
-            <MenuItem href='/skills' icon={<i className='tabler-circles-relation text-xl' />}>
+            <MenuItem href='/skills' icon={<Network className='w-5 h-5' />}>
               Skill Matrix
             </MenuItem>
-            <MenuItem href='/career' icon={<i className='tabler-trending-up text-xl' />}>
+            <MenuItem href='/career' icon={<TrendingUp className='w-5 h-5' />}>
               Karier & Gap
             </MenuItem>
-            <MenuItem href='/learning' icon={<i className='tabler-school text-xl' />}>
+            <MenuItem href='/learning' icon={<GraduationCap className='w-5 h-5' />}>
               Rekomendasi Belajar
             </MenuItem>
-            <MenuItem href='/portfolio' icon={<i className='tabler-sparkles text-xl' />}>
+            <MenuItem href='/portfolio' icon={<Sparkles className='w-5 h-5' />}>
               Portofolio AI
             </MenuItem>
           </MenuSection>
@@ -95,7 +105,7 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
           <div className='p-3.5 rounded-2xl bg-[#F0F5FF] border border-[#DBEAFE] transition-all hover:shadow-sm'>
             <div className='flex items-center gap-2'>
               <div className='w-6 h-6 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600 shrink-0'>
-                <i className='tabler-sparkles text-sm' />
+                <Sparkles className='w-3.5 h-3.5' />
               </div>
               <span className='font-bold text-xs text-[#1E3A8A]'>AI Readiness</span>
             </div>

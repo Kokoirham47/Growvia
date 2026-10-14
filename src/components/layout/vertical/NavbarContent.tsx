@@ -8,6 +8,7 @@ import Avatar from '@mui/material/Avatar'
 import Badge from '@mui/material/Badge'
 import IconButton from '@mui/material/IconButton'
 import Tooltip from '@mui/material/Tooltip'
+import { Search, Bell } from 'lucide-react'
 
 // Component Imports
 import NavToggle from './NavToggle'
@@ -24,7 +25,7 @@ const NavbarContent = () => {
         {/* Global Search Bar */}
         <div className='relative flex items-center is-full'>
           <div className='absolute inset-y-0 start-0 flex items-center ps-3.5 pointer-events-none text-slate-400'>
-            <i className='tabler-search text-lg' />
+            <Search className='w-4 h-4' />
           </div>
           <input
             type='text'
@@ -52,7 +53,7 @@ const NavbarContent = () => {
                 }
               }}
             >
-              <i className='tabler-bell text-[22px]' />
+              <Bell className='w-5 h-5 text-slate-600' />
             </Badge>
           </IconButton>
         </Tooltip>

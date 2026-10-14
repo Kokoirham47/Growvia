@@ -1,7 +1,10 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 @layer theme, base, components, utilities;
 @import 'tailwindcss/theme.css' layer(theme) important;
 @import 'tailwindcss/utilities.css' layer(utilities) important;
 @plugin 'tailwindcss-logical';
+
+@custom-variant dark (&:where([data-mui-color-scheme="dark"], [data-mui-color-scheme="dark"] *, [data-theme="dark"], [data-theme="dark"] *, .dark, .dark *));
 
 @theme {
   --radius-none: 0px;
@@ -199,10 +202,6 @@ ul:not([class]) {
   }
 }
 
-:where([class^='tabler-']) {
-  font-size: 1.5rem;
-}
-
 /* Fix width issue for the input-otp component */
 input[autocomplete='one-time-code'][data-input-otp='true'] {
   inline-size: 100% !important;
@@ -233,5 +232,24 @@ code {
 .animate-wave {
   display: inline-block;
   animation: wave 2.5s infinite ease-in-out;
+}
+
+/* Hide native password reveal button in Edge / IE / Chrome / WebKit / Firefox */
+input::-ms-reveal,
+input::-ms-clear,
+input::-ms-value,
+input::-webkit-credentials-auto-fill-button,
+input::-webkit-contacts-auto-fill-button {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  opacity: 0 !important;
+}
+
+input[type='password']::-ms-reveal,
+input[type='password']::-ms-clear {
+  display: none !important;
 }
 

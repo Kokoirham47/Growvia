@@ -18,6 +18,7 @@ import type { Mode } from '@core/types'
 
 // Hook Imports
 import { useSettings } from '@core/hooks/useSettings'
+import { Sun, Moon, Laptop } from 'lucide-react'
 
 const ModeDropdown = () => {
   // States
@@ -47,13 +48,13 @@ const ModeDropdown = () => {
     }
   }
 
-  const getModeIcon = () => {
+  const renderModeIcon = () => {
     if (settings.mode === 'system') {
-      return 'tabler-device-laptop'
+      return <Laptop className='w-5 h-5' />
     } else if (settings.mode === 'dark') {
-      return 'tabler-moon-stars'
+      return <Moon className='w-5 h-5' />
     } else {
-      return 'tabler-sun'
+      return <Sun className='w-5 h-5' />
     }
   }
 
@@ -67,7 +68,7 @@ const ModeDropdown = () => {
         slotProps={{ popper: { className: 'capitalize' } }}
       >
         <IconButton ref={anchorRef} onClick={handleToggle} className='text-textPrimary'>
-          <i className={getModeIcon()} />
+          {renderModeIcon()}
         </IconButton>
       </Tooltip>
       <Popper
@@ -91,7 +92,7 @@ const ModeDropdown = () => {
                     onClick={() => handleModeSwitch('light')}
                     selected={settings.mode === 'light'}
                   >
-                    <i className='tabler-sun' />
+                    <Sun className='w-4 h-4' />
                     Light
                   </MenuItem>
                   <MenuItem
@@ -99,7 +100,7 @@ const ModeDropdown = () => {
                     onClick={() => handleModeSwitch('dark')}
                     selected={settings.mode === 'dark'}
                   >
-                    <i className='tabler-moon-stars' />
+                    <Moon className='w-4 h-4' />
                     Dark
                   </MenuItem>
                   <MenuItem
@@ -107,7 +108,7 @@ const ModeDropdown = () => {
                     onClick={() => handleModeSwitch('system')}
                     selected={settings.mode === 'system'}
                   >
-                    <i className='tabler-device-laptop' />
+                    <Laptop className='w-4 h-4' />
                     System
                   </MenuItem>
                 </MenuList>
