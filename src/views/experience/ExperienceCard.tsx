@@ -25,13 +25,15 @@ interface ExperienceCardProps {
   onEdit: (exp: ExperienceItem) => void
   onDelete: (exp: ExperienceItem) => void
   onViewDetail: (exp: ExperienceItem) => void
+  onTriggerAI?: (exp: ExperienceItem) => void
 }
 
 export default function ExperienceCard({
   experience,
   onEdit,
   onDelete,
-  onViewDetail
+  onViewDetail,
+  onTriggerAI
 }: ExperienceCardProps) {
   const [isExpanded, setIsExpanded] = useState(false)
 
@@ -63,6 +65,16 @@ export default function ExperienceCard({
 
           {/* Action Buttons */}
           <div className='flex items-center gap-1 opacity-90 group-hover:opacity-100 transition-opacity'>
+            {onTriggerAI && (
+              <button
+                type='button'
+                onClick={() => onTriggerAI(experience)}
+                title='Ekstrak Skill dengan AI'
+                className='p-1.5 bg-transparent border-0 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/50 rounded-lg transition-colors cursor-pointer'
+              >
+                <Sparkles className='w-4 h-4' />
+              </button>
+            )}
             <button
               type='button'
               onClick={() => onViewDetail(experience)}
@@ -143,9 +155,21 @@ export default function ExperienceCard({
         {/* Extracted Skills Chips */}
         {skillEvidences.length > 0 && (
           <div className='mt-4 pt-3.5 border-t border-slate-100 dark:border-slate-800/80'>
-            <div className='flex items-center gap-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400 mb-2'>
-              <CheckCircle2 className='w-3.5 h-3.5' />
-              <span>{skillEvidences.length} Skill Tervalidasi</span>
+            <div className='flex items-center justify-between mb-2'>
+              <div className='flex items-center gap-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400'>
+                <CheckCircle2 className='w-3.5 h-3.5' />
+                <span>{skillEvidences.length} Skill Tervalidasi</span>
+              </div>
+              {onTriggerAI && (
+                <button
+                  type='button'
+                  onClick={() => onTriggerAI(experience)}
+                  className='text-[10px] font-bold text-blue-600 dark:text-blue-400 hover:underline inline-flex items-center gap-1 cursor-pointer'
+                >
+                  <Sparkles className='w-3 h-3' />
+                  <span>Review AI</span>
+                </button>
+              )}
             </div>
             <div className='flex flex-wrap gap-1.5'>
               {skillEvidences.slice(0, 4).map(evidence => (
@@ -165,19 +189,30 @@ export default function ExperienceCard({
           </div>
         )}
 
-        {/* AI Analysis Pending State if no skills yet */}
-        {skillEvidences.length === 0 && latestAiJob && (
+        {/* AI Extraction Action if no skills yet */}
+        {skillEvidences.length === 0 && (
           <div className='mt-4 pt-3.5 border-t border-slate-100 dark:border-slate-800/80'>
-            <div className='inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border border-blue-200/60 dark:border-blue-900/60'>
-              <Sparkles className='w-3.5 h-3.5 text-blue-500 animate-pulse' />
-              <span>
-                {latestAiJob.status === 'queued'
-                  ? 'Menunggu antrean ekstraksi skill AI'
-                  : latestAiJob.status === 'processing'
-                  ? 'Sedang diekstrak oleh AI...'
-                  : 'Siap dianalisis oleh AI'}
-              </span>
-            </div>
+            {onTriggerAI ? (
+              <button
+                type='button'
+                onClick={() => onTriggerAI(experience)}
+                className='w-full inline-flex items-center justify-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50/80 hover:bg-blue-100 dark:bg-blue-950/50 dark:hover:bg-blue-900/50 border border-blue-200/80 dark:border-blue-900/60 shadow-2xs transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer'
+              >
+                <Sparkles className='w-3.5 h-3.5 text-blue-600 dark:text-blue-400 animate-pulse' />
+                <span>Ekstrak Skill dengan AI ✨</span>
+              </button>
+            ) : (
+              <div className='inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border border-blue-200/60 dark:border-blue-900/60'>
+                <Sparkles className='w-3.5 h-3.5 text-blue-500 animate-pulse' />
+                <span>
+                  {latestAiJob?.status === 'queued'
+                    ? 'Menunggu antrean ekstraksi skill AI'
+                    : latestAiJob?.status === 'processing'
+                    ? 'Sedang diekstrak oleh AI...'
+                    : 'Siap dianalisis oleh AI'}
+                </span>
+              </div>
+            )}
           </div>
         )}
       </div>

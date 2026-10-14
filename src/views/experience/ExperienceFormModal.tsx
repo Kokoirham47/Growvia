@@ -265,7 +265,7 @@ export default function ExperienceFormModal({
               type='text'
               value={title}
               onChange={e => setTitle(e.target.value)}
-              placeholder='Contoh: Ketua Divisi Acara Bincang Karir 2026'
+              placeholder='Contoh: Ketua BEM Fakultas 2026'
               className={`w-full px-4 py-2.5 rounded-xl border text-sm transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/20 bg-slate-50/50 dark:bg-slate-900/50 text-slate-900 dark:text-white ${
                 fieldErrors.title
                   ? 'border-rose-400 dark:border-rose-600 focus:border-rose-500'
@@ -293,7 +293,7 @@ export default function ExperienceFormModal({
                     key={opt.value}
                     type='button'
                     onClick={() => setType(opt.value)}
-                    className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border text-xs font-semibold transition-all ${
+                    className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border text-xs font-semibold transition-all cursor-pointer ${
                       isSelected
                         ? 'border-blue-600 bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 shadow-sm ring-1 ring-blue-500'
                         : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-700'
@@ -508,7 +508,7 @@ export default function ExperienceFormModal({
             type='button'
             onClick={onClose}
             disabled={loading}
-            className='px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-50'
+            className='px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer disabled:opacity-50'
           >
             Batal
           </button>
@@ -516,7 +516,7 @@ export default function ExperienceFormModal({
             type='submit'
             form='experience-form'
             disabled={loading}
-            className='inline-flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-500/20 transition-all hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed'
+            className='inline-flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-500/20 transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed'
           >
             {loading ? (
               <>

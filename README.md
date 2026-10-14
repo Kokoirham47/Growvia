@@ -1,178 +1,170 @@
-# 🌱 Growvia — AI-Powered Skill Ecosystem
+# 🧠 Feature: F04 — AI Skill Extraction
 
-> **Platform karier terintegrasi bagi mahasiswa dan fresh graduate untuk mengubah pengalaman organisasi, kepanitiaan, magang, dan proyek menjadi skill terstruktur, analisis kesiapan karier, rekomendasi belajar personalisasi, dan portofolio profesional.**
-
-Branch ini (`develop`) adalah **integration branch utama** tempat bertemunya seluruh fitur tim Growvia sebelum dirilis ke `main`.
-
----
-
-## 📑 Daftar Isi
-
-1. [Ringkasan Proyek](#1-ringkasan-proyek)
-2. [Tech Stack](#2-tech-stack)
-3. [Pembagian Tugas Tim](#3-pembagian-tugas-tim)
-4. [Strategi Branch & Alur Kerja Git](#4-strategi-branch--alur-kerja-git)
-5. [Matriks Kepemilikan Database (Anti-Konflik)](#5-matriks-kepemilikan-database-anti-konflik)
-6. [Roadmap Merge & Sprint](#6-roadmap-merge--sprint)
-7. [Katalog Fitur & Daftar Branch](#7-katalog-fitur--daftar-branch)
-8. [Panduan Menjalankan Proyek](#8-panduan-menjalankan-proyek)
-9. [Dokumentasi Perencanaan (`plan-md`)](#9-dokumentasi-perencanaan-plan-md)
+> **Branch:** `feature/f04-ai-skill-extraction`  
+> **PIC / Assignee:** Anggota A (Beban: 40% — *Foundation & Core AI Loop*)  
+> **Prioritas:** P0 (Must Have — *Core AI Value Proposition*)  
+> **Dependency:** F03 (Experience Management) harus sudah di-merge ke `develop`  
+> **Target Merge:** `develop` (Merge ke-4 — *Menghubungkan Pengalaman ke Skill*)  
+> **Dokumen Terkait:** [PRD (F04)](./plan-md/prd.md#f04--ai-skill-extraction) · [Task Management](./plan-md/task-management.md#f04--ai-skill-extraction) · [ERD](./plan-md/erd_growvia.md)
 
 ---
 
-## 1. Ringkasan Proyek
+## 📌 Deskripsi Fitur
 
-- **Visi**: Menjadi ekosistem karier terlengkap bagi generasi muda Indonesia yang menghubungkan **Pengalaman → Skill → Karier** dalam satu alur berbasis kecerdasan buatan (AI).
-- **Target Pengguna**:
-  - *Primary*: Mahasiswa aktif semester 4–8 (aktif berorganisasi & kepanitiaan).
-  - *Secondary*: Fresh graduate 0–2 tahun pengalaman kerja.
-  - *Tertiary*: Career switcher yang memetakan ulang skill set mereka.
-- **Problem Statement**:
-  1. Sulit mengidentifikasi skill konkret dari pengalaman non-formal/organisasi.
-  2. Tidak mengetahui skill gap terhadap karier impian.
-  3. Bingung memilih materi belajar yang tepat untuk menutup gap.
-  4. Belum memiliki portofolio profesional berbasis bukti (*evidence-based*).
+AI Skill Extraction adalah **fitur inti kecerdasan buatan** di Growvia. Ketika mahasiswa selesai menulis deskripsi aktivitas pengalaman (organisasi, kepanitiaan, magang, proyek), modul ini secara otomatis menganalisis teks, mengekstrak keahlian laten, menormalisasi terminologi sesuai taksonomi standar, memberikan skor keyakinan (*confidence score*), serta menyajikan antarmuka *review* interaktif yang memberi kendali penuh kepada pengguna (manusia tetap sebagai penentu akhir).
 
 ---
 
-## 2. Tech Stack
+## 🎯 Spesifikasi Kebutuhan & Pipeline AI (PRD)
 
-| Layer | Teknologi | Keterangan |
-|---|---|---|
-| **Framework** | Next.js 16.1.1 (App Router + Turbopack) | Server & Client Components hybrid |
-| **UI Library** | MUI (Material UI) v7.3.6 | `@mui/material`, `@mui/lab`, CSS Variables |
-| **Styling** | Emotion + Tailwind CSS 4.1 | Utility styling & modular themes |
-| **Language** | TypeScript 5.9 | Strict typing |
-| **Icons** | Iconify (Tabler Icons) | `src/assets/iconify-icons` |
-| **AI Intelligence** | Gemini / Groq LLM API | Ekstraksi skill & ranking rekomendasi belajar |
-| **Visualization** | D3.js / Vis.js / React Flow | Skill Pattern Map graph |
+```text
+Input: Deskripsi Pengalaman (min. 50 char)
+   │
+   ▼
+[ 1. Extract ]     ➔ AI mengekstraksi kata kunci kompetensi dari narasi aktivitas
+   │
+   ▼
+[ 2. Normalize ]   ➔ Standardisasi istilah ke master taxonomy SKILL (misal: "ngomong di depan umum" ➔ "Public Speaking")
+   │
+   ▼
+[ 3. Classify ]    ➔ Kategorisasi 4 domain: Hard Skill | Soft Skill | Technical | Leadership
+   │
+   ▼
+[ 4. Score ]       ➔ Menghitung relevansi konteks & confidence score (0–100%)
+   │
+   ▼
+Output: Antarmuka Review Interaktif (Accept All / Edit / Reject)
+   │
+   ▼
+Simpan ke USER_SKILL & tautkan sebagai SKILL_EVIDENCE
+```
+
+### F04.1 Pipeline Ekstraksi AI
+- Integrasi ke LLM API (**Gemini 1.5 Flash / Groq Llama 3**):
+  - Mengirim prompt terstruktur dengan instruksi ekstraksi ketat (JSON output).
+  - Waktu respons ekstraksi harus selesai dalam **< 10 detik**.
+  - Menghasilkan **minimal 3 saran skill** untuk deskripsi yang memenuhi syarat (≥ 50 karakter).
+- Pencatatan log transaksi AI ke tabel `AI_ANALYSIS_JOB` (model yang digunakan, token, status pengerjaan).
+
+### F04.2 Antarmuka Review Pengguna (Review Interface)
+- Ditampilkan dalam format dialog modal interaktif (`AISkillReviewModal`):
+  - Setiap skill ditampilkan sebagai kartu/chip saran (*Suggestion Chip*).
+  - Dilengkapi badge kategori warna (`Hard Skill`, `Soft Skill`, `Technical`, `Leadership`).
+  - Dilengkapi teks alasan singkat AI (*Reasoning*): mengapa skill ini diekstraksi dari deskripsi.
+- Opsi interaksi pengguna:
+  - **Terima Semua (Accept All)**.
+  - **Edit Nama Skill**: Pengguna dapat mengubah nama atau level sebelum disimpan.
+  - **Tolak (Reject)**: Menolak saran skill yang tidak relevan.
+- Setelah konfirmasi review:
+  - Skill yang diterima otomatis tersimpan ke tabel `USER_SKILL` dengan atribut `source = 'ai_extracted'`.
+  - Terbuat relasi bukti di `SKILL_EVIDENCE` yang merujuk ke ID pengalaman asal.
+
+### F04.3 Ambang Batas Keyakinan AI (Confidence Score)
+- **High Confidence (> 75%)**: Ditandai warna hijau dan otomatis dicentang untuk disetujui (*auto-suggest accept*).
+- **Medium Confidence (40% – 75%)**: Ditandai warna kuning netral.
+- **Low Confidence (< 40%)**: Ditampilkan terpisah di bagian bawah dengan label peringatan *"Perlu Konfirmasi"* agar pengguna memeriksa ulang secara teliti.
 
 ---
 
-## 3. Pembagian Tugas Tim
+## 🗄️ Lingkup Backend & Skema Basis Data
 
-Total Beban: **100%** | Skema Fullstack per Fitur (Frontend + Backend per orang):
+### Endpoint API
 
-| Anggota | Peran / Fokus | Fitur yang Dikerjakan | Beban |
+| Method | Endpoint | Deskripsi | Proteksi Auth |
 |---|---|---|---|
-| **Anggota A** | Foundation & Core AI Loop | **F01** Auth, **F02** Onboarding, **F03** Experience, **F04** AI Skill Extraction, **F10** Dashboard | **40%** |
-| **Anggota B** | Intelligence & Career Engine | **F05** Skill Profile, **F06** Career Target & Gap, **F07** Learning Recommendation, **F13** Admin Dashboard | **40%** |
-| **Anggota C** | Discovery & Identity | **F08** Career Opportunities, **F09** Portfolio Builder, **F12** Profile & Settings | **20%** |
+| `POST` | `/api/ai/analyze-experience` | Memicu job ekstraksi AI untuk ID pengalaman tertentu | User Auth |
+| `GET` | `/api/ai/suggestions/:job_id` | Mengambil daftar saran skill yang dihasilkan oleh job | User Auth |
+| `POST` | `/api/ai/suggestions/:job_id/review` | Menyimpan keputusan review user (bulk accept, edit, reject) | User Auth |
 
----
+### Entitas Basis Data (Ownership: Anggota A)
 
-## 4. Strategi Branch & Alur Kerja Git
+```mermaid
+erDiagram
+    EXPERIENCE {
+        uuid id PK
+        uuid user_id FK
+        text description
+    }
 
-```text
-main (Production / Stable Release)
- └── develop (Integration Branch)
-      ├── feature/f01-authentication      (Sprint 1 - Anggota A)
-      ├── feature/f02-onboarding          (Sprint 2 - Anggota A)
-      ├── feature/f03-experience          (Sprint 2 - Anggota A)
-      ├── feature/f04-ai-skill-extraction (Sprint 3 - Anggota A)
-      ├── feature/f05-skill-profile       (Sprint 4 - Anggota B)
-      ├── feature/f06-career-gap          (Sprint 5 - Anggota B)
-      ├── feature/f07-learning            (Sprint 6 - Anggota B)
-      ├── feature/f08-opportunities       (Sprint 3 - Anggota C)
-      ├── feature/f09-portfolio           (Sprint 5 - Anggota C)
-      ├── feature/f10-dashboard           (Sprint 4 - Anggota A)
-      ├── feature/f12-profile-settings    (Sprint 1 - Anggota C)
-      └── feature/f13-admin               (Sprint 6 - Anggota B)
-```
+    AI_ANALYSIS_JOB {
+        uuid id PK
+        uuid user_id FK
+        uuid experience_id FK
+        enum status "pending | processing | completed | failed"
+        string model_name
+        int tokens_used
+        timestamp created_at
+        timestamp completed_at
+    }
 
-### Aturan Branching & Pull Request:
-1. **Source Branch**: Setiap feature branch **wajib dibuat dari `develop` terbaru**:
-   ```bash
-   git checkout develop
-   git pull origin develop
-   git checkout -b feature/fXX-nama-fitur
-   ```
-2. **Merge Target**: Semua PR diarahkan ke **`develop`**, bukan ke `main`.
-3. **Branch `main`**: Hanya diperbarui saat rilis milestone stabil (Alpha/Beta/v1.0).
-4. **Shared Files**: File global seperti middleware auth, skema basis data inti, konfigurasi `.env`, dan layout root dikerjakan di `develop` sebelum didistribusikan ke branch fitur.
+    AI_SKILL_SUGGESTION {
+        uuid id PK
+        uuid job_id FK
+        string skill_name
+        enum category "hard_skill | soft_skill | technical | leadership"
+        float confidence_score
+        text reasoning
+        enum status "suggested | accepted | rejected | edited"
+    }
 
----
+    SKILL {
+        uuid id PK
+        string name
+        enum category
+        string normalized_name UK
+    }
 
-## 5. Matriks Kepemilikan Database (Anti-Konflik)
+    USER_SKILL {
+        uuid id PK
+        uuid user_id FK
+        uuid skill_id FK
+        enum level "beginner | intermediate | advanced"
+        enum source "ai_extracted | manual"
+    }
 
-Untuk menghindari *merge conflict* pada database logic dan schema:
+    SKILL_EVIDENCE {
+        uuid id PK
+        uuid user_skill_id FK
+        uuid experience_id FK
+        timestamp created_at
+    }
 
-| Tabel Basis Data | PIC Pemilik (Write / Primary CRUD) | Keterangan Konsumsi |
-|---|---|---|
-| `USER`, `EMAIL_VERIFICATION`, `SESSION` | **Anggota A** | Digunakan middleware auth oleh semua anggota |
-| `PROFILE`, `CAREER_INTEREST`, `CAREER_FIELD` | **Anggota A** | Dibaca oleh F09 (Portofolio) & F12 (Settings) |
-| `EXPERIENCE` | **Anggota A** | Dibaca oleh F04 (AI), F05 (Evidence), F09 (Portofolio) |
-| `AI_ANALYSIS_JOB`, `AI_SKILL_SUGGESTION` | **Anggota A** | Khusus modul AI extraction |
-| `SKILL` | **Anggota A** (Inisiasi/Seed) → **Anggota B** (Admin CRUD & Read) | Master taxonomy skill sistem |
-| `USER_SKILL`, `SKILL_EVIDENCE` | **Anggota A** (Write saat ekstraksi) → **Anggota B** (Read & Manage) | Relasi skill user & bukti pengalaman |
-| `CAREER_ROLE`, `CAREER_ROLE_SKILL` | **Anggota B** | Master library peran karier & bobot skill |
-| `USER_CAREER_TARGET`, `SKILL_GAP_RESULT` | **Anggota B** | Data analisis gap & readiness score |
-| `LEARNING_RESOURCE`, `RESOURCE_SKILL_TAG` | **Anggota B** | Master data resource & tag skill |
-| `LEARNING_RECOMMENDATION`, `USER_SAVED_RESOURCE` | **Anggota B** | Hasil hybrid AI ranking belajar & bookmark |
-| `ADMIN` | **Anggota B** | Akun autentikasi portal admin |
-| `CAREER_OPPORTUNITY`, `OPPORTUNITY_SKILL_TAG` | **Anggota C** | Data lowongan karier & tag kualifikasi |
-| `USER_SAVED_OPPORTUNITY` | **Anggota C** | Bookmark lowongan pengguna |
-
----
-
-## 6. Roadmap Merge & Sprint
-
-```text
-Sprint 1  →  F01 (Auth - A) [FOUNDATION] ──> F12 (Profile & Settings - C) bisa mulai
-Sprint 2  →  F02 (Onboarding - A) ───────> F03 (Experience - A)
-Sprint 3  →  F04 (AI Skill Extraction - A) ──> F08 (Opportunities - C) paralel
-Sprint 4  →  F05 (Skill Profile - B) ────> F10 (Dashboard Shell & Widgets - A)
-Sprint 5  →  F06 (Career Gap - B) ───────> F09 (Portfolio Builder - C)
-Sprint 6  →  F07 (Learning Rec - B) ─────> F13 (Admin Dashboard - B)
-Sprint 7  →  Integrasi menyeluruh, End-to-End Testing, & Bug fixing
+    EXPERIENCE ||--o{ AI_ANALYSIS_JOB : "analyzed by"
+    AI_ANALYSIS_JOB ||--o{ AI_SKILL_SUGGESTION : "generates"
+    USER_SKILL ||--o{ SKILL_EVIDENCE : "backed by"
 ```
 
 ---
 
-## 7. Katalog Fitur & Daftar Branch
+## 💻 Lingkup Frontend
 
-| ID | Nama Fitur | Nama Branch | PIC | Prioritas PRD |
-|---|---|---|---|---|
-| **F01** | Authentication & Session | `feature/f01-authentication` | Anggota A | P0 (Must Have) |
-| **F02** | User Onboarding | `feature/f02-onboarding` | Anggota A | P0 (Must Have) |
-| **F03** | Experience Management | `feature/f03-experience` | Anggota A | P0 (Must Have) |
-| **F04** | AI Skill Extraction | `feature/f04-ai-skill-extraction` | Anggota A | P0 (Must Have) |
-| **F05** | Skill Profile & Pattern Map | `feature/f05-skill-profile` | Anggota B | P0 (Must Have) |
-| **F06** | Career Target & Gap Analysis | `feature/f06-career-gap` | Anggota B | P1 (Should Have) |
-| **F07** | Learning Recommendation | `feature/f07-learning` | Anggota B | P1 (Should Have) |
-| **F08** | Career Opportunities | `feature/f08-opportunities` | Anggota C | P1 (Should Have) |
-| **F09** | Portfolio Builder & Public View | `feature/f09-portfolio` | Anggota C | P1 (Should Have) |
-| **F10** | Core Dashboard | `feature/f10-dashboard` | Anggota A | P0 (Must Have) |
-| **F12** | Profile & Account Settings | `feature/f12-profile-settings` | Anggota C | P0 (Must Have) |
-| **F13** | Admin Dashboard & Master Data | `feature/f13-admin` | Anggota B | P1 (Should Have) |
+### Komponen UI
+- `AISkillReviewModal.tsx` ➔ Dialog penampil hasil ekstraksi AI.
+- `SkillSuggestionChip.tsx` ➔ Chip interaktif dengan tombol accept/edit/reject dan badge confidence.
+- `ExtractionLoadingSkeleton.tsx` ➔ Indikator animasi loading saat LLM memproses teks narasi.
+- `AIBadge.tsx` ➔ Badge penanda visual untuk skill yang diperoleh dari hasil ekstraksi AI.
 
-*Catatan: Setiap branch di atas memiliki `README.md` terdedikasi yang merinci flow, endpoint, skema, dan kriteria penerimaan sesuai PRD.*
+---
+
+## ✅ Kriteria Penerimaan (Acceptance Criteria)
+
+- [ ] AI menghasilkan minimal 3 saran skill jika deskripsi pengalaman ≥ 50 karakter.
+- [ ] Durasi analisis LLM hingga hasil tampil di layar < 10 detik.
+- [ ] Pengguna memiliki kendali penuh untuk menerima, mengedit, atau menolak setiap saran AI.
+- [ ] Skill yang disetujui otomatis masuk ke `USER_SKILL` dan terhubung ke `EXPERIENCE` via `SKILL_EVIDENCE`.
+- [ ] Saran dengan confidence score < 40% dikelompokkan dengan label "Perlu konfirmasi".
 
 ---
 
 ## 🛠️ Panduan Pengembangan
 
 ```bash
-# 1. Jalankan development server
+# 1. Konfigurasi API Key LLM pada .env.local
+# GROQ_API_KEY=gsk_... atau GEMINI_API_KEY=AIza...
+
+# 2. Jalankan development server
 npm run dev
+
+# 3. Uji integrasi AI dengan submit pengalaman baru di:
+# http://localhost:3000/experience
 ```
-
-Aplikasi berjalan di [http://localhost:3000](http://localhost:3000).
-
-### Script Berguna
-- `npm run dev` : Menjalankan Next.js dev server.
-- `npm run build` : Memvalidasi bundle build Next.js.
-- `npm run lint` : Menjalankan audit ESLint.
-- `npm run lint:fix` : Memperbaiki pelanggaran linting secara otomatis.
-- `npm run build:icons` : Mengompilasi CSS ikon Iconify jika menambah ikon baru.
-
----
-
-## 9. Dokumentasi Perencanaan (`plan-md`)
-
-Detail arsitektur teknis dan panduan lengkap tersedia di folder `plan-md/`:
-- [`plan-md/prd.md`](./plan-md/prd.md) : Product Requirements Document lengkap (F01–F13).
-- [`plan-md/task-management.md`](./plan-md/task-management.md) : Panduan pembagian tugas, format Notion, dan aturan merge.
-- [`plan-md/erd_growvia.md`](./plan-md/erd_growvia.md) : Diagram ERD Mermaid & struktur seluruh tabel.
-- [`plan-md/erd_penjelasan.md`](./plan-md/erd_penjelasan.md) : Penjelasan mendalam kamus data dan relasi tabel.
-- [`plan-md/design_system.md`](./plan-md/design_system.md) : Panduan Design System, tipografi, warna, dan komponen UI.

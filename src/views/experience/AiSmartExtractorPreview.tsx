@@ -1,178 +1,330 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import {
   Sparkles,
   RotateCcw,
   CheckCircle2,
   X,
   FileText,
-  Sliders,
   Check,
   HelpCircle,
-  TrendingUp,
   Cpu,
-  Layers,
-  ArrowRight
+  Mic,
+  MicOff,
+  Zap,
+  TrendingUp,
+  Lightbulb,
+  AlertCircle,
+  ExternalLink
 } from 'lucide-react'
+
+import {
+  HiCodeBracket,
+  HiPaintBrush,
+  HiChartBar,
+  HiPresentationChartLine
+} from 'react-icons/hi2'
 
 interface ExtractedSkill {
   id: string
   name: string
+  category?: string
   metricBadge: string
   metricColor: 'green' | 'indigo' | 'blue' | 'purple'
   level: string
   confidence: number
+  reasoning?: string
 }
-
-interface ExampleCase {
-  text: string
-  metricLabel: string
-  accuracy: string
-  skills: ExtractedSkill[]
-}
-
-const EXAMPLES: ExampleCase[] = [
-  {
-    text: 'Memimpin tim 5 orang merancang ulang alur registrasi aplikasi mobile e-commerce hingga meningkatkan checkout rate 18% dalam 3 bulan.',
-    metricLabel: 'Konteks Metrik Terdeteksi',
-    accuracy: '98.4%',
-    skills: [
-      {
-        id: '1',
-        name: 'User Research & Usability',
-        metricBadge: 'Bukti Metrik 18%',
-        metricColor: 'green',
-        level: 'Intermediate',
-        confidence: 82
-      },
-      {
-        id: '2',
-        name: 'Cross-Functional Leadership',
-        metricBadge: 'Tim 5 Orang',
-        metricColor: 'indigo',
-        level: 'Advanced',
-        confidence: 88
-      },
-      {
-        id: '3',
-        name: 'Data-Driven UX Design',
-        metricBadge: 'Analisis Konversi',
-        metricColor: 'blue',
-        level: 'Intermediate',
-        confidence: 79
-      }
-    ]
-  },
-  {
-    text: 'Mengembangkan arsitektur backend mikroservis Node.js dan PostgreSQL yang mampu menangani throughput 1.200 req/detik dengan test coverage 92%.',
-    metricLabel: 'Konteks Teknis & Skala Terdeteksi',
-    accuracy: '99.1%',
-    skills: [
-      {
-        id: '4',
-        name: 'Backend API Architecture',
-        metricBadge: '1.200 req/detik',
-        metricColor: 'green',
-        level: 'Advanced',
-        confidence: 91
-      },
-      {
-        id: '5',
-        name: 'Database Query Optimization',
-        metricBadge: 'PostgreSQL Relational',
-        metricColor: 'blue',
-        level: 'Intermediate',
-        confidence: 85
-      },
-      {
-        id: '6',
-        name: 'Test-Driven Development (TDD)',
-        metricBadge: 'Coverage 92%',
-        metricColor: 'indigo',
-        level: 'Intermediate',
-        confidence: 87
-      }
-    ]
-  },
-  {
-    text: 'Mengkoordinasikan kepanitiaan nasional beranggotakan 40 staf dan mengelola anggaran sponsor senilai Rp75 juta untuk konferensi 1.500 mahasiswa.',
-    metricLabel: 'Konteks Skala & Finansial Terdeteksi',
-    accuracy: '97.8%',
-    skills: [
-      {
-        id: '7',
-        name: 'Project Budgeting & Finance',
-        metricBadge: 'Rp75 Juta Sponsor',
-        metricColor: 'green',
-        level: 'Advanced',
-        confidence: 90
-      },
-      {
-        id: '8',
-        name: 'Large Team Coordination',
-        metricBadge: '40 Staf Internal',
-        metricColor: 'indigo',
-        level: 'Advanced',
-        confidence: 89
-      },
-      {
-        id: '9',
-        name: 'Stakeholder & Event Scale',
-        metricBadge: '1.500 Peserta',
-        metricColor: 'purple',
-        level: 'Intermediate',
-        confidence: 84
-      }
-    ]
-  }
-]
 
 interface AiSmartExtractorPreviewProps {
   onConfirmSkills?: (count: number) => void
+  onOpenLiveAiModal?: (text: string) => void
 }
 
-export default function AiSmartExtractorPreview({
-  onConfirmSkills
-}: AiSmartExtractorPreviewProps) {
-  const [exampleIndex, setExampleIndex] = useState(0)
-  const currentExample = EXAMPLES[exampleIndex]
+interface QuickPrompt {
+  label: string
+  icon: React.ComponentType<{ className?: string }>
+  iconColor: string
+  text: string
+}
 
-  const [inputText, setInputText] = useState(currentExample.text)
-  const [skills, setSkills] = useState<ExtractedSkill[]>(currentExample.skills)
+const QUICK_PROMPTS: QuickPrompt[] = [
+  {
+    label: 'Coding & Tech',
+    icon: HiCodeBracket,
+    iconColor: 'text-purple-600 dark:text-purple-400',
+    text: 'Hari ini saya membangun arsitektur autentikasi JWT di Next.js 15 dan integrasi database PostgreSQL dengan Prisma ORM untuk 5 endpoint REST API.'
+  },
+  {
+    label: 'Desain UI/UX',
+    icon: HiPaintBrush,
+    iconColor: 'text-purple-600 dark:text-purple-400',
+    text: 'Menyelesaikan perancangan user flow dan wireframe high-fidelity aplikasi mobile finance di Figma serta melakukan usability testing dengan 6 user.'
+  },
+  {
+    label: 'Analisis Data',
+    icon: HiChartBar,
+    iconColor: 'text-purple-600 dark:text-purple-400',
+    text: 'Membersihkan dan menganalisis 15.000 baris data penjualan menggunakan Python Pandas, lalu membuat visualisasi korelasi konversi di Tableau.'
+  },
+  {
+    label: 'Pitching & Soft Skill',
+    icon: HiPresentationChartLine,
+    iconColor: 'text-purple-600 dark:text-purple-400',
+    text: 'Mempresentasikan pitch deck solusi smart campus di hadapan 4 dewan juri dan memimpin sesi tanya jawab teknis selama 20 menit.'
+  }
+]
+
+export default function AiSmartExtractorPreview({
+  onConfirmSkills,
+  onOpenLiveAiModal
+}: AiSmartExtractorPreviewProps) {
+  // Input state - STARTS EMPTY as requested by user
+  const [inputText, setInputText] = useState('')
+  const [skills, setSkills] = useState<ExtractedSkill[]>([])
+  const [jobId, setJobId] = useState<string | null>(null)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
   const [confirmed, setConfirmed] = useState(false)
+  const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const [showDocModal, setShowDocModal] = useState(false)
 
-  // Cycle example
-  const handleNextExample = () => {
-    const nextIdx = (exampleIndex + 1) % EXAMPLES.length
-    setExampleIndex(nextIdx)
-    setInputText(EXAMPLES[nextIdx].text)
-    setSkills(EXAMPLES[nextIdx].skills)
-    setConfirmed(false)
+  // Speech-to-Text State
+  const [isListening, setIsListening] = useState(false)
+  const [speechSupported, setSpeechSupported] = useState(true)
+  const [speechInterim, setSpeechInterim] = useState('')
+  const recognitionRef = useRef<any>(null)
+
+  // Check SpeechRecognition support on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const SpeechRecognition =
+        (window as any).SpeechRecognition ||
+        (window as any).webkitSpeechRecognition
+
+      if (!SpeechRecognition) {
+        setSpeechSupported(false)
+      }
+    }
+  }, [])
+
+  // Start or Stop Speech Recognition
+  const toggleListening = () => {
+    if (!speechSupported) {
+      setErrorMsg('Browser Anda belum mendukung Speech-to-Text. Silakan gunakan Google Chrome, Edge, atau ketik secara manual.')
+      return
+    }
+
+    if (isListening) {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop()
+      }
+      setIsListening(false)
+      setSpeechInterim('')
+      return
+    }
+
+    try {
+      const SpeechRecognition =
+        (window as any).SpeechRecognition ||
+        (window as any).webkitSpeechRecognition
+
+      const recognition = new SpeechRecognition()
+      recognition.lang = 'id-ID' // Bahasa Indonesia
+      recognition.continuous = true
+      recognition.interimResults = true
+
+      recognition.onstart = () => {
+        setIsListening(true)
+        setErrorMsg(null)
+      }
+
+      recognition.onresult = (event: any) => {
+        let interimText = ''
+        let finalText = ''
+
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          if (event.results[i].isFinal) {
+            finalText += event.results[i][0].transcript + ' '
+          } else {
+            interimText += event.results[i][0].transcript
+          }
+        }
+
+        if (finalText) {
+          setInputText(prev => {
+            const trimmed = prev.trim()
+            return trimmed ? `${trimmed} ${finalText.trim()}` : finalText.trim()
+          })
+          setConfirmed(false)
+        }
+
+        setSpeechInterim(interimText)
+      }
+
+      recognition.onerror = (event: any) => {
+        console.warn('Speech recognition error:', event.error)
+        if (event.error === 'not-allowed') {
+          setErrorMsg('Izin akses mikrofon ditolak. Silakan izinkan akses mikrofon di pengaturan browser Anda.')
+        } else if (event.error !== 'no-speech') {
+          setErrorMsg(`Error suara: ${event.error}`)
+        }
+        setIsListening(false)
+        setSpeechInterim('')
+      }
+
+      recognition.onend = () => {
+        setIsListening(false)
+        setSpeechInterim('')
+      }
+
+      recognitionRef.current = recognition
+      recognition.start()
+    } catch (err: any) {
+      console.error('Speech recognition init error:', err)
+      setErrorMsg('Gagal mengaktifkan mikrofon. Pastikan mikrofon terpasang dan diizinkan.')
+      setIsListening(false)
+    }
   }
 
-  // Simulate AI Re-analysis
-  const handleReanalyze = () => {
+  // Cleanup speech on unmount
+  useEffect(() => {
+    return () => {
+      if (recognitionRef.current) {
+        try {
+          recognitionRef.current.stop()
+        } catch (_) {}
+      }
+    }
+  }, [])
+
+  // Live Extraction with AI via backend API
+  const handleAnalyzeWithAi = async () => {
+    const textToAnalyze = inputText.trim()
+    if (!textToAnalyze || textToAnalyze.length < 15) {
+      setErrorMsg('Tulis atau rekam narasi minimal 15 karakter agar AI dapat mengekstrak skill secara akurat.')
+      return
+    }
+
     setIsAnalyzing(true)
-    setTimeout(() => {
+    setErrorMsg(null)
+    setConfirmed(false)
+
+    // Stop microphone if currently listening
+    if (isListening && recognitionRef.current) {
+      try {
+        recognitionRef.current.stop()
+      } catch (_) {}
+      setIsListening(false)
+    }
+
+    try {
+      const res = await fetch('/api/ai/analyze-experience', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ customText: textToAnalyze })
+      })
+
+      const json = await res.json()
+      if (!res.ok || !json.success) {
+        throw new Error(json.message || 'Gagal menganalisis narasi dengan AI')
+      }
+
+      const receivedJobId = json.data?.jobId || json.data?.job?.id
+      const suggestions = json.data?.suggestions || []
+
+      setJobId(receivedJobId)
+
+      // Map to UI items
+      const mappedSkills: ExtractedSkill[] = suggestions.map((s: any, idx: number) => {
+        const colors: Array<'green' | 'indigo' | 'blue' | 'purple'> = ['green', 'indigo', 'blue', 'purple']
+        const color = colors[idx % colors.length]
+
+        return {
+          id: s.id,
+          name: s.suggestedName,
+          category: s.suggestedCategory,
+          metricBadge: s.suggestedCategory === 'leadership' ? 'Kepemimpinan' : s.suggestedCategory === 'technical' ? 'Teknis Praktis' : 'Kompetensi Relevan',
+          metricColor: color,
+          level: 'Pemula (+35% Skor)',
+          confidence: Math.round(s.confidenceScore),
+          reasoning: s.reasoning || undefined
+        }
+      })
+
+      setSkills(mappedSkills)
+    } catch (err: any) {
+      console.error('AI Extraction error:', err)
+      setErrorMsg(err.message || 'Terjadi kesalahan saat memproses ekstraksi AI. Silakan coba lagi.')
+    } finally {
       setIsAnalyzing(false)
-      setSkills(currentExample.skills)
-      setConfirmed(false)
-    }, 600)
+    }
   }
 
-  // Remove skill item
+  // Remove individual skill
   const handleRemoveSkill = (id: string) => {
     setSkills(prev => prev.filter(s => s.id !== id))
   }
 
-  // Confirm skills
-  const handleConfirm = () => {
-    setConfirmed(true)
-    if (onConfirmSkills) {
-      onConfirmSkills(skills.length)
+  // Confirm and directly save to Skill Matrix
+  const handleConfirmToSkillMatrix = async () => {
+    if (skills.length === 0) return
+
+    if (!jobId) {
+      // Fallback if no jobId (e.g. manual entry without API response)
+      setConfirmed(true)
+      if (onConfirmSkills) onConfirmSkills(skills.length)
+      return
+    }
+
+    setIsSaving(true)
+    setErrorMsg(null)
+
+    try {
+      const reviews = skills.map(skill => ({
+        suggestionId: skill.id,
+        action: 'accept',
+        finalName: skill.name,
+        level: skill.level.toLowerCase()
+      }))
+
+      const res = await fetch(`/api/ai/suggestions/${jobId}/review`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reviews })
+      })
+
+      const json = await res.json()
+      if (!res.ok || !json.success) {
+        throw new Error(json.message || 'Gagal menyimpan skill ke Skill Matrix')
+      }
+
+      setConfirmed(true)
+      if (onConfirmSkills) {
+        onConfirmSkills(skills.length)
+      }
+    } catch (err: any) {
+      console.error('Save to skill matrix error:', err)
+      setErrorMsg(err.message || 'Gagal menyimpan ke Skill Matrix.')
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  // Clear all
+  const handleReset = () => {
+    setInputText('')
+    setSkills([])
+    setJobId(null)
+    setConfirmed(false)
+    setErrorMsg(null)
+    setSpeechInterim('')
+    if (isListening && recognitionRef.current) {
+      try {
+        recognitionRef.current.stop()
+      } catch (_) {}
+      setIsListening(false)
     }
   }
 
@@ -185,33 +337,40 @@ export default function AiSmartExtractorPreview({
       <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-blue-100 dark:border-slate-800/80'>
         <div className='flex items-start gap-3.5'>
           <div className='w-11 h-11 rounded-2xl bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 shadow-xs border border-blue-100 dark:border-slate-700 mt-0.5'>
-            <Sparkles className='w-5 h-5 text-blue-600 dark:text-blue-400 animate-pulse' />
+            <Zap className='w-5 h-5 text-blue-600 dark:text-blue-400 animate-pulse' />
           </div>
           <div>
             <div className='flex items-center gap-2 flex-wrap'>
               <h2 className='text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white tracking-tight'>
-                Growvia AI Smart Extractor
+                AI Quick Skill Booster & Catat Aktivitas
               </h2>
-              <span className='inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-blue-600 text-white shadow-xs'>
-                Live Preview
+              <span className='inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-blue-600 text-white shadow-xs'>
+                <Sparkles className='w-3 h-3' />
+                Live AI Extractor
+              </span>
+              <span className='inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'>
+                <Mic className='w-3 h-3 text-emerald-600 dark:text-emerald-400' />
+                Speech-to-Text Ready
               </span>
             </div>
             <p className='text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-1 max-w-2xl leading-relaxed'>
-              Tempel deskripsi tugas, sertifikat, atau ringkasan proyekmu. AI akan memecahnya secara otomatis menjadi skill terukur berbasis bukti empiris.
+              Baru selesai coding, latihan, atau projek harian? Ceritakan lewat tulisan atau suara langsung di sini. AI akan mengekstrak kompetensi terukur dan menambah persentase di Skill Matrix kamu!
             </p>
           </div>
         </div>
 
         {/* Top Right Quick Controls */}
         <div className='flex items-center gap-2 shrink-0 self-start sm:self-center'>
-          <button
-            type='button'
-            onClick={handleNextExample}
-            className='inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 hover:border-blue-400 dark:hover:border-blue-600 shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-750 transition-all cursor-pointer'
-          >
-            <RotateCcw className='w-3.5 h-3.5 text-blue-600 dark:text-blue-400' />
-            <span>Ganti Contoh Teks</span>
-          </button>
+          {inputText && (
+            <button
+              type='button'
+              onClick={handleReset}
+              className='inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:text-rose-600 hover:border-rose-300 dark:hover:border-rose-800 shadow-2xs transition-all cursor-pointer'
+            >
+              <RotateCcw className='w-3.5 h-3.5' />
+              <span>Reset</span>
+            </button>
+          )}
 
           <button
             type='button'
@@ -219,18 +378,18 @@ export default function AiSmartExtractorPreview({
             className='inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:text-slate-900 dark:hover:text-white shadow-2xs transition-all cursor-pointer'
           >
             <HelpCircle className='w-3.5 h-3.5 text-slate-400' />
-            <span>Dokumentasi AI</span>
+            <span>Cara Kerja AI</span>
           </button>
         </div>
       </div>
 
       {/* Info Pipeline Modal/Drawer if opened */}
       {showDocModal && (
-        <div className='mt-4 p-4 rounded-2xl bg-white/90 dark:bg-slate-900/90 border border-blue-200 dark:border-blue-900/60 text-xs text-slate-700 dark:text-slate-300 space-y-2 animate-in fade-in duration-200 shadow-xs'>
+        <div className='mt-4 p-4 rounded-2xl bg-white/95 dark:bg-slate-900/95 border border-blue-200 dark:border-blue-900/60 text-xs text-slate-700 dark:text-slate-300 space-y-2 animate-in fade-in duration-200 shadow-xs'>
           <div className='flex items-center justify-between'>
             <span className='font-bold text-blue-600 dark:text-blue-400 flex items-center gap-1.5'>
               <Cpu className='w-4 h-4' />
-              <span>Arsitektur Ekstraksi AI 3-Tahap (PRD F04)</span>
+              <span>Arsitektur AI Skill Booster (Groq Qwen & Gemini 3-Tier Fallback)</span>
             </span>
             <button
               type='button'
@@ -240,40 +399,46 @@ export default function AiSmartExtractorPreview({
               <X className='w-3.5 h-3.5' />
             </button>
           </div>
-          <div className='grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1 text-[11px] leading-relaxed'>
-            <div className='p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800'>
-              <strong className='text-slate-900 dark:text-white block'>1. Extract</strong>
-              Mengidentifikasi skill, metrik angka, dan peran tanggung jawab dari kalimat input.
-            </div>
-            <div className='p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800'>
-              <strong className='text-slate-900 dark:text-white block'>2. Normalize</strong>
-              Menstandarkan taksonomi (misal: &quot;usability test&quot; → &quot;Usability Testing&quot;).
-            </div>
-            <div className='p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800'>
-              <strong className='text-slate-900 dark:text-white block'>3. Classify & Score</strong>
-              Mengelompokkan Hard/Soft/Leadership serta menghitung confidence score.
-            </div>
-          </div>
+          <p className='text-[11px] text-slate-500 dark:text-slate-400'>
+            Fitur ini dirancang untuk aktivitas informal, coding harian, atau projek mandiri cepat tanpa perlu mengisi form kepanitiaan/sertifikat yang rumit. Skill yang dikonfirmasi langsung menaikkan skor dan persentase di Skill Matrix Anda.
+          </p>
         </div>
       )}
 
-      {/* Main 2-Column Grid (Left: Narasi, Right: Hasil Ekstraksi) */}
+      {/* Error Alert if any */}
+      {errorMsg && (
+        <div className='mt-4 p-3.5 rounded-2xl bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-900/60 text-xs font-medium text-rose-700 dark:text-rose-300 flex items-start gap-2.5 animate-in fade-in'>
+          <AlertCircle className='w-4 h-4 text-rose-500 shrink-0 mt-0.5' />
+          <div className='flex-1'>{errorMsg}</div>
+          <button
+            type='button'
+            onClick={() => setErrorMsg(null)}
+            className='text-rose-400 hover:text-rose-600 dark:hover:text-rose-200 p-1 rounded-lg hover:bg-rose-100 dark:hover:bg-rose-900/40 transition-colors cursor-pointer'
+          >
+            <X className='w-3.5 h-3.5' />
+          </button>
+        </div>
+      )}
+
+      {/* Main 2-Column Grid (Left: Narasi + Voice, Right: Hasil Ekstraksi) */}
       <div className='grid grid-cols-1 lg:grid-cols-12 gap-5 mt-6'>
-        {/* LEFT COLUMN: Input Narasi Aktivitas */}
+        {/* LEFT COLUMN: Input Narasi Aktivitas Harian */}
         <div className='lg:col-span-5 flex flex-col justify-between rounded-2xl bg-white dark:bg-[#0B132B] border border-slate-200 dark:border-slate-800 p-5 shadow-xs'>
           <div>
             <div className='flex items-center justify-between pb-3'>
               <span className='inline-flex items-center gap-1.5 text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider'>
                 <FileText className='w-4 h-4 text-blue-600 dark:text-blue-400' />
-                <span>Input Narasi Aktivitas</span>
+                <span>Narasi Aktivitas Harian</span>
               </span>
-              <span className='text-xs font-semibold text-slate-400 dark:text-slate-500'>
+              <span className={`text-xs font-semibold ${inputText.length >= 20 ? 'text-emerald-600 dark:text-emerald-400 font-bold' : 'text-slate-400 dark:text-slate-500'}`}>
                 {inputText.trim().length} Karakter
               </span>
             </div>
 
-            {/* Editable narrative text */}
-            <div className='mt-1 rounded-xl bg-[#F8FAFC] dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 p-4 transition-all focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20'>
+            {/* Editable narrative text + speech live indicator */}
+            <div className={`relative rounded-xl bg-[#F8FAFC] dark:bg-slate-900/60 border p-4 transition-all focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20 ${
+              isListening ? 'border-red-400 dark:border-red-600 ring-2 ring-red-400/20' : 'border-slate-200/80 dark:border-slate-800'
+            }`}>
               <textarea
                 rows={5}
                 value={inputText}
@@ -281,63 +446,162 @@ export default function AiSmartExtractorPreview({
                   setInputText(e.target.value)
                   setConfirmed(false)
                 }}
-                className='w-full bg-transparent text-sm text-slate-800 dark:text-slate-200 leading-relaxed outline-none resize-none placeholder:text-slate-400 custom-scrollbar font-medium'
-                placeholder='Tulis atau tempel deskripsi pengalaman...'
+                className='w-full bg-transparent text-sm text-slate-800 dark:text-slate-200 leading-relaxed outline-none resize-none placeholder:text-slate-400 dark:placeholder:text-slate-600 custom-scrollbar font-medium'
+                placeholder='Ketik atau rekam suara aktivitas coding, tugas, atau projek harianmu di sini... (contoh: "Hari ini saya baru selesai slicing landing page pakai Tailwind CSS dan menambahkan animasi scroll Framer Motion")'
               />
+
+              {/* Interim voice speech feedback */}
+              {isListening && speechInterim && (
+                <div className='mt-2 p-2 rounded-lg bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/40 text-xs italic text-red-600 dark:text-red-400 animate-pulse'>
+                  &ldquo;{speechInterim}...&rdquo;
+                </div>
+              )}
+
+              {/* Listening Banner */}
+              {isListening && (
+                <div className='flex items-center justify-between mt-2 pt-2 border-t border-red-100 dark:border-red-900/40 text-xs text-red-600 dark:text-red-400 font-semibold'>
+                  <span className='flex items-center gap-1.5'>
+                    <span className='w-2 h-2 rounded-full bg-red-500 animate-ping' />
+                    <span>Mendengarkan suara Anda... (Bicaralah secara leluasa)</span>
+                  </span>
+                  <button
+                    type='button'
+                    onClick={toggleListening}
+                    className='text-[11px] underline hover:text-red-700 cursor-pointer font-medium'
+                  >
+                    Selesai
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Quick Inspiration Pills */}
+            <div className='mt-3 space-y-1.5'>
+              <div className='flex items-center gap-1 text-[11px] font-semibold text-slate-500 dark:text-slate-400'>
+                <Lightbulb className='w-3 h-3 text-amber-500' />
+                <span>Pilih contoh cepat untuk dicoba:</span>
+              </div>
+              <div className='flex flex-wrap gap-1.5'>
+                {QUICK_PROMPTS.map((prompt, idx) => {
+                  const Icon = prompt.icon
+                  return (
+                    <button
+                      key={idx}
+                      type='button'
+                      onClick={() => {
+                        setInputText(prompt.text)
+                        setConfirmed(false)
+                      }}
+                      className='inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-[11px] font-semibold bg-white dark:bg-slate-800 hover:bg-blue-50/80 hover:text-blue-600 dark:hover:bg-blue-950/60 dark:hover:text-blue-400 text-slate-700 dark:text-slate-200 transition-all border border-slate-200/80 dark:border-slate-700/80 shadow-2xs hover:border-blue-300 dark:hover:border-blue-700 hover:scale-[1.02] active:scale-[0.98] cursor-pointer'
+                    >
+                      <Icon className={`w-3.5 h-3.5 ${prompt.iconColor} shrink-0`} />
+                      <span>{prompt.label}</span>
+                    </button>
+                  )
+                })}
+              </div>
             </div>
           </div>
 
-          {/* Left Footer: Metric detected status & Re-analyze button */}
+          {/* Left Footer: Voice Button & Analyze with AI */}
           <div className='flex items-center justify-between gap-3 pt-4 border-t border-slate-100 dark:border-slate-800/80 mt-4'>
-            <div className='inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400'>
-              <CheckCircle2 className='w-4 h-4 text-emerald-500 shrink-0' />
-              <span className='truncate'>{currentExample.metricLabel}</span>
-            </div>
-
+            {/* Speech to text toggle */}
             <button
               type='button'
-              onClick={handleReanalyze}
-              disabled={isAnalyzing}
-              className='inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-xs transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60 cursor-pointer shrink-0'
+              onClick={toggleListening}
+              className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                isListening
+                  ? 'bg-red-600 hover:bg-red-700 text-white shadow-md shadow-red-500/25 animate-pulse'
+                  : 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700'
+              }`}
+              title={isListening ? 'Klik untuk berhenti merekam' : 'Mulai bicara dengan mikrofon'}
             >
-              <RotateCcw className={`w-3.5 h-3.5 ${isAnalyzing ? 'animate-spin' : ''}`} />
-              <span>{isAnalyzing ? 'Mengekstrak...' : 'Analisis Ulang'}</span>
+              {isListening ? (
+                <>
+                  <MicOff className='w-3.5 h-3.5' />
+                  <span>Stop Rekam</span>
+                </>
+              ) : (
+                <>
+                  <Mic className='w-3.5 h-3.5 text-blue-600 dark:text-blue-400' />
+                  <span>Bicara (Suara)</span>
+                </>
+              )}
+            </button>
+
+            {/* AI Analyze Action */}
+            <button
+              type='button'
+              onClick={handleAnalyzeWithAi}
+              disabled={isAnalyzing || !inputText.trim() || inputText.trim().length < 15}
+              className='inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-xs shadow-blue-600/25 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shrink-0'
+            >
+              <Sparkles className={`w-3.5 h-3.5 ${isAnalyzing ? 'animate-spin' : ''}`} />
+              <span>{isAnalyzing ? 'Memproses dengan AI...' : 'Ekstrak Skill dengan AI ✨'}</span>
             </button>
           </div>
         </div>
 
-        {/* RIGHT COLUMN: Hasil Ekstraksi Bukti Kompetensi */}
+        {/* RIGHT COLUMN: Hasil Ekstraksi AI & Simpan ke Skill Matrix */}
         <div className='lg:col-span-7 flex flex-col justify-between rounded-2xl bg-white dark:bg-[#0B132B] border border-slate-200 dark:border-slate-800 p-5 shadow-xs'>
           <div>
             <div className='flex items-center justify-between pb-3'>
               <span className='inline-flex items-center gap-1.5 text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider'>
                 <Sparkles className='w-4 h-4 text-purple-500' />
-                <span>Hasil Ekstraksi Bukti Kompetensi ({skills.length} Ditemukan)</span>
+                <span>
+                  Hasil Ekstraksi AI ({skills.length} Ditemukan)
+                </span>
               </span>
-              <span className='text-xs font-semibold text-slate-400 dark:text-slate-500'>
-                Akurasi Model {currentExample.accuracy}
+              <span className='text-xs font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1'>
+                <CheckCircle2 className='w-3.5 h-3.5' />
+                <span>Model AI Aktif</span>
               </span>
             </div>
 
-            {/* Skills List */}
+            {/* State Handling: Loading vs Empty vs Results */}
             {isAnalyzing ? (
               <div className='space-y-3 py-6'>
-                {[1, 2, 3].map(n => (
-                  <div
-                    key={n}
-                    className='p-4 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 animate-pulse space-y-2'
-                  >
+                <div className='p-4 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 animate-pulse space-y-2'>
+                  <div className='flex items-center justify-between'>
                     <div className='w-1/3 h-4 bg-slate-200 dark:bg-slate-800 rounded' />
-                    <div className='w-1/2 h-3 bg-slate-100 dark:bg-slate-850 rounded' />
+                    <div className='w-16 h-2 bg-slate-200 dark:bg-slate-800 rounded' />
                   </div>
-                ))}
+                  <div className='w-3/4 h-3 bg-slate-100 dark:bg-slate-850 rounded' />
+                </div>
+                <div className='p-4 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 animate-pulse space-y-2'>
+                  <div className='flex items-center justify-between'>
+                    <div className='w-1/2 h-4 bg-slate-200 dark:bg-slate-800 rounded' />
+                    <div className='w-16 h-2 bg-slate-200 dark:bg-slate-800 rounded' />
+                  </div>
+                  <div className='w-2/3 h-3 bg-slate-100 dark:bg-slate-850 rounded' />
+                </div>
+                <div className='p-4 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 animate-pulse space-y-2'>
+                  <div className='flex items-center justify-between'>
+                    <div className='w-1/3 h-4 bg-slate-200 dark:bg-slate-800 rounded' />
+                    <div className='w-16 h-2 bg-slate-200 dark:bg-slate-800 rounded' />
+                  </div>
+                  <div className='w-1/2 h-3 bg-slate-100 dark:bg-slate-850 rounded' />
+                </div>
+                <p className='text-center text-xs text-slate-500 animate-pulse pt-2'>
+                  ⚡ AI sedang menganalisis narasi aktivitas harianmu...
+                </p>
               </div>
             ) : skills.length === 0 ? (
-              <div className='p-6 text-center text-xs text-slate-400 dark:text-slate-500 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-100 dark:border-slate-800 mt-2'>
-                Tidak ada skill yang terdeteksi atau semua rekomendasi dihapus. Klik &quot;Analisis Ulang&quot; untuk memuat kembali.
+              <div className='py-12 px-6 text-center rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-100 dark:border-slate-800 mt-2 space-y-3'>
+                <div className='w-12 h-12 rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 mx-auto flex items-center justify-center'>
+                  <TrendingUp className='w-6 h-6' />
+                </div>
+                <div>
+                  <h4 className='text-sm font-bold text-slate-800 dark:text-slate-200'>
+                    Belum Ada Skill Diekstrak
+                  </h4>
+                  <p className='text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto mt-1'>
+                    Ketik atau rekam suara aktivitas harianmu di sisi kiri, lalu klik <span className='font-semibold text-blue-600 dark:text-blue-400'>&ldquo;Ekstrak Skill dengan AI&rdquo;</span> untuk melihat hasil rekomendasi skill dan bukti relevannya di sini.
+                  </p>
+                </div>
               </div>
             ) : (
-              <div className='space-y-2.5 mt-1'>
+              <div className='space-y-2.5 mt-1 max-h-[290px] overflow-y-auto custom-scrollbar pr-1'>
                 {skills.map(skill => {
                   const isGreen = skill.metricColor === 'green'
                   const isIndigo = skill.metricColor === 'indigo'
@@ -369,8 +633,14 @@ export default function AiSmartExtractorPreview({
                           </span>
                         </div>
 
+                        {skill.reasoning && (
+                          <p className='text-[11px] text-slate-600 dark:text-slate-300 mt-1 line-clamp-1 italic'>
+                            &ldquo;{skill.reasoning}&rdquo;
+                          </p>
+                        )}
+
                         <p className='text-[11px] text-slate-500 dark:text-slate-400 mt-0.5'>
-                          Tingkat: <span className='font-semibold text-slate-700 dark:text-slate-300'>{skill.level}</span> · Skor Kepercayaan: <span className='font-semibold text-slate-700 dark:text-slate-300'>{skill.confidence}%</span>
+                          Tingkat Awal: <span className='font-semibold text-slate-700 dark:text-slate-300'>{skill.level}</span> · Validitas Bukti AI: <span className='font-bold text-emerald-600 dark:text-emerald-400'>{skill.confidence}%</span>
                         </p>
                       </div>
 
@@ -401,34 +671,37 @@ export default function AiSmartExtractorPreview({
 
           {/* Right Footer: Controls & Confirm CTA */}
           <div className='pt-4 border-t border-slate-100 dark:border-slate-800/80 mt-4 space-y-3'>
-            <div className='flex items-center justify-between text-xs'>
-              <button
-                type='button'
-                onClick={() => alert('Level skill dapat dikustomisasi setelah dimasukkan ke Skill Matrix (F04).')}
-                className='font-semibold text-slate-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer'
-              >
-                Sesuaikan Level
-              </button>
-              <button
-                type='button'
-                onClick={() => setSkills([])}
-                className='font-semibold text-rose-500 hover:text-rose-600 dark:hover:text-rose-400 transition-colors cursor-pointer'
-              >
-                Hapus Rekomendasi
-              </button>
-            </div>
+            {skills.length > 0 && (
+              <div className='flex items-center justify-between text-xs'>
+                <span className='text-slate-500 dark:text-slate-400'>
+                  {skills.length} kompetensi terdeteksi siap disimpan
+                </span>
+                <button
+                  type='button'
+                  onClick={() => setSkills([])}
+                  className='font-semibold text-rose-500 hover:text-rose-600 dark:hover:text-rose-400 transition-colors cursor-pointer'
+                >
+                  Hapus Semua
+                </button>
+              </div>
+            )}
 
             <button
               type='button'
-              onClick={handleConfirm}
-              disabled={skills.length === 0}
+              onClick={handleConfirmToSkillMatrix}
+              disabled={skills.length === 0 || isSaving}
               className={`w-full inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-xs sm:text-sm font-bold text-white transition-all shadow-md active:scale-[0.99] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
                 confirmed
                   ? 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-500/25'
                   : 'bg-[#1E3A8A] hover:bg-[#1E3A8A]/90 dark:bg-blue-600 dark:hover:bg-blue-700 shadow-blue-900/20'
               }`}
             >
-              {confirmed ? (
+              {isSaving ? (
+                <>
+                  <Sparkles className='w-4 h-4 animate-spin' />
+                  <span>Menyimpan ke Skill Matrix...</span>
+                </>
+              ) : confirmed ? (
                 <>
                   <Check className='w-4 h-4' />
                   <span>{skills.length} Skill Berhasil Dimasukkan ke Matrix!</span>
