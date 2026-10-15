@@ -23,6 +23,8 @@ import Button from '@mui/material/Button'
 
 // Hook Imports
 import { useSettings } from '@core/hooks/useSettings'
+import { useAuth } from '@/contexts/AuthContext'
+import { User, Settings, CircleDollarSign, HelpCircle, LogOut } from 'lucide-react'
 
 // Styled component for badge content
 const BadgeContentSpan = styled('span')({
@@ -45,6 +47,7 @@ const UserDropdown = () => {
   const router = useRouter()
 
   const { settings } = useSettings()
+  const { user, logout } = useAuth()
 
   const handleDropdownOpen = () => {
     !open ? setOpen(true) : setOpen(false)
@@ -63,8 +66,8 @@ const UserDropdown = () => {
   }
 
   const handleUserLogout = async () => {
-    // Redirect to login page
-    router.push('/login')
+    setOpen(false)
+    await logout()
   }
 
   return (
@@ -78,8 +81,8 @@ const UserDropdown = () => {
       >
         <Avatar
           ref={anchorRef}
-          alt='John Doe'
-          src='/images/avatars/1.png'
+          alt={user?.name || 'User'}
+          src={user?.avatarUrl || '/images/avatars/1.png'}
           onClick={handleDropdownOpen}
           className='cursor-pointer bs-[38px] is-[38px]'
         />
@@ -103,29 +106,29 @@ const UserDropdown = () => {
               <ClickAwayListener onClickAway={e => handleDropdownClose(e as MouseEvent | TouchEvent)}>
                 <MenuList>
                   <div className='flex items-center plb-2 pli-6 gap-2' tabIndex={-1}>
-                    <Avatar alt='John Doe' src='/images/avatars/1.png' />
+                    <Avatar alt={user?.name || 'User'} src={user?.avatarUrl || '/images/avatars/1.png'} />
                     <div className='flex items-start flex-col'>
                       <Typography className='font-medium' color='text.primary'>
-                        John Doe
+                        {user?.name || 'Growvia User'}
                       </Typography>
-                      <Typography variant='caption'>admin@vuexy.com</Typography>
+                      <Typography variant='caption'>{user?.email || 'user@growvia.id'}</Typography>
                     </div>
                   </div>
                   <Divider className='mlb-1' />
                   <MenuItem className='mli-2 gap-3' onClick={e => handleDropdownClose(e)}>
-                    <i className='tabler-user' />
+                    <User className='w-4 h-4' />
                     <Typography color='text.primary'>My Profile</Typography>
                   </MenuItem>
                   <MenuItem className='mli-2 gap-3' onClick={e => handleDropdownClose(e)}>
-                    <i className='tabler-settings' />
+                    <Settings className='w-4 h-4' />
                     <Typography color='text.primary'>Settings</Typography>
                   </MenuItem>
                   <MenuItem className='mli-2 gap-3' onClick={e => handleDropdownClose(e)}>
-                    <i className='tabler-currency-dollar' />
+                    <CircleDollarSign className='w-4 h-4' />
                     <Typography color='text.primary'>Pricing</Typography>
                   </MenuItem>
                   <MenuItem className='mli-2 gap-3' onClick={e => handleDropdownClose(e)}>
-                    <i className='tabler-help-circle' />
+                    <HelpCircle className='w-4 h-4' />
                     <Typography color='text.primary'>FAQ</Typography>
                   </MenuItem>
                   <div className='flex items-center plb-2 pli-3'>
@@ -134,7 +137,7 @@ const UserDropdown = () => {
                       variant='contained'
                       color='error'
                       size='small'
-                      endIcon={<i className='tabler-logout' />}
+                      endIcon={<LogOut className='w-4 h-4' />}
                       onClick={handleUserLogout}
                       sx={{ '& .MuiButton-endIcon': { marginInlineStart: 1.5 } }}
                     >
