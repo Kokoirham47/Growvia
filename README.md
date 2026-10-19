@@ -134,6 +134,7 @@ erDiagram
 
 ```bash
 # 1. Jalankan development server
+# 1. Jalankan development server
 npm run dev
 
 # 2. Buka antarmuka Career Target & Gap:

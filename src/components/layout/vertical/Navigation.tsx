@@ -20,6 +20,7 @@ import Logo from '@components/layout/shared/Logo'
 // Hook Imports
 import useVerticalNav from '@menu/hooks/useVerticalNav'
 import { useSettings } from '@core/hooks/useSettings'
+import { CircleDot, Circle, X } from 'lucide-react'
 
 // Style Imports
 import navigationCustomStyles from '@core/styles/vertical/navigationCustomStyles'
@@ -113,9 +114,9 @@ const Navigation = (props: Props) => {
         </Link>
         {!(isCollapsed && !isHovered) && (
           <NavCollapseIcons
-            lockedIcon={<i className='tabler-circle-dot text-xl' />}
-            unlockedIcon={<i className='tabler-circle text-xl' />}
-            closeIcon={<i className='tabler-x text-xl' />}
+            lockedIcon={<CircleDot className='w-5 h-5' />}
+            unlockedIcon={<Circle className='w-5 h-5' />}
+            closeIcon={<X className='w-5 h-5' />}
             onClick={() => updateSettings({ layout: !isCollapsed ? 'collapsed' : 'vertical' })}
           />
         )}

@@ -1,5 +1,6 @@
 // MUI Imports
 import type { Theme } from '@mui/material/styles'
+import { ChevronRight } from 'lucide-react'
 
 // Type Imports
 import type { Skin } from '@core/types'
@@ -35,7 +36,7 @@ const accordion = (skin: Skin): Theme['components'] => ({
   },
   MuiAccordionSummary: {
     defaultProps: {
-      expandIcon: <i className='tabler-chevron-right' />
+      expandIcon: <ChevronRight className='w-5 h-5' />
     },
     styleOverrides: {
       root: ({ theme }) => ({

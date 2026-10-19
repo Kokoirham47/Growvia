@@ -1,11 +1,12 @@
 // MUI Imports
 import type { Theme } from '@mui/material/styles'
+import { Star } from 'lucide-react'
 
 const rating: Theme['components'] = {
   MuiRating: {
     defaultProps: {
-      emptyIcon: <i className='tabler-star' />,
-      icon: <i className='tabler-star-filled' />
+      emptyIcon: <Star className='w-5 h-5 text-slate-300' />,
+      icon: <Star className='w-5 h-5 fill-current' />
     },
     styleOverrides: {
       root: {
