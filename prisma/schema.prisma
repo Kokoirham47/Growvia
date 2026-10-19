@@ -1,0 +1,555 @@
+// =============================================================================
+// GROWVIA — PRISMA SCHEMA
+// Database: PostgreSQL (Supabase)
+// =============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ─── ENUMS ────────────────────────────────────────────────────────────────────
+
+enum UserStatus {
+  active
+  unverified
+  suspended
+  deleted
+}
+
+enum ExperienceType {
+  organisation
+  committee
+  internship
+  freelance
+  project
+  competition
+  other
+}
+
+enum SkillCategory {
+  hard_skill
+  soft_skill
+  technical
+  leadership
+}
+
+enum SkillLevel {
+  beginner
+  intermediate
+  advanced
+  expert
+}
+
+enum SkillSource {
+  ai_extracted
+  manual
+}
+
+enum AiJobStatus {
+  queued
+  processing
+  completed
+  failed
+}
+
+enum ReviewStatus {
+  pending
+  accepted
+  edited
+  rejected
+}
+
+enum RoleSkillImportance {
+  required
+  important
+  nice_to_have
+}
+
+enum OpportunitySkillImportance {
+  required
+  preferred
+}
+
+enum GapCategory {
+  strong
+  develop
+  missing
+}
+
+enum LearningResourceType {
+  course
+  article
+  video
+  bootcamp
+  book
+}
+
+enum Difficulty {
+  beginner
+  intermediate
+  advanced
+}
+
+enum ContentSource {
+  admin
+  api_import
+}
+
+enum OpportunityType {
+  internship
+  part_time
+  full_time
+  freelance
+  competition
+}
+
+enum NotificationType {
+  skill_update
+  learning_reminder
+  career_opportunity
+  portfolio_view
+}
+
+// ─── AUTH & USER DOMAIN ───────────────────────────────────────────────────────
+
+model Admin {
+  id            String    @id @default(uuid()) @db.Uuid
+  name          String
+  email         String    @unique
+  passwordHash  String    @map("password_hash")
+  lastLoginAt   DateTime? @map("last_login_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  createdLearningResources   LearningResource[]
+  createdCareerOpportunities CareerOpportunity[]
+
+  @@map("admins")
+}
+
+model User {
+  id               String     @id @default(uuid()) @db.Uuid
+  name             String
+  email            String     @unique
+  passwordHash     String     @map("password_hash")
+  avatarUrl        String?    @map("avatar_url")
+  status           UserStatus @default(unverified)
+  emailVerifiedAt  DateTime?  @map("email_verified_at")
+  createdAt        DateTime   @default(now()) @map("created_at")
+  updatedAt        DateTime   @updatedAt @map("updated_at")
+  deletedAt        DateTime?  @map("deleted_at")
+
+  profile                  Profile?
+  emailVerifications       EmailVerification[]
+  sessions                 Session[]
+  experiences              Experience[]
+  userSkills               UserSkill[]
+  aiAnalysisJobs           AiAnalysisJob[]
+  careerTargets            UserCareerTarget[]
+  learningRecommendations  LearningRecommendation[]
+  savedResources           UserSavedResource[]
+  savedOpportunities       UserSavedOpportunity[]
+  notifications            Notification[]
+
+  @@map("users")
+}
+
+model EmailVerification {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  token     String   @unique
+  expiresAt DateTime @map("expires_at")
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("email_verifications")
+}
+
+model Session {
+  id           String   @id @default(uuid()) @db.Uuid
+  userId       String   @map("user_id") @db.Uuid
+  refreshToken String   @unique @map("refresh_token")
+  deviceInfo   String?  @map("device_info")
+  expiresAt    DateTime @map("expires_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+// ─── PROFILE DOMAIN ───────────────────────────────────────────────────────────
+
+model Profile {
+  id                 String   @id @default(uuid()) @db.Uuid
+  userId             String   @unique @map("user_id") @db.Uuid
+  institution        String?
+  major              String?
+  graduationYear     Int?     @map("graduation_year")
+  bio                String?  @db.Text
+  headline           String?
+  portfolioSlug      String?  @unique @map("portfolio_slug")
+  portfolioPublished Boolean  @default(false) @map("portfolio_published")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  user             User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  careerInterests  CareerInterest[]
+
+  @@map("profiles")
+}
+
+model CareerInterest {
+  id            String   @id @default(uuid()) @db.Uuid
+  profileId     String   @map("profile_id") @db.Uuid
+  careerFieldId String   @map("career_field_id") @db.Uuid
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  profile     Profile     @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  careerField CareerField @relation(fields: [careerFieldId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, careerFieldId])
+  @@map("career_interests")
+}
+
+model CareerField {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  slug      String   @unique
+  icon      String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  careerInterests CareerInterest[]
+
+  @@map("career_fields")
+}
+
+// ─── EXPERIENCE DOMAIN ────────────────────────────────────────────────────────
+
+model Experience {
+  id              String         @id @default(uuid()) @db.Uuid
+  userId          String         @map("user_id") @db.Uuid
+  title           String
+  type            ExperienceType
+  role            String
+  institutionName String         @map("institution_name")
+  startDate       DateTime       @map("start_date") @db.Date
+  endDate         DateTime?      @map("end_date") @db.Date
+  isOngoing       Boolean        @default(false) @map("is_ongoing")
+  description     String?        @db.Text
+  proofUrl        String?        @map("proof_url")
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
+
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  skillEvidences SkillEvidence[]
+  aiAnalysisJobs AiAnalysisJob[]
+
+  @@map("experiences")
+}
+
+// ─── SKILL DOMAIN ─────────────────────────────────────────────────────────────
+
+model Skill {
+  id             String        @id @default(uuid()) @db.Uuid
+  name           String        @unique
+  category       SkillCategory
+  normalizedName String?       @map("normalized_name")
+  createdAt      DateTime      @default(now()) @map("created_at")
+
+  userSkills           UserSkill[]
+  aiSkillSuggestions   AiSkillSuggestion[]
+  careerRoleSkills     CareerRoleSkill[]
+  skillGapResults      SkillGapResult[]
+  resourceSkillTags    ResourceSkillTag[]
+  opportunitySkillTags OpportunitySkillTag[]
+
+  @@map("skills")
+}
+
+model UserSkill {
+  id           String      @id @default(uuid()) @db.Uuid
+  userId       String      @map("user_id") @db.Uuid
+  skillId      String      @map("skill_id") @db.Uuid
+  level        SkillLevel  @default(beginner)
+  score        Int         @default(0)
+  source       SkillSource @default(manual)
+  aiConfidence Float?      @map("ai_confidence")
+  createdAt    DateTime    @default(now()) @map("created_at")
+  updatedAt    DateTime    @updatedAt @map("updated_at")
+
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  skill          Skill           @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  skillEvidences SkillEvidence[]
+
+  @@unique([userId, skillId])
+  @@map("user_skills")
+}
+
+model SkillEvidence {
+  id           String   @id @default(uuid()) @db.Uuid
+  userSkillId  String   @map("user_skill_id") @db.Uuid
+  experienceId String   @map("experience_id") @db.Uuid
+  note         String?  @db.Text
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  userSkill  UserSkill  @relation(fields: [userSkillId], references: [id], onDelete: Cascade)
+  experience Experience @relation(fields: [experienceId], references: [id], onDelete: Cascade)
+
+  @@map("skill_evidences")
+}
+
+// ─── AI ANALYSIS DOMAIN ───────────────────────────────────────────────────────
+
+model AiAnalysisJob {
+  id           String      @id @default(uuid()) @db.Uuid
+  userId       String      @map("user_id") @db.Uuid
+  experienceId String      @map("experience_id") @db.Uuid
+  status       AiJobStatus @default(queued)
+  rawInput     String?     @map("raw_input") @db.Text
+  rawOutput    Json?       @map("raw_output")
+  startedAt    DateTime?   @map("started_at")
+  completedAt  DateTime?   @map("completed_at")
+  createdAt    DateTime    @default(now()) @map("created_at")
+
+  user        User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  experience  Experience            @relation(fields: [experienceId], references: [id], onDelete: Cascade)
+  suggestions AiSkillSuggestion[]
+
+  @@map("ai_analysis_jobs")
+}
+
+model AiSkillSuggestion {
+  id                String        @id @default(uuid()) @db.Uuid
+  aiAnalysisJobId   String        @map("ai_analysis_job_id") @db.Uuid
+  suggestedName     String        @map("suggested_name")
+  suggestedCategory SkillCategory @map("suggested_category")
+  confidenceScore   Float         @map("confidence_score")
+  reviewStatus      ReviewStatus  @default(pending) @map("review_status")
+  finalName         String?       @map("final_name")
+  mappedSkillId     String?       @map("mapped_skill_id") @db.Uuid
+  reviewedAt        DateTime?     @map("reviewed_at")
+  createdAt         DateTime      @default(now()) @map("created_at")
+
+  analysisJob AiAnalysisJob @relation(fields: [aiAnalysisJobId], references: [id], onDelete: Cascade)
+  mappedSkill Skill?        @relation(fields: [mappedSkillId], references: [id], onDelete: SetNull)
+
+  @@map("ai_skill_suggestions")
+}
+
+// ─── CAREER TARGET DOMAIN ─────────────────────────────────────────────────────
+
+model CareerRole {
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String
+  slug        String   @unique
+  industry    String?
+  description String?  @db.Text
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  roleSkills  CareerRoleSkill[]
+  userTargets UserCareerTarget[]
+
+  @@map("career_roles")
+}
+
+model CareerRoleSkill {
+  id           String              @id @default(uuid()) @db.Uuid
+  careerRoleId String              @map("career_role_id") @db.Uuid
+  skillId      String              @map("skill_id") @db.Uuid
+  importance   RoleSkillImportance @default(required)
+  minLevel     SkillLevel          @default(intermediate) @map("min_level")
+  createdAt    DateTime            @default(now()) @map("created_at")
+
+  careerRole CareerRole @relation(fields: [careerRoleId], references: [id], onDelete: Cascade)
+  skill      Skill      @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@unique([careerRoleId, skillId])
+  @@map("career_role_skills")
+}
+
+model UserCareerTarget {
+  id               String    @id @default(uuid()) @db.Uuid
+  userId           String    @map("user_id") @db.Uuid
+  careerRoleId     String?   @map("career_role_id") @db.Uuid
+  customCareerName String?   @map("custom_career_name")
+  isActive         Boolean   @default(true) @map("is_active")
+  readinessScore   Int       @default(0) @map("readiness_score")
+  lastAnalyzedAt   DateTime? @map("last_analyzed_at")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  careerRole      CareerRole?      @relation(fields: [careerRoleId], references: [id], onDelete: SetNull)
+  skillGapResults SkillGapResult[]
+
+  @@map("user_career_targets")
+}
+
+// ─── SKILL GAP DOMAIN ─────────────────────────────────────────────────────────
+
+model SkillGapResult {
+  id                 String      @id @default(uuid()) @db.Uuid
+  userCareerTargetId String      @map("user_career_target_id") @db.Uuid
+  skillId            String      @map("skill_id") @db.Uuid
+  gapCategory        GapCategory @map("gap_category")
+  userScore          Int         @default(0) @map("user_score")
+  requiredScore      Int         @map("required_score")
+  gapScore           Int         @default(0) @map("gap_score")
+  analyzedAt         DateTime    @default(now()) @map("analyzed_at")
+
+  careerTarget            UserCareerTarget         @relation(fields: [userCareerTargetId], references: [id], onDelete: Cascade)
+  skill                   Skill                    @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  learningRecommendations LearningRecommendation[]
+
+  @@map("skill_gap_results")
+}
+
+// ─── LEARNING DOMAIN ──────────────────────────────────────────────────────────
+
+model LearningResource {
+  id              String               @id @default(uuid()) @db.Uuid
+  title           String
+  platform        String
+  url             String
+  type            LearningResourceType
+  difficulty      Difficulty           @default(beginner)
+  durationMinutes Int?                 @map("duration_minutes")
+  rating          Float?
+  isActive        Boolean              @default(true) @map("is_active")
+  source          ContentSource        @default(admin)
+  createdBy       String?              @map("created_by") @db.Uuid
+  createdAt       DateTime             @default(now()) @map("created_at")
+  updatedAt       DateTime             @updatedAt @map("updated_at")
+
+  creator         Admin?                   @relation(fields: [createdBy], references: [id], onDelete: SetNull)
+  skillTags       ResourceSkillTag[]
+  recommendations LearningRecommendation[]
+  savedByUsers    UserSavedResource[]
+
+  @@map("learning_resources")
+}
+
+model ResourceSkillTag {
+  id                 String   @id @default(uuid()) @db.Uuid
+  learningResourceId String   @map("learning_resource_id") @db.Uuid
+  skillId            String   @map("skill_id") @db.Uuid
+  createdAt          DateTime @default(now()) @map("created_at")
+
+  resource LearningResource @relation(fields: [learningResourceId], references: [id], onDelete: Cascade)
+  skill    Skill            @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@unique([learningResourceId, skillId])
+  @@map("resource_skill_tags")
+}
+
+model LearningRecommendation {
+  id                 String    @id @default(uuid()) @db.Uuid
+  userId             String    @map("user_id") @db.Uuid
+  learningResourceId String    @map("learning_resource_id") @db.Uuid
+  skillGapResultId   String?   @map("skill_gap_result_id") @db.Uuid
+  relevanceScore     Float     @default(0) @map("relevance_score")
+  aiRankingPosition  Int?      @map("ai_ranking_position")
+  aiReasoning        String?   @map("ai_reasoning") @db.Text
+  generatedAt        DateTime  @default(now()) @map("generated_at")
+
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  resource       LearningResource @relation(fields: [learningResourceId], references: [id], onDelete: Cascade)
+  skillGapResult SkillGapResult? @relation(fields: [skillGapResultId], references: [id], onDelete: SetNull)
+
+  @@map("learning_recommendations")
+}
+
+model UserSavedResource {
+  id                 String    @id @default(uuid()) @db.Uuid
+  userId             String    @map("user_id") @db.Uuid
+  learningResourceId String    @map("learning_resource_id") @db.Uuid
+  isCompleted        Boolean   @default(false) @map("is_completed")
+  completedAt        DateTime? @map("completed_at")
+  savedAt            DateTime  @default(now()) @map("saved_at")
+
+  user     User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  resource LearningResource @relation(fields: [learningResourceId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, learningResourceId])
+  @@map("user_saved_resources")
+}
+
+// ─── OPPORTUNITY DOMAIN ───────────────────────────────────────────────────────
+
+model CareerOpportunity {
+  id          String          @id @default(uuid()) @db.Uuid
+  title       String
+  company     String
+  location    String?
+  sourceUrl   String?         @map("source_url")
+  type        OpportunityType @default(internship)
+  description String?         @db.Text
+  isActive    Boolean         @default(true) @map("is_active")
+  source      ContentSource   @default(admin)
+  createdBy   String?         @map("created_by") @db.Uuid
+  deadline    DateTime?       @db.Date
+  postedAt    DateTime?       @map("posted_at")
+  createdAt   DateTime        @default(now()) @map("created_at")
+  updatedAt   DateTime        @updatedAt @map("updated_at")
+
+  creator      Admin?                   @relation(fields: [createdBy], references: [id], onDelete: SetNull)
+  skillTags    OpportunitySkillTag[]
+  savedByUsers UserSavedOpportunity[]
+
+  @@map("career_opportunities")
+}
+
+model OpportunitySkillTag {
+  id                  String                     @id @default(uuid()) @db.Uuid
+  careerOpportunityId String                     @map("career_opportunity_id") @db.Uuid
+  skillId             String                     @map("skill_id") @db.Uuid
+  importance          OpportunitySkillImportance @default(required)
+  createdAt           DateTime                   @default(now()) @map("created_at")
+
+  opportunity CareerOpportunity @relation(fields: [careerOpportunityId], references: [id], onDelete: Cascade)
+  skill       Skill             @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@unique([careerOpportunityId, skillId])
+  @@map("opportunity_skill_tags")
+}
+
+model UserSavedOpportunity {
+  id                  String   @id @default(uuid()) @db.Uuid
+  userId              String   @map("user_id") @db.Uuid
+  careerOpportunityId String   @map("career_opportunity_id") @db.Uuid
+  skillMatchScore     Int?     @map("skill_match_score")
+  savedAt             DateTime @default(now()) @map("saved_at")
+
+  user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  opportunity CareerOpportunity @relation(fields: [careerOpportunityId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, careerOpportunityId])
+  @@map("user_saved_opportunities")
+}
+
+// ─── NOTIFICATION DOMAIN ──────────────────────────────────────────────────────
+
+model Notification {
+  id        String           @id @default(uuid()) @db.Uuid
+  userId    String           @map("user_id") @db.Uuid
+  type      NotificationType
+  title     String
+  body      String           @db.Text
+  actionUrl String?          @map("action_url")
+  isRead    Boolean          @default(false) @map("is_read")
+  readAt    DateTime?        @map("read_at")
+  createdAt DateTime         @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
