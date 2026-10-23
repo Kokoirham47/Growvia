@@ -1,8 +1,8 @@
 'use client'
 
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useEffect, useCallback } from 'react'
 
-import { CheckCircle2, RotateCcw, Search } from 'lucide-react'
+import { CheckCircle2, RotateCcw, Search, AlertCircle } from 'lucide-react'
 
 import LearningHeader from './LearningHeader'
 import FeaturedRecommendationCard from './FeaturedRecommendationCard'
@@ -10,7 +10,6 @@ import LearningFilterBar from './LearningFilterBar'
 import LearningCard from './LearningCard'
 import ImpactSimulationBanner from './ImpactSimulationBanner'
 import CourseDetailModal from './CourseDetailModal'
-import { FEATURED_LEARNING_RESOURCE, LEARNING_RESOURCES } from './learningData'
 import type {
   LearningCategory,
   DifficultyLevel,
@@ -18,14 +17,49 @@ import type {
   LearningCardItem
 } from '@/types/learning'
 
+interface LearningApiResponse {
+  featuredResource: LearningCardItem | null
+  resources: LearningCardItem[]
+  bookmarkedIds: string[]
+  header: {
+    careerTarget: string
+    selectedModulesCount: number
+    priorityGapsCount: number
+  }
+  impact: {
+    currentScore: number
+    potentialScore: number
+    improvement: number
+    targetScore: number
+  }
+}
+
 export default function LearningRecommendationsView() {
+  // Remote Data State from Supabase
+  const [featuredResource, setFeaturedResource] = useState<LearningCardItem | null>(null)
+  const [resources, setResources] = useState<LearningCardItem[]>([])
+  const [bookmarkedIds, setBookmarkedIds] = useState<string[]>([])
+
+  const [headerData, setHeaderData] = useState({
+    careerTarget: 'Karier Impian',
+    selectedModulesCount: 0,
+    priorityGapsCount: 0
+  })
+
+  const [impactData, setImpactData] = useState({
+    currentScore: 25,
+    potentialScore: 50,
+    improvement: 25,
+    targetScore: 80
+  })
+
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
   // Filter States
   const [selectedCategory, setSelectedCategory] = useState<LearningCategory>('semua')
   const [selectedDifficulty, setSelectedDifficulty] = useState<DifficultyLevel>('all')
   const [selectedSort, setSelectedSort] = useState<SortOption>('match')
-
-  // Bookmark State
-  const [bookmarkedIds, setBookmarkedIds] = useState<string[]>([])
 
   // Modal State
   const [activeModalItem, setActiveModalItem] = useState<LearningCardItem | null>(null)
@@ -39,20 +73,83 @@ export default function LearningRecommendationsView() {
     setTimeout(() => setToastMessage(null), 3500)
   }
 
-  // Handle Bookmark Toggle
-  const handleToggleBookmark = (id: string) => {
-    setBookmarkedIds(prev => {
-      const exists = prev.includes(id)
-      const next = exists ? prev.filter(item => item !== id) : [...prev, id]
+  // Fetch learning data from Supabase
+  const fetchLearningData = useCallback(async () => {
+    try {
+      setIsLoading(true)
+      setError(null)
 
-      showToast(
-        exists
-          ? 'Modul dihapus dari daftar tersimpan.'
-          : 'Modul berhasil disimpan ke daftar belajar!'
-      )
-      
-return next
-    })
+      const res = await fetch('/api/learning')
+      const json = await res.json()
+
+      if (!res.ok || !json.success) {
+        throw new Error(json.message || 'Gagal memuat rekomendasi belajar dari Supabase.')
+      }
+
+      const data: LearningApiResponse = json.data
+
+      setFeaturedResource(data.featuredResource)
+      setResources(data.resources || [])
+      setBookmarkedIds(data.bookmarkedIds || [])
+      if (data.header) setHeaderData(data.header)
+      if (data.impact) setImpactData(data.impact)
+    } catch (err: unknown) {
+      console.error('Failed to load learning data from Supabase:', err)
+      setError(err instanceof Error ? err.message : 'Terjadi kesalahan saat memuat data.')
+    } finally {
+      setIsLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    fetchLearningData()
+  }, [fetchLearningData])
+
+  // Handle Bookmark Toggle with optimistic update & Supabase sync
+  const handleToggleBookmark = async (id: string) => {
+    const isCurrentlyBookmarked = bookmarkedIds.includes(id)
+
+    const nextBookmarked = isCurrentlyBookmarked
+      ? bookmarkedIds.filter(item => item !== id)
+      : [...bookmarkedIds, id]
+
+    setBookmarkedIds(nextBookmarked)
+    setHeaderData(prev => ({
+      ...prev,
+      selectedModulesCount: nextBookmarked.length
+    }))
+
+    try {
+      const res = await fetch('/api/learning', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'toggle_bookmark',
+          resourceId: id
+        })
+      })
+
+      const json = await res.json()
+
+      if (!res.ok || !json.success) {
+        throw new Error(json.message || 'Gagal menyimpan perubahan ke Supabase.')
+      }
+
+      showToast(json.data?.message || (isCurrentlyBookmarked ? 'Modul dihapus dari daftar tersimpan.' : 'Modul berhasil disimpan ke daftar belajar!'))
+
+      if (Array.isArray(json.data?.bookmarkedIds)) {
+        setBookmarkedIds(json.data.bookmarkedIds)
+      }
+    } catch (err) {
+      // Revert state on error
+      setBookmarkedIds(bookmarkedIds)
+      setHeaderData(prev => ({
+        ...prev,
+        selectedModulesCount: bookmarkedIds.length
+      }))
+      showToast('Gagal mengubah status bookmark. Silakan coba lagi.')
+      console.error(err)
+    }
   }
 
   // Handle Open Syllabus / Course Detail
@@ -63,29 +160,46 @@ return next
 
   // Handle Start Learning
   const handleStartLearning = (item: LearningCardItem) => {
-    setActiveModalItem(item)
-    setIsModalOpen(true)
+    if (item.syllabus && item.syllabus.length > 0) {
+      setActiveModalItem(item)
+      setIsModalOpen(true)
+    } else if (item.url) {
+      window.open(item.url, '_blank', 'noopener,noreferrer')
+      showToast(`Membuka ${item.title} di platform ${item.platform}...`)
+    }
   }
 
-  // Handle Enroll / Launch
+  // Handle Enroll / Launch from Modal
   const handleEnroll = (item: LearningCardItem) => {
+    if (item.url) {
+      window.open(item.url, '_blank', 'noopener,noreferrer')
+    }
+
     showToast(`Membuka ${item.title} di platform ${item.platform}...`)
   }
 
-  // Calculate category counts
+  // Combine featured and regular resources for category counts
+  const allResources = useMemo(() => {
+    return [
+      ...(featuredResource ? [featuredResource] : []),
+      ...resources
+    ]
+  }, [featuredResource, resources])
+
+  // Calculate dynamic category counts from Supabase
   const counts = useMemo(() => {
     return {
-      semua: LEARNING_RESOURCES.length,
-      course: LEARNING_RESOURCES.filter(r => r.category === 'course').length,
-      artikel: LEARNING_RESOURCES.filter(r => r.category === 'artikel').length,
-      video: LEARNING_RESOURCES.filter(r => r.category === 'video').length,
-      bootcamp: LEARNING_RESOURCES.filter(r => r.category === 'bootcamp').length
+      semua: allResources.length,
+      course: allResources.filter(r => r.category === 'course').length,
+      artikel: allResources.filter(r => r.category === 'artikel').length,
+      video: allResources.filter(r => r.category === 'video').length,
+      bootcamp: allResources.filter(r => r.category === 'bootcamp').length
     }
-  }, [])
+  }, [allResources])
 
-  // Filter & Sort Logic
+  // Filter & Sort Logic for regular resources
   const filteredAndSortedResources = useMemo(() => {
-    const result = LEARNING_RESOURCES.filter(item => {
+    const result = resources.filter(item => {
       // Category Filter
       const matchCat = selectedCategory === 'semua' || item.category === selectedCategory
 
@@ -106,7 +220,6 @@ return next
       }
 
       if (selectedSort === 'duration') {
-        // extract hours/minutes number roughly
         const numA = parseFloat(a.duration) || 99
         const numB = parseFloat(b.duration) || 99
 
@@ -117,7 +230,7 @@ return next
     })
 
     return result
-  }, [selectedCategory, selectedDifficulty, selectedSort])
+  }, [resources, selectedCategory, selectedDifficulty, selectedSort])
 
   return (
     <div
@@ -138,86 +251,133 @@ return next
 
       {/* 1. PAGE HEADER */}
       <LearningHeader
-        careerTarget='AI Engineer'
-        selectedModulesCount={4}
-        priorityGapsCount={3}
+        careerTarget={headerData.careerTarget}
+        selectedModulesCount={headerData.selectedModulesCount}
+        priorityGapsCount={headerData.priorityGapsCount}
       />
 
-      {/* 2. PINNED TOP SECTION: AI Recommendation Highlight Card */}
-      <FeaturedRecommendationCard
-        item={FEATURED_LEARNING_RESOURCE}
-        isBookmarked={bookmarkedIds.includes(FEATURED_LEARNING_RESOURCE.id)}
-        onToggleBookmark={handleToggleBookmark}
-        onOpenSyllabus={handleOpenSyllabus}
-        onStartLearning={handleStartLearning}
-      />
+      {/* Loading Skeleton */}
+      {isLoading ? (
+        <div className='flex flex-col gap-6 w-full animate-pulse'>
+          {/* Featured Card Skeleton */}
+          <div className='w-full h-72 rounded-2xl bg-indigo-50/70 dark:bg-slate-800/50 border border-indigo-100 dark:border-slate-800' />
 
-      {/* 3. FILTER BAR */}
-      <LearningFilterBar
-        selectedCategory={selectedCategory}
-        onSelectCategory={setSelectedCategory}
-        selectedDifficulty={selectedDifficulty}
-        onSelectDifficulty={setSelectedDifficulty}
-        selectedSort={selectedSort}
-        onSelectSort={setSelectedSort}
-        counts={counts}
-      />
+          {/* Filter Bar Skeleton */}
+          <div className='w-full h-12 rounded-xl bg-slate-100 dark:bg-slate-800' />
 
-      {/* 4. RESOURCE LIST (2 COLUMNS ON DESKTOP) */}
-      {filteredAndSortedResources.length > 0 ? (
-        <div className='grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6'>
-          {filteredAndSortedResources.map(resource => (
-            <LearningCard
-              key={resource.id}
-              item={resource}
-              isBookmarked={bookmarkedIds.includes(resource.id)}
-              onToggleBookmark={handleToggleBookmark}
-              onStartLearning={handleStartLearning}
-            />
-          ))}
+          {/* Grid Cards Skeleton */}
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6'>
+            {[1, 2, 3, 4].map(idx => (
+              <div
+                key={idx}
+                className='h-60 rounded-2xl bg-slate-100 dark:bg-slate-800 border border-slate-200/60 dark:border-slate-700'
+              />
+            ))}
+          </div>
         </div>
-      ) : (
+      ) : error ? (
 
-        /* Empty State */
-        <div className='flex flex-col items-center justify-center py-16 px-4 bg-white dark:bg-slate-900 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 text-center gap-3'>
-          <div className='w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400'>
-            <Search className='w-6 h-6' />
+        /* Error State */
+        <div className='flex flex-col items-center justify-center py-16 px-4 bg-white dark:bg-slate-900 rounded-2xl border border-rose-200 dark:border-rose-900/50 text-center gap-3'>
+          <div className='w-12 h-12 rounded-xl bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 flex items-center justify-center'>
+            <AlertCircle className='w-6 h-6' />
           </div>
           <h4 className='text-base font-bold text-slate-900 dark:text-white'>
-            Tidak ada materi yang sesuai
+            Gagal Memuat Rekomendasi
           </h4>
           <p className='text-xs text-slate-500 dark:text-slate-400 max-w-sm'>
-            Coba ubah kata kunci pencarian atau sesuaikan pilihan filter kategori dan tingkat kesulitan.
+            {error}
           </p>
           <button
             type='button'
-            onClick={() => {
-              setSelectedCategory('semua')
-              setSelectedDifficulty('all')
-            }}
-            className='inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 hover:bg-blue-100 transition-colors cursor-pointer mt-1'
+            onClick={fetchLearningData}
+            className='inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-colors cursor-pointer mt-1'
           >
             <RotateCcw className='w-3.5 h-3.5' />
-            <span>Reset Semua Filter</span>
+            <span>Coba Lagi</span>
           </button>
         </div>
+      ) : (
+        <>
+          {/* 2. PINNED TOP SECTION: AI Recommendation Highlight Card */}
+          {featuredResource && (
+            <FeaturedRecommendationCard
+              item={featuredResource}
+              isBookmarked={bookmarkedIds.includes(featuredResource.id)}
+              onToggleBookmark={handleToggleBookmark}
+              onOpenSyllabus={handleOpenSyllabus}
+              onStartLearning={handleStartLearning}
+            />
+          )}
+
+          {/* 3. FILTER BAR */}
+          <LearningFilterBar
+            selectedCategory={selectedCategory}
+            onSelectCategory={setSelectedCategory}
+            selectedDifficulty={selectedDifficulty}
+            onSelectDifficulty={setSelectedDifficulty}
+            selectedSort={selectedSort}
+            onSelectSort={setSelectedSort}
+            counts={counts}
+          />
+
+          {/* 4. RESOURCE LIST (2 COLUMNS ON DESKTOP) */}
+          {filteredAndSortedResources.length > 0 ? (
+            <div className='grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6'>
+              {filteredAndSortedResources.map(resource => (
+                <LearningCard
+                  key={resource.id}
+                  item={resource}
+                  isBookmarked={bookmarkedIds.includes(resource.id)}
+                  onToggleBookmark={handleToggleBookmark}
+                  onStartLearning={handleStartLearning}
+                />
+              ))}
+            </div>
+          ) : (
+
+            /* Empty State */
+            <div className='flex flex-col items-center justify-center py-16 px-4 bg-white dark:bg-slate-900 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 text-center gap-3'>
+              <div className='w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400'>
+                <Search className='w-6 h-6' />
+              </div>
+              <h4 className='text-base font-bold text-slate-900 dark:text-white'>
+                Tidak ada materi yang sesuai
+              </h4>
+              <p className='text-xs text-slate-500 dark:text-slate-400 max-w-sm'>
+                Coba ubah kata kunci pencarian atau sesuaikan pilihan filter kategori dan tingkat kesulitan.
+              </p>
+              <button
+                type='button'
+                onClick={() => {
+                  setSelectedCategory('semua')
+                  setSelectedDifficulty('all')
+                }}
+                className='inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 hover:bg-blue-100 transition-colors cursor-pointer mt-1'
+              >
+                <RotateCcw className='w-3.5 h-3.5' />
+                <span>Reset Semua Filter</span>
+              </button>
+            </div>
+          )}
+
+          {/* 5. BOTTOM SECTION: SIMULASI DAMPAK BELAJAR & SYNC NOTICE */}
+          <ImpactSimulationBanner
+            currentScore={impactData.currentScore}
+            potentialScore={impactData.potentialScore}
+            improvement={impactData.improvement}
+            targetScore={impactData.targetScore}
+          />
+
+          {/* Course Detail / Syllabus Modal */}
+          <CourseDetailModal
+            item={activeModalItem}
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+            onEnroll={handleEnroll}
+          />
+        </>
       )}
-
-      {/* 5. BOTTOM SECTION: SIMULASI DAMPAK BELAJAR & SYNC NOTICE */}
-      <ImpactSimulationBanner
-        currentScore={68}
-        potentialScore={89}
-        improvement={21}
-        targetScore={80}
-      />
-
-      {/* Course Detail / Syllabus Modal */}
-      <CourseDetailModal
-        item={activeModalItem}
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onEnroll={handleEnroll}
-      />
     </div>
   )
 }
