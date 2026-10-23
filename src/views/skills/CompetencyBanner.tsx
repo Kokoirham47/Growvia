@@ -1,13 +1,23 @@
 'use client'
 
 import React from 'react'
-import { Sparkles, ArrowRight, BarChart2 } from 'lucide-react'
+import { Sparkles, BarChart2 } from 'lucide-react'
+import { SkillItem } from '@/types/skills'
 
 interface CompetencyBannerProps {
+  skills?: SkillItem[]
   onOpenBenchmark: () => void
 }
 
-export default function CompetencyBanner({ onOpenBenchmark }: CompetencyBannerProps) {
+export default function CompetencyBanner({ skills = [], onOpenBenchmark }: CompetencyBannerProps) {
+  const sorted = [...skills].sort((a, b) => b.score - a.score)
+  const top1 = sorted[0]?.name
+  const top2 = sorted[1]?.name
+
+  const description = top1
+    ? `Skill ${top1}${top2 ? ` & ${top2}` : ''} kamu berada pada kuadran performa unggul berdasarkan data validasi portofolio.`
+    : 'Validasi dan kelola skill portofolio Anda untuk melihat analisis komparasi kompetensi industri.'
+
   return (
     <div className='relative overflow-hidden rounded-[16px] p-4 sm:p-5 bg-gradient-to-r from-[#F5F7FF] via-[#EEF2FF] to-[#F8FAFC] dark:from-slate-900 dark:via-indigo-950/20 dark:to-slate-900 border border-[#E0E7FF] dark:border-indigo-900/40 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4'>
       {/* Left content with icon badge */}
@@ -23,7 +33,7 @@ export default function CompetencyBanner({ onOpenBenchmark }: CompetencyBannerPr
             </span>
           </div>
           <p className='text-xs sm:text-[13px] text-[#64748B] dark:text-slate-400 mt-0.5 leading-relaxed'>
-            Skill kepemimpinan & visual design kamu berada pada kuadran <span className='font-semibold text-slate-800 dark:text-slate-200'>top 10%</span> lulusan satu angkatan.
+            {description}
           </p>
         </div>
       </div>
