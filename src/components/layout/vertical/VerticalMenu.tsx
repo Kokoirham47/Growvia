@@ -1,5 +1,10 @@
 'use client'
 
+import { useState, useEffect } from 'react'
+
+// Next Imports
+import Link from 'next/link'
+
 // MUI Imports
 import { useTheme } from '@mui/material/styles'
 
@@ -13,7 +18,8 @@ import {
   Network,
   TrendingUp,
   GraduationCap,
-  Sparkles
+  Sparkles,
+  Settings
 } from 'lucide-react'
 
 // Type Imports
@@ -55,6 +61,19 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
   // Vars
   const { isBreakpointReached, transitionDuration, isCollapsed, isHovered } = verticalNavOptions
   const ScrollWrapper = isBreakpointReached ? 'div' : PerfectScrollbar
+
+  const [user, setUser] = useState<{ name: string; avatarUrl?: string | null } | null>(null)
+
+  useEffect(() => {
+    fetch('/api/auth/me')
+      .then(res => res.json())
+      .then(json => {
+        if (json?.data?.user) {
+          setUser(json.data.user)
+        }
+      })
+      .catch(() => {})
+  }, [])
 
   return (
     <div className='flex flex-col justify-between bs-full'>
@@ -101,7 +120,7 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
 
       {/* AI Readiness Sidebar Widget */}
       {!(isCollapsed && !isHovered) && (
-        <div className='p-4 pb-6'>
+        <div className='p-4 pb-2'>
           <div className='p-3.5 rounded-2xl bg-[#F0F5FF] dark:bg-blue-950/40 border border-[#DBEAFE] dark:border-blue-900/50 transition-all hover:shadow-sm'>
             <div className='flex items-center gap-2'>
               <div className='w-6 h-6 rounded-lg bg-blue-100 dark:bg-blue-900/60 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0'>
@@ -110,10 +129,48 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
               <span className='font-bold text-xs text-[#1E3A8A] dark:text-blue-300'>AI Readiness</span>
             </div>
             <p className='text-[11px] text-[#64748B] dark:text-slate-400 mt-1.5 leading-snug font-normal'>
-              Profil siap kerja mencapai 78% berdasarkan target UI/UX.
+              Profil siap kerja mencapai 68% berdasarkan target karier.
             </p>
             <div className='mt-2.5 w-full bg-slate-200 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden'>
-              <div className='bg-[#2563EB] h-full rounded-full' style={{ width: '78%' }} />
+              <div className='bg-[#2563EB] h-full rounded-full' style={{ width: '68%' }} />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Bottom Profile avatar + name + "Settings" link */}
+      {!(isCollapsed && !isHovered) && (
+        <div className='p-4 pt-1 pb-5 border-t border-[#E8ECF2] dark:border-slate-800/80 mt-1'>
+          <div className='flex items-center gap-2.5 pt-2'>
+            {user?.avatarUrl ? (
+              <img
+                src={user.avatarUrl}
+                alt={user.name}
+                className='w-9 h-9 rounded-full object-cover shrink-0 border border-slate-200 dark:border-slate-700'
+              />
+            ) : (
+              <div className='w-9 h-9 rounded-full bg-gradient-to-tr from-[#2563EB] to-[#6366F1] text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-xs'>
+                {user?.name
+                  ? user.name
+                      .split(' ')
+                      .map(n => n[0])
+                      .slice(0, 2)
+                      .join('')
+                      .toUpperCase()
+                  : 'GV'}
+              </div>
+            )}
+            <div className='flex flex-col min-w-0'>
+              <span className='text-xs font-bold text-slate-800 dark:text-slate-100 truncate'>
+                {user?.name || 'Mahasiswa Growvia'}
+              </span>
+              <Link
+                href='/profile'
+                className='text-[11px] text-slate-400 hover:text-[#2563EB] dark:hover:text-blue-400 flex items-center gap-1 transition-colors'
+              >
+                <Settings className='w-3 h-3' />
+                <span>Settings</span>
+              </Link>
             </div>
           </div>
         </div>
