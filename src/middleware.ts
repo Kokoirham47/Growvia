@@ -9,6 +9,7 @@ const JWT_SECRET = new TextEncoder().encode(
 
 // Public pages that do not require authentication
 const PUBLIC_PATHS = [
+  '/',
   '/login',
   '/register',
   '/verify-email',
@@ -93,9 +94,15 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // Halaman publik lainnya (seperti verifikasi email atau portofolio publik /u/)
-  if (pathname === '/verify-email' || pathname.startsWith('/u/')) {
-    return NextResponse.next()
+  // Halaman publik lainnya (landing page '/', verifikasi email, atau portofolio publik /u/)
+  if (pathname === '/' || pathname === '/verify-email' || pathname.startsWith('/u/')) {
+    const res = NextResponse.next()
+    if (pathname === '/') {
+      res.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
+      res.headers.set('Pragma', 'no-cache')
+      res.headers.set('Expires', '0')
+    }
+    return res
   }
 
   // 5. Halaman Dashboard & Fitur Terproteksi (/home, /onboarding, /experience, /skills, dll.)
