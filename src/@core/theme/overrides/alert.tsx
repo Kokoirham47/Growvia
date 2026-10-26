@@ -1,5 +1,6 @@
 // React Imports
 import React from 'react'
+import { AlertCircle, AlertTriangle, Info, CheckCircle2 } from 'lucide-react'
 
 // MUI Imports
 import type { Theme } from '@mui/material/styles'
@@ -8,10 +9,10 @@ const alerts: Theme['components'] = {
   MuiAlert: {
     defaultProps: {
       iconMapping: {
-        error: <i className='tabler-alert-circle' />,
-        warning: <i className='tabler-alert-triangle' />,
-        info: <i className='tabler-info-circle' />,
-        success: <i className='tabler-circle-check' />
+        error: <AlertCircle className='w-5 h-5' />,
+        warning: <AlertTriangle className='w-5 h-5' />,
+        info: <Info className='w-5 h-5' />,
+        success: <CheckCircle2 className='w-5 h-5' />
       }
     },
     styleOverrides: {

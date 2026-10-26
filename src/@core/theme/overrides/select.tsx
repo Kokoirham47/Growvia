@@ -1,11 +1,12 @@
 // React Imports
 import React from 'react'
+import { ChevronDown } from 'lucide-react'
 
 // MUI Imports
 import type { Theme } from '@mui/material/styles'
 
 const SelectIcon = () => {
-  return <i className='tabler-chevron-down' />
+  return <ChevronDown className='w-5 h-5' />
 }
 
 const iconStyles = (theme: Theme) => ({
