@@ -278,7 +278,7 @@ return
         <div className='flex items-center gap-3'>
           <button
             onClick={() => fetchSkills()}
-            className='p-2 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors'
+            className='h-10 w-10 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-all flex items-center justify-center cursor-pointer shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)] dark:shadow-none shrink-0'
             title='Muat Ulang'
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
@@ -286,7 +286,7 @@ return
 
           <button
             onClick={handleOpenAdd}
-            className='px-4 py-2.5 rounded-xl font-semibold text-xs text-white bg-gradient-to-r from-purple-600 to-indigo-600 hover:opacity-95 shadow-md shadow-purple-900/30 transition-all flex items-center gap-2 cursor-pointer'
+            className='px-4 py-2.5 rounded-xl font-semibold text-xs text-white bg-[#2563EB] hover:bg-blue-600 active:bg-blue-700 shadow-sm shadow-blue-500/20 transition-all flex items-center gap-2 cursor-pointer'
           >
             <Plus className='w-4 h-4' />
             <span>Tambah Skill Baru</span>
@@ -295,7 +295,7 @@ return
       </div>
 
       {/* Filter and Search Bar */}
-      <div className='p-4 rounded-2xl bg-white dark:bg-[#0F1424] border border-slate-200/80 dark:border-slate-800/80 shadow-xs flex flex-col md:flex-row items-center justify-between gap-4'>
+      <div className='p-4 rounded-2xl bg-white dark:bg-[#0F172A] border border-slate-200/90 dark:border-slate-800 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] dark:shadow-none flex flex-col md:flex-row items-center justify-between gap-4'>
         {/* Search */}
         <div className='relative w-full md:w-80'>
           <div className='absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400'>
@@ -306,7 +306,7 @@ return
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder='Cari nama atau slug skill...'
-            className='w-full pl-10 pr-4 py-2 rounded-xl text-xs bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-purple-500 transition-all'
+            className='w-full pl-10 pr-4 py-2 rounded-xl text-xs bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all'
           />
         </div>
 
@@ -324,7 +324,7 @@ return
               onClick={() => setSelectedCategory(tab.id)}
               className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
                 selectedCategory === tab.id
-                  ? 'bg-purple-600 text-white shadow-xs'
+                  ? 'bg-[#2563EB] text-white shadow-xs'
                   : 'bg-slate-100 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800'
               }`}
             >
@@ -335,7 +335,7 @@ return
       </div>
 
       {/* Table Content */}
-      <div className='overflow-hidden rounded-2xl bg-white dark:bg-[#0F1424] border border-slate-200/80 dark:border-slate-800/80 shadow-xs'>
+      <div className='overflow-hidden rounded-2xl bg-white dark:bg-[#0F172A] border border-slate-200/90 dark:border-slate-800 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] dark:shadow-none'>
         <div className='overflow-x-auto'>
           <table className='w-full text-left border-collapse text-xs'>
             <thead>
@@ -351,7 +351,7 @@ return
               {loading ? (
                 <tr>
                   <td colSpan={5} className='py-12 text-center text-slate-400'>
-                    <RefreshCw className='w-6 h-6 animate-spin mx-auto mb-2 text-purple-500' />
+                    <RefreshCw className='w-6 h-6 animate-spin mx-auto mb-2 text-blue-500' />
                     <span>Memuat master skill...</span>
                   </td>
                 </tr>
@@ -414,21 +414,23 @@ return
                         </span>
                       </td>
 
-                      <td className='py-3.5 px-4 sm:px-6 text-right space-x-1.5'>
-                        <button
-                          onClick={() => handleOpenEdit(skill)}
-                          className='p-1.5 rounded-lg text-slate-500 hover:text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-950/40 transition-colors cursor-pointer'
-                          title='Edit Skill'
-                        >
-                          <Edit2 className='w-4 h-4' />
-                        </button>
-                        <button
-                          onClick={() => handlePrepareDelete(skill)}
-                          className='p-1.5 rounded-lg text-slate-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer'
-                          title='Hapus Skill'
-                        >
-                          <Trash2 className='w-4 h-4' />
-                        </button>
+                      <td className='py-3.5 px-4 sm:px-6 text-right whitespace-nowrap'>
+                        <div className='inline-flex items-center justify-end gap-1'>
+                          <button
+                            onClick={() => handleOpenEdit(skill)}
+                            className='p-1.5 rounded-lg bg-transparent text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50/80 dark:hover:bg-blue-950/40 transition-colors cursor-pointer'
+                            title='Edit Skill'
+                          >
+                            <Edit2 className='w-4 h-4' />
+                          </button>
+                          <button
+                            onClick={() => handlePrepareDelete(skill)}
+                            className='p-1.5 rounded-lg bg-transparent text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50/80 dark:hover:bg-rose-950/40 transition-colors cursor-pointer'
+                            title='Hapus Skill'
+                          >
+                            <Trash2 className='w-4 h-4' />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   )
@@ -514,14 +516,14 @@ return
                   type='button'
                   onClick={() => setModalOpen(false)}
                   disabled={formLoading}
-                  className='px-4 py-2 rounded-xl font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+                  className='px-4 py-2 rounded-xl font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 bg-transparent transition-colors cursor-pointer'
                 >
                   Batal
                 </button>
                 <button
                   type='submit'
                   disabled={formLoading}
-                  className='px-4 py-2 rounded-xl font-semibold text-white bg-purple-600 hover:bg-purple-700 shadow-md shadow-purple-900/30 disabled:opacity-50'
+                  className='px-4 py-2 rounded-xl font-semibold text-white bg-[#2563EB] hover:bg-blue-600 shadow-sm shadow-blue-500/20 disabled:opacity-50 transition-all cursor-pointer'
                 >
                   {formLoading ? 'Menyimpan...' : 'Simpan Data'}
                 </button>

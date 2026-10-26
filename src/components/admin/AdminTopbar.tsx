@@ -1,12 +1,10 @@
 'use client'
 
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 
 import { usePathname } from 'next/navigation'
 
 import { Menu, Sun, Moon } from 'lucide-react'
-
-import { useSettings } from '@core/hooks/useSettings'
 
 interface AdminTopbarProps {
   onToggleSidebar: () => void
@@ -38,17 +36,44 @@ const titlesMap: Record<string, { title: string; subtitle: string }> = {
 
 export default function AdminTopbar({ onToggleSidebar, adminName = 'Super Admin' }: AdminTopbarProps) {
   const pathname = usePathname()
-  const { settings, updateSettings } = useSettings()
+  const [isDark, setIsDark] = useState(false)
+
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      const isDarkMode =
+        document.documentElement.classList.contains('dark') ||
+        document.documentElement.getAttribute('data-theme') === 'dark' ||
+        document.documentElement.getAttribute('data-mui-color-scheme') === 'dark'
+
+      setIsDark(isDarkMode)
+    }
+  }, [])
 
   const currentMeta = titlesMap[pathname] || {
     title: 'Admin Console',
     subtitle: 'Growvia Master Data Management'
   }
 
-  const isDark = settings.mode === 'dark'
-
   const toggleTheme = () => {
-    updateSettings({ mode: isDark ? 'light' : 'dark' })
+    const nextDark = !isDark
+
+    setIsDark(nextDark)
+
+    if (typeof document !== 'undefined') {
+      const modeStr = nextDark ? 'dark' : 'light'
+
+      if (nextDark) {
+        document.documentElement.classList.add('dark')
+        document.documentElement.setAttribute('data-theme', 'dark')
+        document.documentElement.setAttribute('data-mui-color-scheme', 'dark')
+      } else {
+        document.documentElement.classList.remove('dark')
+        document.documentElement.setAttribute('data-theme', 'light')
+        document.documentElement.setAttribute('data-mui-color-scheme', 'light')
+      }
+
+      document.cookie = `settings={"mode":"${modeStr}"}; path=/; max-age=31536000`
+    }
   }
 
   return (
@@ -76,13 +101,30 @@ export default function AdminTopbar({ onToggleSidebar, adminName = 'Super Admin'
 
       {/* Right Controls */}
       <div className='flex items-center gap-2.5 sm:gap-3.5'>
-        {/* Mode Toggle Button */}
+        {/* Theme Toggle Pill Switch */}
         <button
+          type='button'
           onClick={toggleTheme}
-          className='p-2 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-colors'
-          title={`Ganti ke mode ${isDark ? 'Terang' : 'Gelap'}`}
+          aria-label={isDark ? 'Beralih ke Light mode' : 'Beralih ke Dark mode'}
+          title={isDark ? 'Mode Gelap (Klik untuk Light Mode)' : 'Mode Terang (Klik untuk Dark Mode)'}
+          className={`relative inline-flex h-8 w-[60px] sm:h-9 sm:w-[68px] shrink-0 cursor-pointer items-center rounded-full p-1 border transition-colors duration-300 ease-in-out shadow-xs ${
+            isDark ? 'bg-[#111827] border-[#1F2937]' : 'bg-white border-slate-200'
+          }`}
         >
-          {isDark ? <Sun className='w-4 h-4 text-amber-400' /> : <Moon className='w-4 h-4 text-purple-600' />}
+          <div className='absolute inset-0 flex items-center justify-between px-1.5 sm:px-2 pointer-events-none'>
+            <Sun className={`w-3 h-3 sm:w-3.5 sm:h-3.5 transition-opacity duration-200 ${isDark ? 'opacity-30 text-slate-400' : 'opacity-80 text-amber-500'}`} />
+            <Moon className={`w-3 h-3 sm:w-3.5 sm:h-3.5 transition-opacity duration-200 ${isDark ? 'opacity-80 text-blue-400' : 'opacity-30 text-slate-400'}`} />
+          </div>
+
+          <span
+            className={`pointer-events-none flex h-6 w-6 sm:h-7 sm:w-7 items-center justify-center rounded-full shadow-md transition-transform duration-300 ease-in-out ${
+              isDark
+                ? 'translate-x-[28px] sm:translate-x-[32px] bg-[#1E293B] text-blue-400 border border-slate-700'
+                : 'translate-x-0 bg-white text-amber-500 border border-slate-100 shadow-xs'
+            }`}
+          >
+            {isDark ? <Moon className='w-3 h-3 sm:w-3.5 sm:h-3.5 fill-current' /> : <Sun className='w-3 h-3 sm:w-3.5 sm:h-3.5 fill-current' />}
+          </span>
         </button>
 
         {/* Active Badge */}

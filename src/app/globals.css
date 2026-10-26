@@ -113,12 +113,24 @@
     border: 0 solid;
     border-color: var(--border-color, currentColor);
   }
+
+  button,
+  [type='button'],
+  [type='reset'],
+  [type='submit'] {
+    background-color: transparent;
+    color: inherit;
+  }
 }
 
 html {
   display: flex;
   inline-size: 100%;
   min-block-size: 100%;
+}
+
+body {
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
 a {
@@ -277,16 +289,4 @@ input[type='password']::-ms-clear {
   background: rgba(100, 116, 139, 0.7);
 }
 
-/* Global Button Reset:
- * Menghapus background-color default browser (buttonface / abu-abu) dan border default
- * agar icon, link button, dan teks button tanpa styling tetap bersih dan transparan.
- * Tombol dengan class latar eksplisit (misal: bg-*, MuiButton-contained) tetap mempertahankan warnanya.
- */
-button:not([class*='bg-']):not([class*='MuiButton-contained']),
-[type='button']:not([class*='bg-']):not([class*='MuiButton-contained']),
-[type='reset']:not([class*='bg-']):not([class*='MuiButton-contained']),
-[type='submit']:not([class*='bg-']):not([class*='MuiButton-contained']) {
-  background-color: transparent;
-  border-style: none;
-}
 

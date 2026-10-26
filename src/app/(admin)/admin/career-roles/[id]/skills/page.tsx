@@ -244,7 +244,7 @@ return
       <div>
         <Link
           href='/admin/career-roles'
-          className='inline-flex items-center gap-1.5 text-xs font-semibold text-purple-600 dark:text-purple-400 hover:underline'
+          className='inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline'
         >
           <ArrowLeft className='w-4 h-4' />
           <span>Kembali ke Daftar Peran Karier</span>
@@ -252,9 +252,9 @@ return
       </div>
 
       {/* Role Header Banner */}
-      <div className='rounded-2xl bg-white dark:bg-[#0F1424] border border-slate-200/80 dark:border-slate-800/80 p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-6'>
+      <div className='rounded-2xl bg-white dark:bg-[#0F172A] border border-slate-200/90 dark:border-slate-800 p-6 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] dark:shadow-none flex flex-col md:flex-row md:items-center justify-between gap-6'>
         <div className='space-y-1.5'>
-          <div className='inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-xs font-semibold'>
+          <div className='inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 text-xs font-semibold'>
             <span>{roleInfo?.industry || 'Umum'}</span>
           </div>
           <h2 className='text-xl sm:text-2xl font-bold text-slate-900 dark:text-white'>
@@ -267,7 +267,7 @@ return
 
         <button
           onClick={handleOpenAdd}
-          className='px-4 py-2.5 rounded-xl font-semibold text-xs text-white bg-gradient-to-r from-purple-600 to-indigo-600 hover:opacity-95 shadow-md shadow-purple-900/30 transition-all flex items-center gap-2 shrink-0 cursor-pointer'
+          className='px-4 py-2.5 rounded-xl font-semibold text-xs text-white bg-[#2563EB] hover:bg-blue-600 active:bg-blue-700 shadow-sm shadow-blue-500/20 transition-all flex items-center gap-2 shrink-0 cursor-pointer'
         >
           <Plus className='w-4 h-4' />
           <span>Petakan Skill Baru</span>
@@ -275,14 +275,14 @@ return
       </div>
 
       {/* Skills Table */}
-      <div className='overflow-hidden rounded-2xl bg-white dark:bg-[#0F1424] border border-slate-200/80 dark:border-slate-800/80 shadow-xs'>
+      <div className='overflow-hidden rounded-2xl bg-white dark:bg-[#0F172A] border border-slate-200/90 dark:border-slate-800 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] dark:shadow-none'>
         <div className='p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between'>
           <h3 className='text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400'>
             Daftar Keahlian yang Dipersyaratkan ({skills.length})
           </h3>
           <button
             onClick={fetchData}
-            className='p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors'
+            className='p-1.5 rounded-lg bg-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer'
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
           </button>
@@ -303,7 +303,7 @@ return
               {loading ? (
                 <tr>
                   <td colSpan={5} className='py-12 text-center text-slate-400'>
-                    <RefreshCw className='w-6 h-6 animate-spin mx-auto mb-2 text-purple-500' />
+                    <RefreshCw className='w-6 h-6 animate-spin mx-auto mb-2 text-blue-500' />
                     <span>Memuat pemetaan skill...</span>
                   </td>
                 </tr>
@@ -350,21 +350,23 @@ return
                         </span>
                       </td>
 
-                      <td className='py-3.5 px-4 sm:px-6 text-right space-x-1.5'>
-                        <button
-                          onClick={() => handleOpenEdit(item)}
-                          className='p-1.5 rounded-lg text-slate-500 hover:text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-950/40 transition-colors cursor-pointer'
-                          title='Ubah Bobot'
-                        >
-                          <Edit2 className='w-4 h-4' />
-                        </button>
-                        <button
-                          onClick={() => handleRemove(item.skillId, item.skill.name)}
-                          className='p-1.5 rounded-lg text-slate-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer'
-                          title='Cabut dari Peran'
-                        >
-                          <Trash2 className='w-4 h-4' />
-                        </button>
+                      <td className='py-3.5 px-4 sm:px-6 text-right whitespace-nowrap'>
+                        <div className='inline-flex items-center justify-end gap-1'>
+                          <button
+                            onClick={() => handleOpenEdit(item)}
+                            className='p-1.5 rounded-lg bg-transparent text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50/80 dark:hover:bg-blue-950/40 transition-colors cursor-pointer'
+                            title='Ubah Bobot'
+                          >
+                            <Edit2 className='w-4 h-4' />
+                          </button>
+                          <button
+                            onClick={() => handleRemove(item.skillId, item.skill.name)}
+                            className='p-1.5 rounded-lg bg-transparent text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50/80 dark:hover:bg-rose-950/40 transition-colors cursor-pointer'
+                            title='Cabut dari Peran'
+                          >
+                            <Trash2 className='w-4 h-4' />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   )
@@ -462,14 +464,14 @@ return
                   type='button'
                   onClick={() => setModalOpen(false)}
                   disabled={formLoading}
-                  className='px-4 py-2 rounded-xl font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+                  className='px-4 py-2 rounded-xl font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 bg-transparent transition-colors cursor-pointer'
                 >
                   Batal
                 </button>
                 <button
                   type='submit'
                   disabled={formLoading}
-                  className='px-4 py-2 rounded-xl font-semibold text-white bg-purple-600 hover:bg-purple-700 shadow-md shadow-purple-900/30 disabled:opacity-50'
+                  className='px-4 py-2 rounded-xl font-semibold text-white bg-[#2563EB] hover:bg-blue-600 shadow-sm shadow-blue-500/20 disabled:opacity-50 transition-all cursor-pointer'
                 >
                   {formLoading ? 'Menyimpan...' : 'Simpan Mapping'}
                 </button>

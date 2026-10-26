@@ -95,21 +95,18 @@ export default function AdminSidebar({
         {/* Brand Header */}
         <div className='p-5 border-b border-slate-800/80 flex items-center justify-between'>
           <Link href='/admin/dashboard' className='flex items-center gap-3 group'>
-            <div className='w-9 h-9 rounded-xl bg-purple-600/20 border border-purple-500/40 p-1 flex items-center justify-center shadow-md shadow-purple-900/30 group-hover:scale-105 transition-transform'>
-              <img
-                src='/images/growvia-logo.png'
-                alt='Growvia'
-                className='w-full h-full object-contain'
-              />
-            </div>
+            <img
+              src='/images/growvia-logo.png'
+              alt='Growvia Logo'
+              className='w-8 h-8 object-contain shrink-0 group-hover:scale-105 transition-transform'
+            />
             <div>
               <div className='flex items-center gap-2'>
-                <span className='font-bold text-base tracking-tight text-white'>Growvia</span>
-                <span className='text-[10px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30'>
+                <span className='font-bold text-lg tracking-tight text-white'>Growvia</span>
+                <span className='text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30'>
                   Admin
                 </span>
               </div>
-              <p className='text-[11px] text-slate-400'>Master Data Console</p>
             </div>
           </Link>
 
@@ -142,21 +139,21 @@ export default function AdminSidebar({
                 onClick={onClose}
                 className={`group flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
                   isActive
-                    ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md shadow-purple-900/30'
+                    ? 'bg-[#2563EB] text-white shadow-md shadow-blue-600/30 font-semibold'
                     : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
                 }`}
               >
                 <div className='flex items-center gap-3'>
                   <Icon
                     className={`w-4 h-4 transition-transform group-hover:scale-110 ${
-                      isActive ? 'text-white' : 'text-slate-400 group-hover:text-purple-400'
+                      isActive ? 'text-white' : 'text-slate-400 group-hover:text-blue-400'
                     }`}
                   />
                   <span>{item.name}</span>
                 </div>
 
                 {item.badge && (
-                  <span className='text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'>
+                  <span className='text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/20 text-white border border-white/25'>
                     {item.badge}
                   </span>
                 )}
@@ -190,7 +187,7 @@ export default function AdminSidebar({
         <div className='p-3.5 border-t border-slate-800/80 bg-slate-900/60'>
           <div className='flex items-center justify-between gap-3 p-2 rounded-xl bg-slate-800/40 border border-slate-700/50'>
             <div className='flex items-center gap-2.5 min-w-0'>
-              <div className='w-8 h-8 rounded-lg bg-gradient-to-tr from-purple-600 to-indigo-600 flex items-center justify-center text-white shrink-0 font-bold text-xs shadow'>
+              <div className='w-8 h-8 rounded-lg bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white shrink-0 font-bold text-xs shadow'>
                 <ShieldCheck className='w-4 h-4' />
               </div>
               <div className='min-w-0'>
@@ -202,7 +199,7 @@ export default function AdminSidebar({
             <button
               onClick={handleLogout}
               title='Logout Admin'
-              className='p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors'
+              className='p-1.5 rounded-lg bg-transparent text-slate-400 hover:text-rose-400 hover:bg-rose-500/15 transition-colors cursor-pointer shrink-0'
             >
               <LogOut className='w-4 h-4' />
             </button>

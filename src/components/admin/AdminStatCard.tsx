@@ -27,7 +27,7 @@ export default function AdminStatCard({
   color
 }: AdminStatCardProps) {
   return (
-    <div className='relative overflow-hidden rounded-2xl bg-white dark:bg-[#0F1424] border border-slate-200/80 dark:border-slate-800/80 p-5 sm:p-6 shadow-sm hover:shadow-md transition-all duration-300 group'>
+    <div className='relative overflow-hidden rounded-2xl bg-white dark:bg-[#0F172A] border border-slate-200/90 dark:border-slate-800 p-5 sm:p-6 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] dark:shadow-none hover:shadow-lg hover:shadow-slate-200/60 dark:hover:shadow-slate-900/60 hover:border-slate-300 dark:hover:border-slate-700 transition-all duration-300 group'>
       {/* Background Accent Glow */}
       <div
         className={`absolute -top-12 -right-12 w-32 h-32 rounded-full ${gradient} opacity-10 dark:opacity-20 blur-2xl group-hover:scale-125 transition-transform duration-500`}

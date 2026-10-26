@@ -61,20 +61,16 @@ export default function AdminDashboardPage() {
   return (
     <div className='space-y-8 animate-fade-in'>
       {/* Welcome Hero Banner */}
-      <div className='relative overflow-hidden rounded-3xl bg-gradient-to-r from-purple-900/90 via-indigo-900/90 to-slate-900/90 border border-purple-500/30 p-6 sm:p-8 text-white shadow-xl shadow-purple-950/30'>
-        <div className='absolute -top-24 -right-24 w-80 h-80 rounded-full bg-purple-500/20 blur-3xl pointer-events-none' />
+      <div className='relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0B1528] via-[#0F2864] to-[#1E3A8A] border border-blue-400/20 p-6 sm:p-8 text-white shadow-lg shadow-blue-950/20'>
+        <div className='absolute -top-24 -right-24 w-80 h-80 rounded-full bg-blue-500/20 blur-3xl pointer-events-none' />
 
         <div className='relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6'>
           <div className='space-y-2 max-w-2xl'>
-            <div className='inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/20 border border-purple-400/30 text-purple-200 text-xs font-semibold'>
-              <ShieldCheck className='w-3.5 h-3.5 text-purple-300' />
-              <span>Admin Management Hub</span>
-            </div>
             <h2 className='text-2xl sm:text-3xl font-extrabold tracking-tight text-white'>
-              Master Data Intelligence Console
+              Master Data Admin Growvia
             </h2>
-            <p className='text-xs sm:text-sm text-purple-200/80 leading-relaxed'>
-              Kelola seluruh taksonomi skill, target karier, rekomendasi belajar, dan peluang kerja yang menggerakkan mesin rekomendasi AI Growvia.
+            <p className='text-xs sm:text-sm text-blue-100/80 leading-relaxed'>
+              Kelola seluruh daftar skill, target karier, rekomendasi belajar, dan peluang kerja yang menggerakkan mesin rekomendasi AI Growvia.
             </p>
           </div>
 
@@ -82,14 +78,14 @@ export default function AdminDashboardPage() {
             <button
               onClick={fetchOverview}
               disabled={loading}
-              className='px-3.5 py-2.5 rounded-xl text-xs font-semibold bg-white/10 hover:bg-white/20 text-white border border-white/20 transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50'
+              className='px-3.5 py-2.5 rounded-xl text-xs font-semibold bg-white/10 hover:bg-white/20 text-white border border-white/20 transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50 shadow-xs'
             >
               <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
               <span>Muat Ulang</span>
             </button>
             <Link
               href='/admin/skills'
-              className='px-4 py-2.5 rounded-xl text-xs font-semibold bg-purple-600 hover:bg-purple-500 text-white shadow-lg shadow-purple-900/40 transition-all flex items-center gap-1.5'
+              className='px-4 py-2.5 rounded-xl text-xs font-semibold bg-[#2563EB] hover:bg-blue-600 active:bg-blue-700 text-white shadow-md shadow-blue-900/30 transition-all flex items-center gap-1.5'
             >
               <Plus className='w-4 h-4' />
               <span>Tambah Skill</span>
@@ -106,8 +102,8 @@ export default function AdminDashboardPage() {
           subtitle='Taksonomi keahlian aktif'
           icon={Layers}
           href='/admin/skills'
-          gradient='bg-purple-500'
-          color='text-purple-600 dark:text-purple-400'
+          gradient='bg-blue-500'
+          color='text-blue-600 dark:text-blue-400'
         />
         <AdminStatCard
           title='Career Paths'
@@ -141,7 +137,7 @@ export default function AdminDashboardPage() {
       {/* Quick Action Shortcuts & System Architecture */}
       <div className='grid grid-cols-1 lg:grid-cols-3 gap-6'>
         {/* Quick Actions Panel */}
-        <div className='lg:col-span-2 rounded-2xl bg-white dark:bg-[#0F1424] border border-slate-200/80 dark:border-slate-800/80 p-6 shadow-sm'>
+        <div className='lg:col-span-2 rounded-2xl bg-white dark:bg-[#0F172A] border border-slate-200/90 dark:border-slate-800 p-6 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] dark:shadow-none'>
           <h3 className='text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-4'>
             Aksi Cepat Pengelolaan Master Data
           </h3>
@@ -149,14 +145,14 @@ export default function AdminDashboardPage() {
           <div className='grid grid-cols-1 sm:grid-cols-2 gap-3.5'>
             <Link
               href='/admin/skills'
-              className='p-4 rounded-xl border border-slate-200/80 dark:border-slate-800 hover:border-purple-500/50 hover:bg-purple-50/50 dark:hover:bg-purple-950/20 transition-all flex items-center justify-between group'
+              className='p-4 rounded-xl border border-slate-200/80 dark:border-slate-800 hover:border-blue-500/50 hover:bg-blue-50/50 dark:hover:bg-blue-950/20 transition-all flex items-center justify-between group'
             >
               <div className='flex items-center gap-3'>
-                <div className='w-10 h-10 rounded-lg bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center font-bold'>
+                <div className='w-10 h-10 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold'>
                   <Layers className='w-5 h-5' />
                 </div>
                 <div>
-                  <h4 className='text-xs font-bold text-slate-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-300 transition-colors'>
+                  <h4 className='text-xs font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-300 transition-colors'>
                     Kelola Skill Taxonomy
                   </h4>
                   <p className='text-[11px] text-slate-500 dark:text-slate-400'>
@@ -164,7 +160,7 @@ export default function AdminDashboardPage() {
                   </p>
                 </div>
               </div>
-              <ArrowRight className='w-4 h-4 text-slate-400 group-hover:text-purple-500 group-hover:translate-x-1 transition-all' />
+              <ArrowRight className='w-4 h-4 text-slate-400 group-hover:text-blue-500 group-hover:translate-x-1 transition-all' />
             </Link>
 
             <Link
@@ -230,7 +226,7 @@ export default function AdminDashboardPage() {
         </div>
 
         {/* System Status Panel */}
-        <div className='rounded-2xl bg-white dark:bg-[#0F1424] border border-slate-200/80 dark:border-slate-800/80 p-6 shadow-sm flex flex-col justify-between'>
+        <div className='rounded-2xl bg-white dark:bg-[#0F172A] border border-slate-200/90 dark:border-slate-800 p-6 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] dark:shadow-none flex flex-col justify-between'>
           <div>
             <h3 className='text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-4'>
               Status Sistem & Database
@@ -252,14 +248,14 @@ export default function AdminDashboardPage() {
               </div>
 
               <div className='flex items-start gap-3'>
-                <div className='w-8 h-8 rounded-lg bg-purple-500/10 text-purple-500 flex items-center justify-center shrink-0'>
+                <div className='w-8 h-8 rounded-lg bg-blue-500/10 text-blue-500 flex items-center justify-center shrink-0'>
                   <Cpu className='w-4 h-4' />
                 </div>
                 <div>
                   <p className='text-xs font-semibold text-slate-900 dark:text-white'>
                     AI Extractor & Match Engine
                   </p>
-                  <p className='text-[11px] text-purple-600 dark:text-purple-400 font-medium'>
+                  <p className='text-[11px] text-blue-600 dark:text-blue-400 font-medium'>
                     ● Google Gemini & Groq Hybrid
                   </p>
                 </div>
