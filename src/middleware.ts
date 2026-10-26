@@ -119,8 +119,13 @@ return NextResponse.redirect(adminLoginUrl)
   const session = token ? await verifyToken(token) : null
   const isAuthenticated = Boolean(session)
 
-  // 2. Bypass public auth API endpoints, master data career-fields & health check
-  if (pathname.startsWith('/api/auth/') || pathname === '/api/career-fields' || pathname === '/api/health') {
+  // 2. Bypass public auth API endpoints, master data career-fields, public portfolio API & health check
+  if (
+    pathname.startsWith('/api/auth/') ||
+    pathname.startsWith('/api/public/') ||
+    pathname === '/api/career-fields' ||
+    pathname === '/api/health'
+  ) {
     return NextResponse.next()
   }
 
