@@ -1,5 +1,6 @@
 // React Imports
 import React from 'react'
+import { ChevronDown } from 'lucide-react'
 
 // MUI Imports
 import type { Theme } from '@mui/material/styles'
@@ -20,7 +21,7 @@ const autocomplete = (skin: Skin): Theme['components'] => ({
       ChipProps: {
         size: 'small'
       },
-      popupIcon: <i className='tabler-chevron-down' />
+      popupIcon: <ChevronDown className='w-4 h-4' />
     },
     styleOverrides: {
       root: {

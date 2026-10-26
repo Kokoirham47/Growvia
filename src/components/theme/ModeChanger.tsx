@@ -21,14 +21,23 @@ const ModeChanger = ({ systemMode }: { systemMode: SystemMode }) => {
 
   useEffect(() => {
     if (settings.mode) {
-      if (settings.mode === 'system') {
-        setMode(isDark ? 'dark' : 'light')
-      } else {
-        setMode(settings.mode)
+      const activeMode = settings.mode === 'system' ? (isDark ? 'dark' : 'light') : settings.mode
+      setMode(activeMode)
+
+      if (typeof document !== 'undefined') {
+        if (activeMode === 'dark') {
+          document.documentElement.classList.add('dark')
+          document.documentElement.setAttribute('data-theme', 'dark')
+          document.documentElement.setAttribute('data-mui-color-scheme', 'dark')
+        } else {
+          document.documentElement.classList.remove('dark')
+          document.documentElement.setAttribute('data-theme', 'light')
+          document.documentElement.setAttribute('data-mui-color-scheme', 'light')
+        }
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [settings.mode])
+  }, [settings.mode, isDark])
 
   return null
 }
