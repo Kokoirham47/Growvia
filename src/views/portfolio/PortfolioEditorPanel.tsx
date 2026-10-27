@@ -1,6 +1,8 @@
 'use client'
 
-import React from 'react'
+import React, { useRef, useState } from 'react'
+
+import Image from 'next/image'
 
 import {
   Globe,
@@ -10,9 +12,14 @@ import {
   Save,
   Palette,
   Eye,
-  Sparkles
+  Sparkles,
+  Camera,
+  UploadCloud,
+  Trash2,
+  RefreshCw
 } from 'lucide-react'
 
+import { useAuth } from '@/contexts/AuthContext'
 import type {
   PortfolioTheme,
   PortfolioSectionVisibility
@@ -23,6 +30,9 @@ interface PortfolioEditorPanelProps {
   onTogglePublish: (val: boolean) => void
   slug: string
   onSlugChange: (val: string) => void
+  avatarUrl?: string | null
+  userName?: string
+  onAvatarChange?: (val: string | null) => void
   headline: string
   onHeadlineChange: (val: string) => void
   bio: string
@@ -41,6 +51,9 @@ export default function PortfolioEditorPanel({
   onTogglePublish,
   slug,
   onSlugChange,
+  avatarUrl,
+  userName,
+  onAvatarChange,
   headline,
   onHeadlineChange,
   bio,
@@ -55,6 +68,90 @@ export default function PortfolioEditorPanel({
 }: PortfolioEditorPanelProps) {
   const origin = typeof window !== 'undefined' ? window.location.origin : 'https://growvia.app'
   const publicUrl = `${origin}/u/${slug}`
+
+  const { refreshUser } = useAuth()
+  const avatarFileInputRef = useRef<HTMLInputElement>(null)
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false)
+  const [avatarError, setAvatarError] = useState<string | null>(null)
+
+  const handleUploadAvatarFile = async (file: File) => {
+    const validMimes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg']
+
+    if (!validMimes.includes(file.type)) {
+      setAvatarError('Format tidak didukung. Gunakan JPG, PNG, atau WebP.')
+
+      return
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setAvatarError('Ukuran file maksimal 5MB.')
+
+      return
+    }
+
+    try {
+      setIsUploadingAvatar(true)
+      setAvatarError(null)
+
+      const formData = new FormData()
+
+      formData.append('file', file)
+
+      const res = await fetch('/api/profile/avatar', {
+        method: 'POST',
+        body: formData
+      })
+
+      const json = await res.json()
+
+      if (!res.ok || !json.success) {
+        throw new Error(json.message || 'Gagal mengunggah foto profil')
+      }
+
+      onAvatarChange?.(json.data.avatarUrl)
+      await refreshUser()
+    } catch (err: any) {
+      setAvatarError(err.message || 'Gagal mengunggah foto')
+    } finally {
+      setIsUploadingAvatar(false)
+
+      if (avatarFileInputRef.current) {
+        avatarFileInputRef.current.value = ''
+      }
+    }
+  }
+
+  const handleRemoveAvatarPhoto = async () => {
+    try {
+      setIsUploadingAvatar(true)
+      setAvatarError(null)
+
+      const res = await fetch('/api/profile/avatar', {
+        method: 'DELETE'
+      })
+
+      const json = await res.json()
+
+      if (!res.ok || !json.success) {
+        throw new Error(json.message || 'Gagal menghapus foto profil')
+      }
+
+      onAvatarChange?.(null)
+      await refreshUser()
+    } catch (err: any) {
+      setAvatarError(err.message || 'Gagal menghapus foto')
+    } finally {
+      setIsUploadingAvatar(false)
+    }
+  }
+
+  const initials = (userName || 'G')
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map(w => w[0])
+    .join('')
+    .toUpperCase()
 
   const themes: { key: PortfolioTheme; label: string; bg: string; dot: string }[] = [
     { key: 'royal-blue', label: 'Royal Blue', bg: 'border-blue-500 bg-blue-50/50 dark:bg-blue-950/30', dot: 'bg-blue-600' },
@@ -151,7 +248,110 @@ export default function PortfolioEditorPanel({
         </div>
       </div>
 
-      {/* 2. Headline & Bio Card */}
+      {/* 2. Foto Profil Portofolio Card */}
+      <div className='p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-2xs space-y-3.5'>
+        <div className='flex items-center gap-2'>
+          <Camera className='w-4 h-4 text-blue-600 dark:text-blue-400' />
+          <h3 className='text-sm font-bold text-slate-900 dark:text-white'>
+            Foto Profil Portofolio
+          </h3>
+        </div>
+
+        <input
+          ref={avatarFileInputRef}
+          type='file'
+          accept='image/jpeg,image/png,image/webp,image/jpg'
+          className='hidden'
+          onChange={e => {
+            if (e.target.files && e.target.files[0]) {
+              handleUploadAvatarFile(e.target.files[0])
+            }
+          }}
+        />
+
+        <div className='flex items-center gap-4'>
+          {/* Avatar Preview */}
+          <div
+            onClick={() => avatarFileInputRef.current?.click()}
+            className='relative shrink-0 group cursor-pointer'
+            title='Klik untuk memilih foto dari perangkat'
+          >
+            {avatarUrl ? (
+              <div className='w-16 h-16 rounded-2xl overflow-hidden ring-2 ring-blue-500/30 shadow-md relative bg-slate-100 dark:bg-slate-800'>
+                <Image
+                  src={avatarUrl}
+                  alt={userName || 'Avatar'}
+                  fill
+                  unoptimized
+                  className='object-cover group-hover:scale-105 transition-transform'
+                />
+                <div className='absolute inset-0 bg-slate-900/50 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white transition-opacity'>
+                  <Camera className='w-4 h-4' />
+                </div>
+              </div>
+            ) : (
+              <div className='w-16 h-16 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-sky-500 text-white font-extrabold text-lg flex items-center justify-center ring-2 ring-blue-500/30 shadow-md relative overflow-hidden group'>
+                <span>{initials}</span>
+                <div className='absolute inset-0 bg-slate-900/50 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white transition-opacity'>
+                  <Camera className='w-4 h-4' />
+                </div>
+              </div>
+            )}
+
+            {isUploadingAvatar ? (
+              <span className='absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center shadow-xs'>
+                <RefreshCw className='w-3 h-3 animate-spin' />
+              </span>
+            ) : (
+              <span
+                className='absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-blue-600 group-hover:bg-blue-700 text-white border border-white dark:border-slate-900 flex items-center justify-center shadow-xs transition-colors'
+                title='Ganti foto'
+              >
+                <Camera className='w-2.5 h-2.5' />
+              </span>
+            )}
+          </div>
+
+          {/* Action Buttons */}
+          <div className='flex flex-col gap-1.5 flex-1 min-w-0'>
+            <div className='flex flex-wrap items-center gap-2'>
+              <button
+                type='button'
+                disabled={isUploadingAvatar}
+                onClick={() => avatarFileInputRef.current?.click()}
+                className='inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-colors cursor-pointer shadow-xs disabled:opacity-60'
+              >
+                <UploadCloud className='w-3.5 h-3.5' />
+                <span>Pilih Foto dari Perangkat</span>
+              </button>
+
+              {avatarUrl && (
+                <button
+                  type='button'
+                  disabled={isUploadingAvatar}
+                  onClick={handleRemoveAvatarPhoto}
+                  className='inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-rose-50 dark:bg-slate-800 dark:hover:bg-rose-950/40 text-slate-600 hover:text-rose-600 dark:text-slate-300 dark:hover:text-rose-400 text-xs font-semibold border border-slate-200/80 dark:border-slate-700 transition-colors cursor-pointer disabled:opacity-60'
+                >
+                  <Trash2 className='w-3.5 h-3.5' />
+                  <span>Hapus</span>
+                </button>
+              )}
+            </div>
+
+            <span className='text-[10px] text-slate-400 dark:text-slate-500'>
+              Unggah langsung dari file perangkat (JPG, PNG, WebP maks. 5MB)
+            </span>
+
+            {avatarError && (
+              <span className='text-[11px] text-rose-500 font-medium'>
+                {avatarError}
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* 3. Headline & Bio Card */}
       <div className='p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-2xs space-y-4'>
         <div className='flex items-center gap-2'>
           <Sparkles className='w-4 h-4 text-blue-600 dark:text-blue-400' />

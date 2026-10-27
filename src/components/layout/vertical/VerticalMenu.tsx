@@ -14,7 +14,9 @@ import {
   TrendingUp,
   GraduationCap,
   Sparkles,
-  Compass
+  Compass,
+  User,
+  Settings
 } from 'lucide-react'
 
 // Type Imports
@@ -98,6 +100,15 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
             </MenuItem>
             <MenuItem href='/portfolio' icon={<Sparkles className='w-5 h-5' />}>
               Portofolio AI
+            </MenuItem>
+          </MenuSection>
+
+          <MenuSection label='PENGATURAN & AKUN'>
+            <MenuItem href='/profile' icon={<User className='w-5 h-5' />}>
+              Profil Saya
+            </MenuItem>
+            <MenuItem href='/settings' icon={<Settings className='w-5 h-5' />}>
+              Pengaturan
             </MenuItem>
           </MenuSection>
         </Menu>

@@ -96,6 +96,22 @@ export default function PortfolioBuilderView() {
     }))
   }
 
+  // Handle direct avatar upload change
+  const handleAvatarChange = (newUrl: string | null) => {
+    setData(prev => {
+      if (!prev) return prev
+
+      return {
+        ...prev,
+        user: {
+          ...prev.user,
+          avatarUrl: newUrl
+        }
+      }
+    })
+    showToast(newUrl ? 'Foto profil berhasil diperbarui!' : 'Foto profil berhasil dihapus.')
+  }
+
   // 3. Save Settings to Backend
   const handleSave = async (overridePublish?: boolean) => {
     try {
@@ -273,6 +289,9 @@ export default function PortfolioBuilderView() {
             onTogglePublish={handleTogglePublish}
             slug={slug}
             onSlugChange={setSlug}
+            avatarUrl={data.user.avatarUrl}
+            userName={data.user.name}
+            onAvatarChange={handleAvatarChange}
             headline={headline}
             onHeadlineChange={setHeadline}
             bio={bio}
