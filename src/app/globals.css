@@ -113,6 +113,22 @@
     border: 0 solid;
     border-color: var(--border-color, currentColor);
   }
+
+  button,
+  [type='button'],
+  [type='reset'],
+  [type='submit'] {
+    background-color: transparent;
+    color: inherit;
+  }
+
+  body,
+  button,
+  input,
+  select,
+  textarea {
+    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  }
 }
 
 html {
@@ -251,5 +267,92 @@ input::-webkit-contacts-auto-fill-button {
 input[type='password']::-ms-reveal,
 input[type='password']::-ms-clear {
   display: none !important;
+}
+
+/* =============================================================================
+   Growvia Design System Tokens: landing-page & auth pages
+   ============================================================================= */
+
+:root,
+.landing-page {
+  --lp-page: #ffffff;
+  --lp-panel: #ffffff;
+  --lp-card: #ffffff;
+  --lp-nav: rgba(255, 255, 255, 0.85);
+
+  --lp-heading: #1e3a8a; /* primary */
+  --lp-btn: #2563eb;
+  --lp-accent: #2563eb;
+  --lp-link: #2563eb;
+  --lp-accent-soft: rgba(37, 99, 235, 0.1);
+
+  --lp-ai: #6366f1;
+  --lp-ai-bg: #eef2ff;
+  --lp-ai-text: #4f46e5;
+  --lp-ai-line: rgba(99, 102, 241, 0.35);
+
+  --lp-border: #e2e8f0;
+  --lp-border-strong: #cbd5e1;
+
+  --lp-text: #1e293b;
+  --lp-text-sec: #64748b;
+  --lp-text-muted: #94a3b8;
+
+  --lp-success: #16a34a;
+  --lp-success-text: #15803d;
+  --lp-success-soft: rgba(22, 163, 74, 0.12);
+  --lp-warning: #f59e0b;
+  --lp-warning-text: #b45309;
+  --lp-warning-soft: rgba(245, 158, 11, 0.16);
+  --lp-error: #dc2626;
+
+  --lp-navy: #1e3a8a;
+  --lp-on-navy: #c7d2fe;
+
+  --lp-shadow-card: 0 1px 3px rgba(30, 41, 59, 0.06);
+  --lp-shadow-float: 0 12px 28px rgba(30, 41, 59, 0.18);
+  color-scheme: light;
+}
+
+.dark,
+[data-mui-color-scheme='dark'],
+.landing-page.dark {
+  --lp-page: #0f172a;
+  --lp-panel: #0b1120;
+  --lp-card: #1e293b;
+  --lp-nav: rgba(15, 23, 42, 0.85);
+
+  --lp-heading: #f1f5f9;
+  --lp-btn: #2563eb;
+  --lp-accent: #3b82f6;
+  --lp-link: #60a5fa;
+  --lp-accent-soft: rgba(96, 165, 250, 0.14);
+
+  --lp-ai: #818cf8;
+  --lp-ai-bg: rgba(99, 102, 241, 0.16);
+  --lp-ai-text: #a5b4fc;
+  --lp-ai-line: rgba(129, 140, 248, 0.4);
+
+  --lp-border: #334155;
+  --lp-border-strong: #475569;
+
+  --lp-text: #f1f5f9;
+  --lp-text-sec: #94a3b8;
+  --lp-text-muted: #64748b;
+
+  --lp-success: #4ade80;
+  --lp-success-text: #4ade80;
+  --lp-success-soft: rgba(74, 222, 128, 0.14);
+  --lp-warning: #fbbf24;
+  --lp-warning-text: #fbbf24;
+  --lp-warning-soft: rgba(251, 191, 36, 0.14);
+  --lp-error: #f87171;
+
+  --lp-navy: #1e3a8a;
+  --lp-on-navy: #c7d2fe;
+
+  --lp-shadow-card: none;
+  --lp-shadow-float: 0 12px 28px rgba(0, 0, 0, 0.45);
+  color-scheme: dark;
 }
 
