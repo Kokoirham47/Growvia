@@ -164,8 +164,8 @@ const h2Class =
   'text-3xl font-medium leading-[1.15] tracking-[-0.025em] text-[var(--lp-heading)] sm:text-4xl lg:text-[2.75rem]'
 
 const container = 'mx-auto w-full max-w-[1120px] px-5 sm:px-8'
-const panel = 'rounded-[2rem] bg-[var(--lp-panel)]'
-const innerCard = 'rounded-3xl bg-[var(--lp-card)] shadow-[var(--lp-shadow-card)]'
+const panel = 'rounded-[2rem] bg-[var(--lp-panel)] border border-[var(--lp-border)]/60'
+const innerCard = 'rounded-3xl bg-[var(--lp-card)] shadow-[var(--lp-shadow-card)] border border-[var(--lp-border)]/60'
 
 // =============================================================================
 // KOMPONEN KECIL
@@ -834,7 +834,7 @@ export default function LandingPage({ mode }: LandingPageProps = {}) {
                       value={experienceText}
                       onChange={e => setExperienceText(e.target.value)}
                       placeholder='Contoh: Ketua divisi acara, mengoordinasi 12 panitia...'
-                      className='mt-2 w-full resize-none rounded-2xl border border-transparent bg-[var(--lp-panel)] p-4 text-sm leading-relaxed text-[var(--lp-text)] placeholder:text-[var(--lp-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--lp-accent)]'
+                      className='mt-2 w-full resize-none rounded-2xl border border-slate-200/90 dark:border-slate-700/80 bg-slate-50/70 dark:bg-slate-900/60 p-4 text-sm leading-relaxed text-[var(--lp-text)] placeholder:text-[var(--lp-text-muted)] transition-all focus:bg-white dark:focus:bg-slate-900 focus:border-[var(--lp-accent)] focus:outline-none focus:ring-2 focus:ring-[var(--lp-accent)]/20 shadow-2xs'
                     />
                     <div className='mt-3 flex flex-wrap items-center justify-between gap-3'>
                       <span
@@ -919,7 +919,7 @@ export default function LandingPage({ mode }: LandingPageProps = {}) {
                   </div>
 
                   {/* kanan: skor */}
-                  <div className='bg-[var(--lp-panel)] p-6 sm:p-8 lg:col-span-2'>
+                  <div className='border-t lg:border-t-0 lg:border-l border-[var(--lp-border)] bg-[var(--lp-card)] p-6 sm:p-8 lg:col-span-2'>
                     <p className='text-sm text-[var(--lp-text-sec)]'>Target karier contoh</p>
                     <p className='text-base font-medium text-[var(--lp-heading)]'>Product Manager</p>
 

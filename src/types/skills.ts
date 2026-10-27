@@ -54,6 +54,7 @@ export interface EvidenceDetail {
   id: string
   skillId: string
   skillName: string
+  experienceId?: string
   experienceTitle: string
   experienceRole: string
   institutionName: string

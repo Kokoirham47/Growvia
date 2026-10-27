@@ -7,11 +7,11 @@ import Link from 'next/link'
 import {
   Sparkles,
   Plus,
-  FileDown,
   LayoutGrid,
   Network,
   ShieldCheck,
   Search,
+  ChevronLeft,
   ChevronRight,
   TrendingUp,
   Check,
@@ -36,6 +36,94 @@ const CATEGORY_CONFIGS: { category: SkillCategoryType; label: string; color: str
   { category: 'leadership', label: 'Leadership', color: '#F59E0B', bgLight: '#FEF3C7', iconName: 'Trophy' }
 ]
 
+function getPaginationRange(currentPage: number, totalPages: number): (number | string)[] {
+  if (totalPages <= 5) {
+    return Array.from({ length: totalPages }, (_, i) => i + 1)
+  }
+
+  if (currentPage <= 3) {
+    return [1, 2, 3, 4, '...', totalPages]
+  }
+
+  if (currentPage >= totalPages - 2) {
+    return [1, '...', totalPages - 3, totalPages - 2, totalPages - 1, totalPages]
+  }
+
+  return [1, '...', currentPage - 1, currentPage, currentPage + 1, '...', totalPages]
+}
+
+// Canonical organic positions matching reference design
+const CANONICAL_SKILL_POSITIONS: { match: string; x: number; y: number }[] = [
+  { match: 'python', x: 215, y: 135 },
+  { match: 'tailwind', x: 470, y: 110 },
+  { match: 'figma systems', x: 640, y: 95 },
+  { match: 'typescript', x: 795, y: 165 },
+  { match: 'wireframing', x: 900, y: 260 },
+  { match: 'executive', x: 155, y: 285 },
+  { match: 'financial', x: 470, y: 280 },
+  { match: 'postgres', x: 710, y: 320 },
+  { match: 'cross-functional', x: 335, y: 395 },
+  { match: 'problem solving', x: 530, y: 425 },
+  { match: 'corporate', x: 790, y: 455 },
+  { match: 'react', x: 95, y: 440 },
+  { match: 'prisma', x: 205, y: 575 },
+  { match: 'auto-layout', x: 420, y: 580 },
+  { match: 'next.js', x: 660, y: 530 },
+  { match: 'data processing', x: 650, y: 650 },
+  { match: 'team leadership', x: 890, y: 575 },
+  { match: 'leadership', x: 890, y: 575 }
+]
+
+const ORGANIC_FALLBACK_SLOTS = [
+  { x: 310, y: 210 },
+  { x: 590, y: 220 },
+  { x: 840, y: 360 },
+  { x: 280, y: 490 },
+  { x: 510, y: 630 },
+  { x: 760, y: 590 },
+  { x: 140, y: 170 },
+  { x: 380, y: 110 },
+  { x: 720, y: 120 },
+  { x: 860, y: 190 },
+  { x: 230, y: 340 },
+  { x: 620, y: 370 },
+  { x: 920, y: 420 },
+  { x: 130, y: 580 },
+  { x: 360, y: 650 },
+  { x: 820, y: 660 }
+]
+
+const CANONICAL_EDGE_PAIRS: [string, string][] = [
+  ['python', 'executive'],
+  ['python', 'tailwind'],
+  ['python', 'cross-functional'],
+  ['python', 'corporate'],
+  ['react', 'executive'],
+  ['react', 'prisma'],
+  ['prisma', 'cross-functional'],
+  ['prisma', 'auto-layout'],
+  ['executive', 'cross-functional'],
+  ['cross-functional', 'tailwind'],
+  ['cross-functional', 'problem solving'],
+  ['tailwind', 'financial'],
+  ['tailwind', 'figma systems'],
+  ['figma systems', 'typescript'],
+  ['figma systems', 'next.js'],
+  ['typescript', 'wireframing'],
+  ['typescript', 'financial'],
+  ['typescript', 'postgres'],
+  ['wireframing', 'corporate'],
+  ['financial', 'problem solving'],
+  ['problem solving', 'postgres'],
+  ['problem solving', 'next.js'],
+  ['postgres', 'corporate'],
+  ['auto-layout', 'next.js'],
+  ['auto-layout', 'data processing'],
+  ['next.js', 'data processing'],
+  ['next.js', 'team leadership'],
+  ['corporate', 'team leadership']
+]
+
 export default function SkillProfileView() {
   // Navigation tab state: 'overview' | 'skill_map' | 'evidence'
   const [activeTab, setActiveTab] = useState<'overview' | 'skill_map' | 'evidence'>('overview')
@@ -52,6 +140,32 @@ export default function SkillProfileView() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [selectedSkillForEdit, setSelectedSkillForEdit] = useState<SkillItem | null>(null)
   const [isBenchmarkModalOpen, setIsBenchmarkModalOpen] = useState(false)
+
+  // Highlight state for navigating from SkillCard to EvidenceView
+  const [highlightedSkillName, setHighlightedSkillName] = useState<string | null>(null)
+  const [highlightedExperienceKey, setHighlightedExperienceKey] = useState<string | null>(null)
+
+  // Pagination State (9 items on desktop, 6 items on mobile)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [isMobile, setIsMobile] = useState(false)
+  const skillsGridRef = React.useRef<HTMLDivElement>(null)
+
+  // Responsive itemsPerPage detector
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+
+    handleResize()
+    window.addEventListener('resize', handleResize)
+
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
+  // Reset page when search or category filter changes
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchQuery, activeCategoryFilter])
 
   // Toast feedback state
   const [toastMessage, setToastMessage] = useState<string | null>(null)
@@ -93,9 +207,11 @@ export default function SkillProfileView() {
     fetchSkills()
   }, [fetchSkills])
 
-  // Calculate dynamic category summaries from live skills
+
+// Calculate dynamic category summaries from live skills
   const categorySummaries: SkillCategorySummary[] = useMemo(() => {
     const total = skills.length
+
     const counts: Record<SkillCategoryType, number> = {
       soft_skill: 0,
       hard_skill: 0,
@@ -120,16 +236,24 @@ export default function SkillProfileView() {
     }))
   }, [skills])
 
-  // Dynamically compute SkillMapNodes from live skills
+  // Unique experience count for Bukti Pengalaman tab badge
+  const uniqueExperiencesCount = useMemo(() => {
+    const set = new Set(
+      evidences.map(
+        e =>
+          e.experienceId ||
+          `${e.experienceTitle.trim().toLowerCase()}__${e.institutionName.trim().toLowerCase()}`
+      )
+    )
+
+    return set.size
+  }, [evidences])
+
+  // Dynamically compute SkillMapNodes from live skills with organic scattered positions
   const skillMapNodes: SkillMapNode[] = useMemo(() => {
     const total = skills.length
 
     if (total === 0) return []
-
-    const centerX = 500
-    const centerY = 260
-    const radiusX = Math.min(360, 200 + total * 12)
-    const radiusY = Math.min(180, 100 + total * 6)
 
     return skills.map((s, idx) => {
       let colorType: SkillMapNode['colorType'] = 'orange'
@@ -138,9 +262,12 @@ export default function SkillProfileView() {
       else if (s.category === 'hard_skill') colorType = 'blue'
       else if (s.source === 'ai_extracted') colorType = 'indigo'
 
-      const angle = (idx / total) * 2 * Math.PI - Math.PI / 2
-      const x = Math.round(centerX + radiusX * Math.cos(angle))
-      const y = Math.round(centerY + radiusY * Math.sin(angle))
+      const norm = s.name.toLowerCase().trim()
+      const matchedCanonical = CANONICAL_SKILL_POSITIONS.find(c => norm.includes(c.match))
+      const fallback = ORGANIC_FALLBACK_SLOTS[idx % ORGANIC_FALLBACK_SLOTS.length]
+
+      const x = matchedCanonical ? matchedCanonical.x : fallback.x
+      const y = matchedCanonical ? matchedCanonical.y : fallback.y
 
       return {
         id: s.id,
@@ -157,13 +284,40 @@ export default function SkillProfileView() {
     })
   }, [skills])
 
-  // Dynamically compute SkillMapEdges from live skills
+  // Dynamically compute SkillMapEdges matching the reference organic network
   const skillMapEdges: SkillMapEdge[] = useMemo(() => {
     if (skills.length < 2) return []
 
     const edges: SkillMapEdge[] = []
     const added = new Set<string>()
 
+    // 1. Connect canonical pairs first
+    for (let i = 0; i < skills.length; i++) {
+      for (let j = i + 1; j < skills.length; j++) {
+        const s1 = skills[i]
+        const s2 = skills[j]
+        const norm1 = s1.name.toLowerCase().trim()
+        const norm2 = s2.name.toLowerCase().trim()
+        const pairKey = [s1.id, s2.id].sort().join('--')
+
+        const isCanonical = CANONICAL_EDGE_PAIRS.some(
+          ([k1, k2]) =>
+            (norm1.includes(k1) && norm2.includes(k2)) ||
+            (norm1.includes(k2) && norm2.includes(k1))
+        )
+
+        if (isCanonical && !added.has(pairKey)) {
+          edges.push({
+            source: s1.id,
+            target: s2.id,
+            relation: 'Korelasi Kompetensi'
+          })
+          added.add(pairKey)
+        }
+      }
+    }
+
+    // 2. Connect based on shared evidence tags or category domains
     for (let i = 0; i < skills.length; i++) {
       for (let j = i + 1; j < skills.length; j++) {
         const s1 = skills[i]
@@ -174,14 +328,14 @@ export default function SkillProfileView() {
 
         const commonTag = s1.evidenceTags?.find(t => s2.evidenceTags?.includes(t))
 
-        if (commonTag) {
+        if (commonTag && edges.length < 35) {
           edges.push({
             source: s1.id,
             target: s2.id,
             relation: `Korelasi ${commonTag}`
           })
           added.add(pairKey)
-        } else if (s1.category === s2.category && edges.length < skills.length * 1.5) {
+        } else if (s1.category === s2.category && edges.length < 25) {
           edges.push({
             source: s1.id,
             target: s2.id,
@@ -192,6 +346,7 @@ export default function SkillProfileView() {
       }
     }
 
+    // 3. Fallback chain if no edges found
     if (edges.length === 0 && skills.length > 1) {
       for (let i = 0; i < skills.length; i++) {
         const next = (i + 1) % skills.length
@@ -222,6 +377,30 @@ export default function SkillProfileView() {
     })
   }, [skills, searchQuery, activeCategoryFilter])
 
+  const itemsPerPage = isMobile ? 6 : 9
+  const totalPages = Math.max(1, Math.ceil(filteredSkills.length / itemsPerPage))
+
+  // Clamp page if item count shrinks
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages)
+    }
+  }, [currentPage, totalPages])
+
+  const paginatedSkills = useMemo(() => {
+    const startIdx = (currentPage - 1) * itemsPerPage
+
+    return filteredSkills.slice(startIdx, startIdx + itemsPerPage)
+  }, [filteredSkills, currentPage, itemsPerPage])
+
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage)
+
+    if (skillsGridRef.current) {
+      skillsGridRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+    }
+  }
+
   // Handler: Add Skill (Saves to Supabase)
   const handleAddSkill = async (newSkillData: Omit<SkillItem, 'id'>) => {
     try {
@@ -249,6 +428,22 @@ export default function SkillProfileView() {
   const handleOpenEdit = (skill: SkillItem) => {
     setSelectedSkillForEdit(skill)
     setIsEditModalOpen(true)
+  }
+
+  // Handler: Navigate to Evidence View and highlight related experience card
+  const handleViewEvidenceForSkill = (skill: SkillItem) => {
+    const matchedEvidence = evidences.find(
+      e => e.skillId === skill.id || e.skillName.toLowerCase() === skill.name.toLowerCase()
+    )
+
+    const expKey = matchedEvidence
+      ? matchedEvidence.experienceId ||
+        `${matchedEvidence.experienceTitle.trim().toLowerCase()}__${matchedEvidence.institutionName.trim().toLowerCase()}__${matchedEvidence.experienceRole.trim().toLowerCase()}`
+      : null
+
+    setHighlightedSkillName(skill.name)
+    setHighlightedExperienceKey(expKey)
+    setActiveTab('evidence')
   }
 
   // Handler: Update Skill (Updates in Supabase)
@@ -296,14 +491,11 @@ export default function SkillProfileView() {
     }
   }
 
-  // Handler: Download PDF Matrix
-  const handleDownloadPdf = () => {
-    window.print()
-    showToast('📄 Menyiapkan dokumen matriks skill untuk dicetak / disimpan PDF...')
-  }
-
   return (
-    <div className="w-full max-w-[1100px] mx-auto px-4 sm:px-6 py-6 font-['Poppins',sans-serif] flex flex-col gap-6 text-slate-800 dark:text-slate-100">
+    <div
+      className="w-full font-['Poppins',sans-serif] flex flex-col gap-6 text-slate-800 dark:text-slate-100 pb-12"
+      style={{ fontFamily: "'Poppins', sans-serif" }}
+    >
       {/* Toast Notification */}
       {toastMessage && (
         <div className='fixed bottom-6 right-6 z-50 flex items-center gap-2.5 px-4 py-3 rounded-2xl bg-slate-900 text-white shadow-xl border border-slate-800 text-xs sm:text-sm animate-in slide-in-from-bottom-3 duration-200'>
@@ -319,10 +511,6 @@ export default function SkillProfileView() {
             <h1 className='text-2xl sm:text-3xl font-bold tracking-tight text-[#1E3A8A] dark:text-blue-400'>
               Skill Profile
             </h1>
-            <span className='px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 flex items-center gap-1'>
-              <ShieldCheck className='w-3 h-3' />
-              <span>Live Supabase</span>
-            </span>
           </div>
           <p className='text-xs sm:text-sm text-[#64748B] dark:text-slate-400 mt-1'>
             {isLoading
@@ -342,15 +530,6 @@ export default function SkillProfileView() {
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
             <span className='hidden sm:inline'>Refresh</span>
-          </button>
-
-          <button
-            type='button'
-            onClick={handleDownloadPdf}
-            className='inline-flex items-center gap-2 px-3.5 py-2 sm:px-4 sm:py-2 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/60 text-[#1E3A8A] dark:text-blue-300 border border-[#E2E8F0] dark:border-slate-700 text-xs sm:text-sm font-semibold transition-all shadow-xs cursor-pointer'
-          >
-            <FileDown className='w-4 h-4 text-[#2563EB]' />
-            <span>Ekspor PDF</span>
           </button>
 
           <button
@@ -402,7 +581,9 @@ export default function SkillProfileView() {
           }`}
         >
           <ShieldCheck className='w-4 h-4' />
-          <span>Bukti Pengalaman ({evidences.length})</span>
+          <span>
+            Bukti Pengalaman ({uniqueExperiencesCount > 0 ? uniqueExperiencesCount : evidences.length})
+          </span>
         </button>
       </nav>
 
@@ -523,6 +704,7 @@ export default function SkillProfileView() {
               ))}
             </div>
           ) : filteredSkills.length === 0 ? (
+
             /* Empty State */
             <div className='flex flex-col items-center justify-center p-12 text-center bg-white dark:bg-slate-900 rounded-3xl border border-dashed border-slate-200 dark:border-slate-800 shadow-xs'>
               <div className='w-14 h-14 rounded-2xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center mb-4'>
@@ -557,16 +739,106 @@ export default function SkillProfileView() {
               </div>
             </div>
           ) : (
-            /* Skills Grid */
-            <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'>
-              {filteredSkills.map(skill => (
-                <SkillCard
-                  key={skill.id}
-                  skill={skill}
-                  onEdit={handleOpenEdit}
-                  onViewEvidence={() => setActiveTab('evidence')}
-                />
-              ))}
+
+            /* Skills Grid & Pagination */
+            <div ref={skillsGridRef} className='flex flex-col gap-4 scroll-mt-20'>
+              <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'>
+                {paginatedSkills.map(skill => (
+                  <SkillCard
+                    key={skill.id}
+                    skill={skill}
+                    onEdit={handleOpenEdit}
+                    onViewEvidence={handleViewEvidenceForSkill}
+                  />
+                ))}
+              </div>
+
+              {/* Pagination Controls */}
+              {filteredSkills.length > 0 && (
+                <div className='flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-slate-200/80 dark:border-slate-800'>
+                  {/* Results Count Text */}
+                  <div className='text-xs text-slate-500 dark:text-slate-400 font-medium'>
+                    Menampilkan{' '}
+                    <span className='font-bold text-slate-800 dark:text-slate-200'>
+                      {Math.min((currentPage - 1) * itemsPerPage + 1, filteredSkills.length)}
+                    </span>
+                    {' - '}
+                    <span className='font-bold text-slate-800 dark:text-slate-200'>
+                      {Math.min(currentPage * itemsPerPage, filteredSkills.length)}
+                    </span>{' '}
+                    dari{' '}
+                    <span className='font-bold text-slate-800 dark:text-slate-200'>
+                      {filteredSkills.length}
+                    </span>{' '}
+                    skill
+                  </div>
+
+                  {/* Page Navigation Buttons */}
+                  {totalPages > 1 && (
+                    <div className='flex items-center gap-1.5'>
+                      {/* Previous Page Button */}
+                      <button
+                        type='button'
+                        onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
+                        disabled={currentPage === 1}
+                        aria-label='Halaman Sebelumnya'
+                        className='inline-flex items-center gap-1 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all font-medium cursor-pointer shadow-2xs text-xs'
+                      >
+                        <ChevronLeft className='w-4 h-4' />
+                        <span className='hidden sm:inline'>Sebelumnya</span>
+                      </button>
+
+                      {/* Numbered Page Buttons */}
+                      <div className='flex items-center gap-1'>
+                        {getPaginationRange(currentPage, totalPages).map((p, idx) => {
+                          if (p === '...') {
+                            return (
+                              <span
+                                key={`ellipsis-${idx}`}
+                                className='w-8 h-8 flex items-center justify-center text-slate-400 dark:text-slate-500 text-xs select-none'
+                              >
+                                ...
+                              </span>
+                            )
+                          }
+
+                          const pageNum = Number(p)
+                          const isActive = pageNum === currentPage
+
+                          return (
+                            <button
+                              key={pageNum}
+                              type='button'
+                              onClick={() => handlePageChange(pageNum)}
+                              aria-label={`Ke halaman ${pageNum}`}
+                              aria-current={isActive ? 'page' : undefined}
+                              className={`w-8 h-8 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center justify-center ${
+                                isActive
+                                  ? 'bg-[#2563EB] text-white shadow-xs'
+                                  : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800'
+                              }`}
+                            >
+                              {pageNum}
+                            </button>
+                          )
+                        })}
+                      </div>
+
+                      {/* Next Page Button */}
+                      <button
+                        type='button'
+                        onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
+                        disabled={currentPage === totalPages}
+                        aria-label='Halaman Selanjutnya'
+                        className='inline-flex items-center gap-1 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all font-medium cursor-pointer shadow-2xs text-xs'
+                      >
+                        <span className='hidden sm:inline'>Selanjutnya</span>
+                        <ChevronRight className='w-4 h-4' />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
 
@@ -605,7 +877,7 @@ export default function SkillProfileView() {
               Skill Map Visualizer
             </h3>
             <p className='text-xs text-[#64748B] dark:text-slate-400'>
-              Peta korelasi kompetensi interaktif berdasarkan data Supabase dan bukti portofolio
+              Peta visualisasi interaktif korelasi dan keterhubungan kompetensi dari rekam jejak portofolio Anda
             </p>
           </div>
 
@@ -628,7 +900,9 @@ export default function SkillProfileView() {
               nodes={skillMapNodes}
               edges={skillMapEdges}
               onSelectSkill={skillId => {
-                const matched = skills.find(s => s.id === skillId)
+                const matched = skills.find(
+                  s => s.id === skillId || s.name.toLowerCase() === skillId.toLowerCase()
+                )
 
                 if (matched) {
                   handleOpenEdit(matched)
@@ -659,6 +933,12 @@ export default function SkillProfileView() {
             <EvidenceView
               evidences={evidences}
               onOpenAddSkill={() => setIsAddModalOpen(true)}
+              highlightedSkillName={highlightedSkillName || undefined}
+              highlightedExperienceKey={highlightedExperienceKey || undefined}
+              onClearHighlight={() => {
+                setHighlightedSkillName(null)
+                setHighlightedExperienceKey(null)
+              }}
             />
           )}
         </div>

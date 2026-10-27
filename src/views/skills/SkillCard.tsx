@@ -1,8 +1,10 @@
 'use client'
 
 import React from 'react'
+
 import { Pencil, Link2, Sparkles } from 'lucide-react'
-import { SkillItem } from '@/types/skills'
+
+import type { SkillItem } from '@/types/skills'
 
 interface SkillCardProps {
   skill: SkillItem

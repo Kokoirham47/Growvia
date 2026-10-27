@@ -433,7 +433,7 @@ return
 
   return (
     <div
-      className={`landing-page ${isDark ? 'dark' : ''} min-h-screen font-poppins flex flex-col justify-between selection:bg-[#2563EB] selection:text-white bg-white dark:bg-[#0B0F19] text-[var(--lp-text)] transition-colors duration-200`}
+      className={`landing-page ${isDark ? 'dark' : ''} min-h-screen font-poppins flex flex-col justify-between selection:bg-[#2563EB] selection:text-white bg-[#F5F6F8] dark:bg-[#0B0F19] text-[var(--lp-text)] transition-colors duration-200`}
     >
       {/* TOP FLOATING CONTROLS (Kembali & Mode Toggle) */}
       <div className='w-full max-w-[1280px] mx-auto px-4 sm:px-8 pt-6 sm:pt-8 flex items-center justify-between z-20'>

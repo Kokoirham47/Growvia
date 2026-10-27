@@ -1,8 +1,10 @@
-import { NextRequest } from 'next/server'
+import type { NextRequest } from 'next/server'
+
+import { SkillCategory, SkillLevel, SkillSource } from '@prisma/client'
+
 import { prisma } from '@/libs/prisma'
 import { getServerSession } from '@/server/utils/auth'
 import { apiSuccess, apiError } from '@/server/utils/response'
-import { SkillCategory, SkillLevel, SkillSource } from '@prisma/client'
 
 /**
  * GET /api/skills
@@ -52,6 +54,7 @@ export async function GET(req: NextRequest) {
         id: se.id,
         skillId: us.id,
         skillName: us.skill.name,
+        experienceId: se.experienceId || se.experience?.id,
         experienceTitle: se.experience?.title || 'Pengalaman',
         experienceRole: se.experience?.role || '',
         institutionName: se.experience?.institutionName || '',
@@ -72,7 +75,8 @@ export async function GET(req: NextRequest) {
     })
   } catch (error: any) {
     console.error('Error fetching skills from Supabase:', error)
-    return apiError(error.message || 'Gagal mengambil data skills dari database', 500)
+    
+return apiError(error.message || 'Gagal mengambil data skills dari database', 500)
   }
 }
 
@@ -164,7 +168,8 @@ export async function POST(req: NextRequest) {
     return apiSuccess(formatted, 'Skill berhasil ditambahkan ke profil Supabase')
   } catch (error: any) {
     console.error('Error creating skill in Supabase:', error)
-    return apiError(error.message || 'Gagal menambahkan skill', 500)
+    
+return apiError(error.message || 'Gagal menambahkan skill', 500)
   }
 }
 
@@ -243,7 +248,8 @@ export async function PUT(req: NextRequest) {
     return apiSuccess(formatted, 'Skill berhasil diperbarui di Supabase')
   } catch (error: any) {
     console.error('Error updating skill in Supabase:', error)
-    return apiError(error.message || 'Gagal memperbarui skill', 500)
+    
+return apiError(error.message || 'Gagal memperbarui skill', 500)
   }
 }
 
@@ -282,6 +288,7 @@ export async function DELETE(req: NextRequest) {
     return apiSuccess({ id }, 'Skill berhasil dihapus dari profil Supabase')
   } catch (error: any) {
     console.error('Error deleting skill from Supabase:', error)
-    return apiError(error.message || 'Gagal menghapus skill', 500)
+    
+return apiError(error.message || 'Gagal menghapus skill', 500)
   }
 }

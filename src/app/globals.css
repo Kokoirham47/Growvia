@@ -318,7 +318,7 @@ input[type='password']::-ms-clear {
 :root,
 .landing-page {
   --lp-page: #ffffff;
-  --lp-panel: #ffffff;
+  --lp-panel: #f1f5f9;
   --lp-card: #ffffff;
   --lp-nav: rgba(255, 255, 255, 0.85);
 

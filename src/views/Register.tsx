@@ -274,7 +274,7 @@ return
 
   return (
     <div
-      className={`landing-page ${isDark ? 'dark' : ''} min-h-screen font-poppins flex flex-col justify-between selection:bg-[#2563EB] selection:text-white bg-white dark:bg-[#0B0F19] text-[var(--lp-text)] transition-colors duration-200`}
+      className={`landing-page ${isDark ? 'dark' : ''} min-h-screen font-poppins flex flex-col justify-between selection:bg-[#2563EB] selection:text-white bg-[#F5F6F8] dark:bg-[#0B0F19] text-[var(--lp-text)] transition-colors duration-200`}
     >
       {/* TOP FLOATING CONTROLS (Kembali & Mode Toggle) */}
       <div className='w-full max-w-[1280px] mx-auto px-4 sm:px-8 pt-6 sm:pt-8 flex items-center justify-between z-20'>
@@ -303,7 +303,7 @@ return
       <main className='flex-1 flex flex-col items-center justify-center px-4 py-8 sm:py-12'>
         {/* REGISTRATION CARD */}
         <section
-          className='w-full max-w-[480px] rounded-3xl p-6 sm:p-10 border border-[var(--lp-border)] bg-[var(--lp-card)] shadow-[var(--lp-shadow-card)] transition-all'
+          className='w-full max-w-[480px] rounded-3xl p-6 sm:p-10 border border-[var(--lp-border)] bg-[var(--lp-card)] shadow-xl shadow-slate-200/50 dark:shadow-none transition-all'
           aria-labelledby='form-heading'
         >
           {/* Card Top: Logo + Title + Subtitle */}
