@@ -3,11 +3,9 @@
 import React, { useState, useEffect, useCallback } from 'react'
 
 import {
-  TrendingUp,
   Briefcase,
   ChevronDown,
   CheckCircle2,
-  Calendar,
   RefreshCw,
   Loader2
 } from 'lucide-react'
@@ -16,7 +14,6 @@ import HeroMatchCard from './HeroMatchCard'
 import DetailedSkillMatrix from './DetailedSkillMatrix'
 import GrowthRoadmap from './GrowthRoadmap'
 import ChangeTargetModal, { type CareerRoleOption } from './ChangeTargetModal'
-import ReanalyzeModal from './ReanalyzeModal'
 import LearningResourcesModal from './LearningResourcesModal'
 import SkillDetailModal from './SkillDetailModal'
 import type { CareerTargetProfile, SkillChipItem, LearningResourceItem } from '@/types/career'
@@ -30,7 +27,6 @@ export default function CareerGapView() {
 
   // Modals state
   const [isChangeTargetOpen, setIsChangeTargetOpen] = useState(false)
-  const [isReanalyzeOpen, setIsReanalyzeOpen] = useState(false)
   const [isLearningModalOpen, setIsLearningModalOpen] = useState(false)
   const [selectedSkillForDetail, setSelectedSkillForDetail] = useState<SkillChipItem | null>(null)
   const [learningSkillFilter, setLearningSkillFilter] = useState<string | undefined>(undefined)
@@ -66,8 +62,8 @@ export default function CareerGapView() {
         setLearningResources(json.data.learningResources || [])
       }
     } catch (err) {
-      console.error('Gagal mengambil data analisis karier dari Supabase:', err)
-      showToast('Gagal memuat analisis karier dari database Supabase.')
+      console.error('Gagal mengambil data analisis karier dari Database:', err)
+      showToast('Gagal memuat analisis karier dari Database.')
     } finally {
       setIsLoading(false)
     }
@@ -98,34 +94,12 @@ export default function CareerGapView() {
       }
     } catch (err) {
       console.error('Error changing target:', err)
-      showToast('❌ Terjadi kesalahan saat mengubah target karier di Supabase.')
+      showToast('❌ Terjadi kesalahan saat mengubah target karier di Database.')
     } finally {
       setIsLoading(false)
     }
   }
 
-  // Handle re-analyze completion via Supabase
-  const handleReanalyzeComplete = async () => {
-    try {
-      const res = await fetch('/api/career', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'reanalyze' })
-      })
-
-      const json = await res.json()
-
-      if (json.success && json.data?.career) {
-        setCareer(json.data.career)
-        showToast(`✅ Analisis ulang berhasil! Skor kesiapan Anda: ${json.data.career.readinessScore}%.`)
-      } else {
-        showToast(`❌ ${json.message || 'Gagal menganalisis ulang'}`)
-      }
-    } catch (err) {
-      console.error('Error reanalyzing career gap:', err)
-      showToast('❌ Terjadi kesalahan saat analisis ulang di Supabase.')
-    }
-  }
 
   // Open learning modal with specific skill
   const handleOpenLearningWithSkill = (skillName?: string) => {
@@ -139,7 +113,7 @@ export default function CareerGapView() {
         <Loader2 className='w-10 h-10 animate-spin text-blue-600' />
         <div className='flex flex-col gap-1'>
           <h3 className='text-base font-bold text-slate-800 dark:text-white'>
-            Menganalisis Kesiapan Karier Anda dari Supabase...
+            Menganalisis Kesiapan Karier Anda dari Database...
           </h3>
           <p className='text-xs text-slate-500'>
             Menghitung bobot kesesuaian skill portofolio terhadap standar industri secara real-time.
@@ -157,7 +131,7 @@ export default function CareerGapView() {
           Data Target Karier Belum Tersedia
         </h3>
         <p className='text-xs text-slate-500 max-w-md'>
-          Belum dapat memuat target karier aktif dari Supabase. Silakan coba muat ulang halaman.
+          Belum dapat memuat target karier aktif dari Database. Silakan coba muat ulang halaman.
         </p>
         <button
           type='button'
@@ -190,12 +164,6 @@ export default function CareerGapView() {
       {/* 1. PAGE HEADER */}
       <section className='flex flex-col md:flex-row md:items-start md:justify-between gap-4 pt-1'>
         <div className='flex flex-col gap-1'>
-          {/* Micro tag: ↗ ANALISIS PASAR & KESIAPAN */}
-          <div className='inline-flex items-center gap-1.5 text-[#2563EB] dark:text-blue-400 text-xs font-bold tracking-wider uppercase'>
-            <TrendingUp className='w-3.5 h-3.5' />
-            <span>Analisis Pasar & Kesiapan (Live Supabase)</span>
-          </div>
-
           {/* Title (H1): Karier & Analisis Skill Gap */}
           <h1 className='text-2xl sm:text-3xl font-extrabold text-[#1E293B] dark:text-white tracking-tight mt-0.5'>
             Karier & Analisis Skill Gap
@@ -207,7 +175,7 @@ export default function CareerGapView() {
           </p>
         </div>
 
-        {/* Right side: Target Posisi selector card & Readiness Badge */}
+        {/* Right side: Target Posisi selector card & Refresh Button */}
         <div className='flex items-center gap-3 shrink-0 self-start md:self-auto'>
           {/* Target Position Dropdown Card */}
           <button
@@ -229,33 +197,16 @@ export default function CareerGapView() {
             <ChevronDown className='w-3.5 h-3.5 text-slate-400 group-hover:translate-y-0.5 transition-transform' />
           </button>
 
-          {/* Readiness Pill Badge */}
-          <div
-            style={{ color: career.readinessBadgeColor }}
-            className='inline-flex items-center gap-1.5 px-3 py-2 rounded-full bg-[#ECFDF5] dark:bg-emerald-950/40 border border-emerald-200/80 dark:border-emerald-800/60 text-xs font-bold shadow-xs'
-          >
-            <CheckCircle2 className='w-4 h-4' />
-            <span>{career.readinessScore}% Siap Melamar</span>
-          </div>
-
           <button
             type='button'
             onClick={() => fetchCareerData()}
             className='p-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 transition-all shadow-xs cursor-pointer'
-            title='Perbarui dari Supabase'
+            title='Perbarui dari Database'
           >
             <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
           </button>
         </div>
       </section>
-
-      {/* 2. CALIBRATION NOTIFICATION BAR */}
-      <div className='w-full px-4 py-2.5 rounded-xl bg-[#F0F5FF] dark:bg-blue-950/30 border border-[#DBEAFE] dark:border-blue-900/50 flex items-center gap-2.5 text-xs text-[#1E40AF] dark:text-blue-300'>
-        <Calendar className='w-4 h-4 text-[#2563EB] shrink-0' />
-        <span className='font-medium'>
-          Dikalibrasi dengan {career.verifiedJobsCount}+ lowongan fresh graduate terverifikasi di {career.companyType} Indonesia ({career.lastUpdated})
-        </span>
-      </div>
 
       {/* 3. HERO MATCH SECTION */}
       <HeroMatchCard career={career} />
@@ -269,9 +220,7 @@ export default function CareerGapView() {
       {/* 5. RUTE PERTUMBUHAN 30 HARI */}
       <GrowthRoadmap
         career={career}
-        onGeneratePersonalized={() => {
-          setIsReanalyzeOpen(true)
-        }}
+        onOpenLearning={skillName => handleOpenLearningWithSkill(skillName)}
       />
 
       {/* Modals */}
@@ -281,13 +230,6 @@ export default function CareerGapView() {
         roles={availableRoles}
         onClose={() => setIsChangeTargetOpen(false)}
         onSelectRole={handleSelectRole}
-      />
-
-      <ReanalyzeModal
-        isOpen={isReanalyzeOpen}
-        careerTitle={career.title}
-        onClose={() => setIsReanalyzeOpen(false)}
-        onComplete={handleReanalyzeComplete}
       />
 
       <LearningResourcesModal

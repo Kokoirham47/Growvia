@@ -1,8 +1,10 @@
 'use client'
 
 import React from 'react'
-import { Check, CheckCircle2, Sliders, AlertTriangle, Sparkles, Brain } from 'lucide-react'
-import { CareerTargetProfile } from '@/types/career'
+
+import { Check, Sliders, Sparkles } from 'lucide-react'
+
+import type { CareerTargetProfile } from '@/types/career'
 
 interface HeroMatchCardProps {
   career: CareerTargetProfile
@@ -165,19 +167,30 @@ export default function HeroMatchCard({ career }: HeroMatchCardProps) {
             <div className='w-8 h-8 rounded-xl bg-[#312E81] text-white flex items-center justify-center shrink-0 mt-0.5 shadow-xs'>
               <Sparkles className='w-4 h-4 text-indigo-200' />
             </div>
-            <div className='flex flex-col gap-0.5'>
+            <div className='flex flex-col gap-0.5 w-full'>
               <div className='flex items-center gap-2'>
                 <span className='text-xs font-bold text-slate-900 dark:text-white'>
                   Growvia AI Career Insight
                 </span>
-                <span className='px-2 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-100 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300'>
-                  Khusus Nabila
-                </span>
               </div>
               <p className='text-xs text-slate-600 dark:text-slate-300 leading-relaxed mt-0.5'>
-                &ldquo;Nabila, kamu punya fondasi UI Design & Research yang sangat solid dari magang Telkom. Untuk bersaing kuat di role Associate Product Designer di tech unicorn/startup, kuasai{' '}
-                <strong className='font-bold text-slate-900 dark:text-white'>&apos;Design Tokens&apos;</strong> dan{' '}
-                <strong className='font-bold text-slate-900 dark:text-white'>&apos;Data Analytics dasar&apos;</strong>.&rdquo;
+                &ldquo;
+                {career.aiInsight ? (
+                  career.aiInsight.split(/(['"][^'"]+['"])/g).map((part, idx) => {
+                    if ((part.startsWith("'") && part.endsWith("'")) || (part.startsWith('"') && part.endsWith('"'))) {
+                      return (
+                        <strong key={idx} className='font-bold text-slate-900 dark:text-white underline decoration-indigo-400/40 underline-offset-2'>
+                          {part}
+                        </strong>
+                      )
+                    }
+
+                    return <span key={idx}>{part}</span>
+                  })
+                ) : (
+                  <span>Analisis AI siap dikalibrasikan dengan target karier Anda.</span>
+                )}
+                &rdquo;
               </p>
             </div>
           </div>

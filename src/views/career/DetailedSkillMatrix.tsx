@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+
 import {
   LayoutGrid,
   Code2,
@@ -9,7 +10,8 @@ import {
   GraduationCap,
   Play
 } from 'lucide-react'
-import { CareerTargetProfile } from '@/types/career'
+
+import type { CareerTargetProfile } from '@/types/career'
 
 interface DetailedSkillMatrixProps {
   career: CareerTargetProfile
@@ -43,6 +45,7 @@ export default function DetailedSkillMatrix({ career, onOpenLearning }: Detailed
   const getProgressColor = (score: number) => {
     if (score >= 80) return 'bg-[#16A34A]'
     if (score >= 40) return 'bg-[#F59E0B]'
+
     return 'bg-[#DC2626]'
   }
 
@@ -130,74 +133,104 @@ export default function DetailedSkillMatrix({ career, onOpenLearning }: Detailed
 
           {/* Rows */}
           <div className='flex flex-col divide-y divide-slate-50 dark:divide-slate-800/60'>
-            {hardSkillsCategory.skills.map(item => (
-              <div
-                key={item.id}
-                className='py-3.5 flex flex-col md:flex-row md:items-center justify-between gap-3'
-              >
-                {/* Left: Name, Badge & Evidence note */}
-                <div className='flex flex-col sm:flex-row sm:items-center gap-2 min-w-[320px]'>
-                  <div className='flex items-center gap-2'>
-                    <span className='text-xs sm:text-sm font-bold text-slate-900 dark:text-white'>
-                      {item.name}
-                    </span>
-                    {getBadge(item.status)}
-                  </div>
-                  <span className={`text-[11px] ${
-                    item.status === 'develop'
-                      ? 'text-amber-500'
-                      : item.status === 'missing'
-                      ? 'text-rose-500'
-                      : 'text-slate-400 dark:text-slate-500'
-                  }`}>
-                    {item.evidenceNote}
-                  </span>
-                </div>
+            {hardSkillsCategory.skills.map(item => {
+              const isQualified = item.score >= 80
 
-                {/* Middle: Progress Bar & Percentage */}
-                <div className='flex items-center gap-3 flex-1 max-w-sm w-full'>
-                  <div className='flex-1 h-1.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden'>
-                    <div
-                      className={`h-full rounded-full transition-all duration-700 ${getProgressColor(item.score)}`}
-                      style={{ width: `${item.score}%` }}
-                    />
-                  </div>
-                  <span className='text-xs font-bold text-slate-800 dark:text-slate-200 w-8 text-right'>
-                    {item.score}%
-                  </span>
-                </div>
+              const effectiveStatus: 'strong' | 'develop' | 'missing' =
+                item.score >= 80 ? 'strong' : item.score >= 40 ? 'develop' : 'missing'
 
-                {/* Right: Action Button */}
-                <div className='shrink-0 flex items-center justify-end min-w-[200px]'>
-                  {item.actionType === 'qualified' ? (
-                    <span className='inline-flex items-center gap-1.5 text-xs font-semibold text-[#16A34A]'>
-                      <CheckCircle2 className='w-4 h-4' />
-                      <span>Kualifikasi Tercapai</span>
+              const effectiveActionType =
+                effectiveStatus === 'strong'
+                  ? 'qualified'
+                  : effectiveStatus === 'develop'
+                  ? 'recommend'
+                  : 'intro_module'
+
+              return (
+                <div
+                  key={item.id}
+                  className='py-3.5 flex flex-col md:flex-row md:items-center justify-between gap-3'
+                >
+                  {/* Left: Name, Badge & Evidence note */}
+                  <div className='flex flex-col sm:flex-row sm:items-center gap-2 min-w-[320px]'>
+                    <div className='flex items-center gap-2'>
+                      <span
+                        className={`text-xs sm:text-sm font-bold transition-colors ${
+                          isQualified
+                            ? 'text-[#16A34A] dark:text-emerald-400'
+                            : 'text-slate-900 dark:text-white'
+                        }`}
+                      >
+                        {item.name}
+                      </span>
+                      {getBadge(effectiveStatus)}
+                    </div>
+                    <span
+                      className={`text-[11px] ${
+                        effectiveStatus === 'strong'
+                          ? 'text-emerald-600 dark:text-emerald-400/80 font-medium'
+                          : effectiveStatus === 'develop'
+                          ? 'text-amber-500'
+                          : effectiveStatus === 'missing'
+                          ? 'text-rose-500'
+                          : 'text-slate-400 dark:text-slate-500'
+                      }`}
+                    >
+                      {item.evidenceNote}
                     </span>
-                  ) : item.actionType === 'recommend' ? (
-                    <button
-                      type='button'
-                      onClick={() => onOpenLearning(item.name)}
-                      className='inline-flex items-center gap-1.5 text-xs font-semibold text-[#2563EB] hover:text-blue-700 transition-colors cursor-pointer'
+                  </div>
+
+                  {/* Middle: Progress Bar & Percentage */}
+                  <div className='flex items-center gap-3 flex-1 max-w-sm w-full'>
+                    <div className='flex-1 h-1.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden'>
+                      <div
+                        className={`h-full rounded-full transition-all duration-700 ${getProgressColor(item.score)}`}
+                        style={{ width: `${item.score}%` }}
+                      />
+                    </div>
+                    <span
+                      className={`text-xs font-bold w-8 text-right ${
+                        isQualified
+                          ? 'text-[#16A34A] dark:text-emerald-400'
+                          : 'text-slate-800 dark:text-slate-200'
+                      }`}
                     >
-                      <GraduationCap className='w-4 h-4' />
-                      <span>Lihat Rekomendasi Belajar</span>
-                    </button>
-                  ) : (
-                    <button
-                      type='button'
-                      onClick={() => onOpenLearning(item.name)}
-                      className='inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#991B1B] hover:bg-red-900 text-white text-xs font-semibold transition-all shadow-xs cursor-pointer'
-                    >
-                      <div className='w-3.5 h-3.5 rounded-full border border-white flex items-center justify-center'>
-                        <Play className='w-2 h-2 fill-white text-white ml-0.5' />
-                      </div>
-                      <span>Ambil Modul Pengantar</span>
-                    </button>
-                  )}
+                      {item.score}%
+                    </span>
+                  </div>
+
+                  {/* Right: Action Button */}
+                  <div className='shrink-0 flex items-center justify-end min-w-[200px]'>
+                    {effectiveActionType === 'qualified' ? (
+                      <span className='inline-flex items-center gap-1.5 text-xs font-semibold text-[#16A34A] dark:text-emerald-400'>
+                        <CheckCircle2 className='w-4 h-4' />
+                        <span>Kualifikasi Tercapai</span>
+                      </span>
+                    ) : effectiveActionType === 'recommend' ? (
+                      <button
+                        type='button'
+                        onClick={() => onOpenLearning(item.name)}
+                        className='inline-flex items-center gap-1.5 text-xs font-semibold text-[#2563EB] hover:text-blue-700 transition-colors cursor-pointer'
+                      >
+                        <GraduationCap className='w-4 h-4' />
+                        <span>Lihat Rekomendasi Belajar</span>
+                      </button>
+                    ) : (
+                      <button
+                        type='button'
+                        onClick={() => onOpenLearning(item.name)}
+                        className='inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#991B1B] hover:bg-red-900 text-white text-xs font-semibold transition-all shadow-xs cursor-pointer'
+                      >
+                        <div className='w-3.5 h-3.5 rounded-full border border-white flex items-center justify-center'>
+                          <Play className='w-2 h-2 fill-white text-white ml-0.5' />
+                        </div>
+                        <span>Ambil Modul Pengantar</span>
+                      </button>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </div>
       )}
@@ -234,10 +267,16 @@ export default function DetailedSkillMatrix({ career, onOpenLearning }: Detailed
             >
               <div>
                 <div className='flex items-center justify-between gap-2'>
-                  <h4 className='text-xs font-bold text-slate-900 dark:text-white'>
+                  <h4
+                    className={`text-xs font-bold transition-colors ${
+                      card.score >= 80 || card.badgeType === 'strong'
+                        ? 'text-[#16A34A] dark:text-emerald-400'
+                        : 'text-slate-900 dark:text-white'
+                    }`}
+                  >
                     {card.name}
                   </h4>
-                  {card.badgeType === 'strong' ? (
+                  {card.score >= 80 || card.badgeType === 'strong' ? (
                     <span className='px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#ECFDF5] text-[#16A34A]'>
                       {card.badge}
                     </span>

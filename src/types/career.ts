@@ -66,6 +66,9 @@ export interface CareerTargetProfile {
     footerLabel: string
     gainLabel: string
     type: 'course' | 'portfolio' | 'application'
+    actionType?: 'learning_modal' | 'portfolio' | 'opportunities'
+    actionUrl?: string
+    targetSkill?: string
   }[]
 }
 

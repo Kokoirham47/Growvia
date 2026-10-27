@@ -1,4 +1,4 @@
-import { CareerTargetProfile, LearningResourceItem } from '@/types/career'
+import type { CareerTargetProfile, LearningResourceItem } from '@/types/career'
 
 export const CAREER_TARGETS: Record<string, CareerTargetProfile> = {
   'associate-product-designer': {
@@ -18,7 +18,7 @@ export const CAREER_TARGETS: Record<string, CareerTargetProfile> = {
     developCount: 2,
     missingCount: 1,
     aiInsight:
-      'Nabila, kamu punya fondasi UI Design & Research yang sangat solid dari magang Telkom. Untuk bersaing kuat di role Associate Product Designer di tech unicorn/startup, kuasai Design Tokens dan Data Analytics dasar.',
+      'Kamu memiliki fondasi UI Design & Research yang solid dari rekam jejak portofolio. Untuk bersaing kuat di role Associate Product Designer di tech unicorn/startup, kuasai \'Design Tokens\' dan \'Data Analytics dasar\'.',
     highlightedKeywords: ['Design Tokens', 'Data Analytics dasar'],
     strongSkills: [
       {
@@ -231,7 +231,7 @@ export const CAREER_TARGETS: Record<string, CareerTargetProfile> = {
     developCount: 3,
     missingCount: 3,
     aiInsight:
-      'Nabila, kamu punya fondasi Python, Problem Solving, & Git yang sangat solid dari portofolio riset dan akademik. Untuk bersaing kuat di role AI Engineer di Tech Industry, prioritaskan Model Deployment (FastAPI, Docker) dan MLOps serta perkuat Machine Learning & SQL.',
+      'Kamu memiliki fondasi Python, Problem Solving, & Git yang sangat solid dari portofolio riset dan akademik. Untuk bersaing kuat di role AI Engineer di Tech Industry, prioritaskan \'Model Deployment\' (FastAPI, Docker) dan \'MLOps\'.',
     highlightedKeywords: ['Model Deployment', 'MLOps'],
     strongSkills: [
       { id: 'python', name: 'Python', status: 'strong', score: 95, evidenceCount: 4, category: 'Hard Skill', description: 'Penguasaan OOP, data structures, algoritma numerik, dan skrip modular.' },

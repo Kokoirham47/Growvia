@@ -3,6 +3,7 @@ import type { NextRequest } from 'next/server'
 import { GapCategory } from '@prisma/client'
 
 import { prisma } from '@/libs/prisma'
+import { getGeminiModel } from '@/libs/ai/gemini'
 import { getServerSession } from '@/server/utils/auth'
 import { apiSuccess, apiError } from '@/server/utils/response'
 import type { CareerTargetProfile, LearningResourceItem, SkillChipItem, SoftSkillCardItem, SkillGapStatus } from '@/types/career'
@@ -23,6 +24,214 @@ function formatLastUpdated(date?: Date | null): string {
 
   
 return `Update ${diffDays} hari lalu`
+}
+
+interface GenerateAiCareerParams {
+  userName: string
+  roleName: string
+  industry: string
+  readinessScore: number
+  strongSkills: string[]
+  developSkills: string[]
+  missingSkills: string[]
+  latestExpTitle?: string
+  latestExpInstitution?: string
+}
+
+/**
+ * Generate real AI career insight and dynamic 30-day roadmap tailored to user profile
+ */
+async function generateAiCareerInsightAndRoadmap(params: GenerateAiCareerParams): Promise<{
+  aiInsight: string
+  highlightedKeywords: string[]
+  growthRoadmap: CareerTargetProfile['growthRoadmap']
+}> {
+  const {
+    userName,
+    roleName,
+    industry,
+    readinessScore,
+    strongSkills,
+    developSkills,
+    missingSkills,
+    latestExpTitle,
+    latestExpInstitution
+  } = params
+
+  const topStrong = strongSkills[0] || 'Kompetensi Fondasi'
+  const topGap = missingSkills[0] || developSkills[0] || 'Skill Spesialisasi'
+  const secondaryGap = missingSkills[1] || developSkills[1] || 'Studi Kasus Portofolio'
+
+  const totalGap = Math.max(10, 100 - readinessScore)
+  const step1GainNum = Math.max(6, Math.min(22, Math.round(totalGap * 0.45)))
+  const step2GainNum = Math.max(5, Math.min(18, Math.round(totalGap * 0.35)))
+
+  // Heuristic dynamic formula
+  const defaultInsight = `${userName}, kamu memiliki fondasi yang baik pada '${topStrong}'${
+    latestExpInstitution ? ` dari pengalaman di ${latestExpInstitution}` : ''
+  }. Untuk bersaing kuat di role ${roleName}, prioritaskan penguasaan '${topGap}' dan '${secondaryGap}'.`
+
+  const defaultRoadmap: CareerTargetProfile['growthRoadmap'] = [
+    {
+      step: 1,
+      title: `Kuasai Fondasi & Praktik '${topGap}'`,
+      estDays: 'Est. 3-5 Hari',
+      description: `Pelajari modul terstruktur dan lab praktis ${topGap} untuk menutup gap kompetensi paling kritis pada posisi ${roleName}.`,
+      footerLabel: 'Buka Modul Belajar',
+      gainLabel: `+${step1GainNum}% Kesiapan`,
+      type: 'course',
+      actionType: 'learning_modal',
+      targetSkill: topGap
+    },
+    {
+      step: 2,
+      title: `Update Studi Kasus Portofolio ${roleName}`,
+      estDays: 'Est. 5-7 Hari',
+      description: `Unggah bukti artefak proyek terapan yang mengintegrasikan ${secondaryGap} ke portofolio Anda dengan metrik hasil bisnis yang terukur.`,
+      footerLabel: 'Buka Portofolio AI',
+      gainLabel: `+${step2GainNum}% Kesiapan`,
+      type: 'portfolio',
+      actionType: 'portfolio',
+      actionUrl: '/dashboard/portfolio'
+    },
+    {
+      step: 3,
+      title: `Kirim Lamaran ke Mitra Lowongan ${roleName}`,
+      estDays: 'Target Akhir (Hari 15-30)',
+      description: `Gunakan fitur Fast-Track Apply Growvia untuk lowongan ${roleName} terverifikasi dengan rekomendasi kecocokan kualifikasi 85%+.`,
+      footerLabel: 'Jelajahi Lowongan',
+      gainLabel: 'Siap Kerja 95%+',
+      type: 'application',
+      actionType: 'opportunities',
+      actionUrl: '/dashboard/opportunities'
+    }
+  ]
+
+  const isMock = process.env.AI_MOCK_MODE === 'true'
+  const groqKey = process.env.GROQ_API_KEY
+  const geminiKey = process.env.GEMINI_API_KEY
+
+  if (isMock || (!groqKey && !geminiKey)) {
+    return {
+      aiInsight: defaultInsight,
+      highlightedKeywords: [topGap, secondaryGap],
+      growthRoadmap: defaultRoadmap
+    }
+  }
+
+  const prompt = `Anda adalah asisten AI Career Advisor profesional dari Growvia.
+Data Profil Pengguna:
+- Nama: "${userName}"
+- Target Posisi: "${roleName}" (Industri: ${industry})
+- Skor Kesiapan: ${readinessScore}%
+- Skill Unggulan: ${strongSkills.slice(0, 3).join(', ') || 'Belum ada'}
+- Pengalaman Terakhir: ${latestExpTitle ? `${latestExpTitle} di ${latestExpInstitution}` : 'Portofolio Mandiri'}
+- Gap Kritis (Missing): ${missingSkills.slice(0, 3).join(', ') || '-'}
+- Perlu Ditingkatkan (Develop): ${developSkills.slice(0, 3).join(', ') || '-'}
+
+Buatkan respon JSON murni dengan schema persis berikut:
+{
+  "aiInsight": "1 sampai 2 kalimat personal tajam menyapa '${userName}'. Puji fondasinya pada '${topStrong}', lalu sebutkan fokus utama pada '${topGap}' dan '${secondaryGap}' untuk role ${roleName}. Tuliskan nama skill di dalam tanda petik tunggal 'Nama Skill'. Jangan gunakan nama selain ${userName}.",
+  "keywords": ["${topGap}", "${secondaryGap}"],
+  "steps": [
+    {
+      "step": 1,
+      "title": "Kuasai Fondasi & Praktik '${topGap}'",
+      "estDays": "Est. 3-5 Hari",
+      "description": "Deskripsi aksi konkret belajar ${topGap} untuk menutup gap utama.",
+      "footerLabel": "Buka Modul Belajar",
+      "gainLabel": "+${step1GainNum}% Kesiapan",
+      "type": "course",
+      "actionType": "learning_modal",
+      "targetSkill": "${topGap}"
+    },
+    {
+      "step": 2,
+      "title": "Update Studi Kasus Portofolio ${roleName}",
+      "estDays": "Est. 5-7 Hari",
+      "description": "Deskripsi membuat artefak proyek dengan metrik hasil nyata terkait ${secondaryGap}.",
+      "footerLabel": "Buka Portofolio AI",
+      "gainLabel": "+${step2GainNum}% Kesiapan",
+      "type": "portfolio",
+      "actionType": "portfolio",
+      "actionUrl": "/dashboard/portfolio"
+    },
+    {
+      "step": 3,
+      "title": "Kirim Lamaran ke Mitra Lowongan ${roleName}",
+      "estDays": "Target Akhir (Hari 15-30)",
+      "description": "Deskripsi melamar lowongan ${roleName} terverifikasi via Growvia.",
+      "footerLabel": "Jelajahi Lowongan",
+      "gainLabel": "Siap Kerja 95%+",
+      "type": "application",
+      "actionType": "opportunities",
+      "actionUrl": "/dashboard/opportunities"
+    }
+  ]
+}
+Keluarkan HANYA JSON tanpa teks pengantar atau markdown (\`\`\`json).`
+
+  try {
+    if (groqKey) {
+      const sanitizedKey = groqKey.startsWith('gskgsk_') ? groqKey.replace('gskgsk_', 'gsk_') : groqKey
+
+      const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${sanitizedKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: 'qwen/qwen3.8-27b',
+          messages: [
+            { role: 'system', content: 'Anda asisten AI yang hanya mengeluarkan JSON murni tanpa markdown.' },
+            { role: 'user', content: prompt }
+          ],
+          temperature: 0.2
+        }),
+        signal: AbortSignal.timeout(4500)
+      })
+
+      if (response.ok) {
+        const json = await response.json()
+        const raw = json.choices?.[0]?.message?.content?.trim() || ''
+        const clean = raw.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/i, '').trim()
+        const parsed = JSON.parse(clean)
+
+        if (parsed?.aiInsight && Array.isArray(parsed?.steps)) {
+          return {
+            aiInsight: parsed.aiInsight,
+            highlightedKeywords: parsed.keywords || [topGap, secondaryGap],
+            growthRoadmap: parsed.steps
+          }
+        }
+      }
+    }
+
+    if (geminiKey) {
+      const model = getGeminiModel('gemini-1.5-flash')
+      const result = await model.generateContent(prompt)
+      const raw = result.response.text().trim()
+      const clean = raw.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/i, '').trim()
+      const parsed = JSON.parse(clean)
+
+      if (parsed?.aiInsight && Array.isArray(parsed?.steps)) {
+        return {
+          aiInsight: parsed.aiInsight,
+          highlightedKeywords: parsed.keywords || [topGap, secondaryGap],
+          growthRoadmap: parsed.steps
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('AI career generator fallback to heuristic formula:', err)
+  }
+
+  return {
+    aiInsight: defaultInsight,
+    highlightedKeywords: [topGap, secondaryGap],
+    growthRoadmap: defaultRoadmap
+  }
 }
 
 /**
@@ -119,8 +328,8 @@ async function computeCareerProfile(userId: string, careerRoleId?: string): Prom
 
     totalScoreSum += userScore
 
-    const status: SkillGapStatus = userScore >= 75 ? 'strong' : userScore >= 35 ? 'develop' : 'missing'
-    const gapCategoryPrisma = userScore >= 75 ? GapCategory.strong : userScore >= 35 ? GapCategory.develop : GapCategory.missing
+    const status: SkillGapStatus = userScore >= 80 ? 'strong' : userScore >= 40 ? 'develop' : 'missing'
+    const gapCategoryPrisma = userScore >= 80 ? GapCategory.strong : userScore >= 40 ? GapCategory.develop : GapCategory.missing
 
     const item: SkillChipItem = {
       id: s.id,
@@ -187,7 +396,7 @@ async function computeCareerProfile(userId: string, careerRoleId?: string): Prom
   let readinessStatus: 'Ready' | 'Developing' | 'Foundational' = 'Developing'
   let readinessBadgeColor = '#F59E0B'
 
-  if (calculatedReadiness >= 75) {
+  if (calculatedReadiness >= 80) {
     readinessStatus = 'Ready'
     readinessBadgeColor = '#16A34A'
   } else if (calculatedReadiness < 50) {
@@ -208,47 +417,44 @@ async function computeCareerProfile(userId: string, careerRoleId?: string): Prom
       score: us.score
     }))
 
-  // Generate Growth Roadmap bertingkat berdasarkan skill yang butuh peningkatan
-  const priorityImprovement = developSkills[0] || missingSkills[0]
-  const secondaryImprovement = missingSkills[1] || developSkills[1]
-
-  const growthRoadmap = [
-    {
-      step: 1,
-      title: priorityImprovement
-        ? `Tingkatkan Kompetensi ${priorityImprovement.name}`
-        : 'Selesaikan Modul Spesialisasi Industri',
-      estDays: 'Est. 3-5 Hari',
-      description: priorityImprovement
-        ? `Pelajari materi intensif dan studi kasus praktis ${priorityImprovement.name} untuk menutup gap kompetensi utama.`
-        : 'Pelajari kurikulum studi kasus standar industri untuk memperkuat portofolio Anda.',
-      footerLabel: 'Modul Rekomendasi',
-      gainLabel: '+10% Kesiapan',
-      type: 'course' as const
-    },
-    {
-      step: 2,
-      title: secondaryImprovement
-        ? `Implementasi Proyek ${secondaryImprovement.name}`
-        : 'Update Portofolio Studi Kasus Nyata',
-      estDays: 'Est. 5-7 Hari',
-      description: secondaryImprovement
-        ? `Unggah bukti artefak proyek yang menerapkan ${secondaryImprovement.name} ke portofolio Anda.`
-        : 'Tambahkan metrik dampak hasil nyata pada portofolio Anda untuk memikat hiring manager.',
-      footerLabel: 'Portofolio Terverifikasi',
-      gainLabel: '+7% Kesiapan',
-      type: 'portfolio' as const
-    },
-    {
-      step: 3,
-      title: `Lamar Posisi ${role.name}`,
-      estDays: 'Target Akhir',
-      description: `Gunakan jalur rekomendasi Growvia untuk melamar lowongan ${role.name} dengan probabilitas lolos tinggi.`,
-      footerLabel: 'Lowongan Mitra',
-      gainLabel: 'Siap Kerja 95%+',
-      type: 'application' as const
+  // 5. Query user profile untuk personalisasi AI nyata
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      name: true,
+      experiences: {
+        orderBy: { startDate: 'desc' },
+        take: 3,
+        select: {
+          id: true,
+          title: true,
+          institutionName: true,
+          type: true
+        }
+      }
     }
-  ]
+  })
+
+  const userName = user?.name ? user.name.split(' ')[0] : 'Sobat Growvia'
+  const latestExp = user?.experiences?.[0]
+
+  // Generate Growth Roadmap & Insight langsung dari AI
+  const {
+    aiInsight,
+    highlightedKeywords,
+    growthRoadmap
+  } = await generateAiCareerInsightAndRoadmap({
+    userName,
+    roleName: role.name,
+    industry: role.industry || 'Tech & Digital Industry',
+    readinessScore: calculatedReadiness,
+    strongSkills: strongSkills.map(s => s.name),
+    developSkills: developSkills.map(s => s.name),
+    missingSkills: missingSkills.map(s => s.name),
+    latestExpTitle: latestExp?.title,
+    latestExpInstitution: latestExp?.institutionName
+  })
 
   // Dynamic Detailed Matrix
   const detailedMatrix = [
@@ -263,7 +469,7 @@ async function computeCareerProfile(userId: string, careerRoleId?: string): Prom
           (rs.skill.normalizedName ? userSkillMap.get(rs.skill.normalizedName.toLowerCase().trim()) : null)
 
         const score = matched ? matched.score : 0
-        const status: SkillGapStatus = score >= 75 ? 'strong' : score >= 35 ? 'develop' : 'missing'
+        const status: SkillGapStatus = score >= 80 ? 'strong' : score >= 40 ? 'develop' : 'missing'
 
         const actionType: 'qualified' | 'recommend' | 'intro_module' =
           status === 'strong' ? 'qualified' : status === 'develop' ? 'recommend' : 'intro_module'
@@ -284,14 +490,6 @@ async function computeCareerProfile(userId: string, careerRoleId?: string): Prom
       })
     }
   ]
-
-  // Dynamic AI Insight
-  const topStrong = strongSkills[0]?.name
-  const topGap = missingSkills[0]?.name || developSkills[0]?.name
-
-  const aiInsight = topStrong && topGap
-    ? `Berdasarkan rekam jejak portofolio Anda di Supabase, Anda memiliki fondasi yang kuat pada ${topStrong}. Untuk mempercepat kesiapan di posisi ${role.name}, fokuskan peningkatan pada ${topGap}.`
-    : `Analisis kompetensi Anda untuk posisi ${role.name} telah disinkronkan dengan data portofolio Supabase terbaru.`
 
   const salaryRange =
     role.slug === 'ai-engineer'
@@ -315,7 +513,7 @@ async function computeCareerProfile(userId: string, careerRoleId?: string): Prom
     salaryRange,
     summary: role.description || `Target karier profesional sebagai ${role.name}.`,
     aiInsight,
-    highlightedKeywords: topGap ? [topGap] : undefined,
+    highlightedKeywords,
     competentCount: strongSkills.length,
     totalSkillsCount: role.roleSkills.length,
     developCount: developSkills.length,

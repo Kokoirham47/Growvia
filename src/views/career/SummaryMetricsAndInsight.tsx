@@ -1,8 +1,10 @@
 'use client'
 
 import React from 'react'
-import { CheckCircle2, Sliders, AlertTriangle, Sparkles, Brain } from 'lucide-react'
-import { CareerTargetProfile } from '@/types/career'
+
+import { CheckCircle2, Sliders, AlertTriangle, Brain } from 'lucide-react'
+
+import type { CareerTargetProfile } from '@/types/career'
 
 interface SummaryMetricsAndInsightProps {
   career: CareerTargetProfile
@@ -109,8 +111,8 @@ export default function SummaryMetricsAndInsight({ career }: SummaryMetricsAndIn
             <span className='text-xs font-bold text-indigo-950 dark:text-indigo-200 tracking-tight'>
               Growvia AI Career Insight
             </span>
-            <span className='px-2 py-0.2 rounded-full text-[10px] font-semibold bg-indigo-200/60 dark:bg-indigo-900/60 text-indigo-800 dark:text-indigo-300'>
-              Khusus Nabila
+            <span className='px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300'>
+              Analisis Langsung AI
             </span>
           </div>
           <p className='text-xs sm:text-[13px] text-slate-700 dark:text-slate-300 leading-relaxed'>
