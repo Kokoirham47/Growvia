@@ -16,14 +16,17 @@ import {
   LogOut,
   ChevronRight,
   Camera,
-  RefreshCw
+  RefreshCw,
+  HelpCircle
 } from 'lucide-react'
 
 import { useAuth } from '@/contexts/AuthContext'
+import AboutAppModal from './AboutAppModal'
 
 export default function UserDropdown() {
   const [open, setOpen] = useState(false)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
+  const [isAboutModalOpen, setIsAboutModalOpen] = useState(false)
   const anchorRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
 
@@ -321,6 +324,31 @@ export default function UserDropdown() {
                     <ChevronRight className='w-4 h-4 text-slate-300 dark:text-slate-600 group-hover:text-emerald-500 group-hover:translate-x-0.5 transition-all' />
                   </button>
 
+                  {/* Menu Item 4: About & App Guide */}
+                  <button
+                    type='button'
+                    onClick={() => {
+                      setOpen(false)
+                      setIsAboutModalOpen(true)
+                    }}
+                    className='w-full flex items-center justify-between p-2.5 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800/70 text-left transition-colors cursor-pointer group'
+                  >
+                    <div className='flex items-center gap-3'>
+                      <div className='w-8 h-8 rounded-xl bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 flex items-center justify-center shrink-0 border border-sky-100 dark:border-sky-900/50 group-hover:scale-105 transition-transform'>
+                        <HelpCircle className='w-4 h-4' />
+                      </div>
+                      <div className='flex flex-col'>
+                        <span className='text-xs font-bold text-slate-800 dark:text-slate-200 group-hover:text-sky-600 dark:group-hover:text-sky-400 transition-colors'>
+                          Tentang & Panduan
+                        </span>
+                        <span className='text-[10px] text-slate-400 dark:text-slate-500'>
+                          Mengenal Growvia & panduan penggunaan
+                        </span>
+                      </div>
+                    </div>
+                    <ChevronRight className='w-4 h-4 text-slate-300 dark:text-slate-600 group-hover:text-sky-500 group-hover:translate-x-0.5 transition-all' />
+                  </button>
+
                   {/* Divider */}
                   <div className='h-px bg-slate-100 dark:bg-slate-800 my-1' />
 
@@ -340,6 +368,12 @@ export default function UserDropdown() {
           </Fade>
         )}
       </Popper>
+
+      {/* About & Guide Modal */}
+      <AboutAppModal
+        isOpen={isAboutModalOpen}
+        onClose={() => setIsAboutModalOpen(false)}
+      />
     </div>
   )
 }
