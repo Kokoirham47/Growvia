@@ -21,12 +21,10 @@ import {
 } from 'lucide-react'
 
 import { useAuth } from '@/contexts/AuthContext'
-import AboutAppModal from './AboutAppModal'
 
 export default function UserDropdown() {
   const [open, setOpen] = useState(false)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
-  const [isAboutModalOpen, setIsAboutModalOpen] = useState(false)
   const anchorRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
 
@@ -327,10 +325,7 @@ export default function UserDropdown() {
                   {/* Menu Item 4: About & App Guide */}
                   <button
                     type='button'
-                    onClick={() => {
-                      setOpen(false)
-                      setIsAboutModalOpen(true)
-                    }}
+                    onClick={() => handleNavigate('/about')}
                     className='w-full flex items-center justify-between p-2.5 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800/70 text-left transition-colors cursor-pointer group'
                   >
                     <div className='flex items-center gap-3'>
@@ -368,12 +363,6 @@ export default function UserDropdown() {
           </Fade>
         )}
       </Popper>
-
-      {/* About & Guide Modal */}
-      <AboutAppModal
-        isOpen={isAboutModalOpen}
-        onClose={() => setIsAboutModalOpen(false)}
-      />
     </div>
   )
 }
