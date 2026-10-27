@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useCallback } from 'react'
 
 import {
-  Sparkles,
   CheckCircle2,
   Loader2,
   Eye,
@@ -153,7 +152,9 @@ export default function PortfolioBuilderView() {
             portfolioSlug: json.data?.portfolioSlug || slug,
             headline,
             bio
-          }
+          },
+          theme: selectedTheme,
+          sections
         })
       }
 
@@ -217,26 +218,6 @@ export default function PortfolioBuilderView() {
       {/* Header Section */}
       <div className='flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-1'>
         <div className='flex flex-col gap-1.5'>
-          <div className='flex flex-wrap items-center gap-2'>
-            <div className='inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200/70 dark:border-blue-800/60 shadow-2xs'>
-              <Sparkles className='w-3.5 h-3.5 text-blue-600 dark:text-blue-400' />
-              <span>Auto-populated Portfolio Engine</span>
-            </div>
-
-            <div
-              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${
-                isPublished
-                  ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'
-                  : 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800'
-              }`}
-            >
-              <span
-                className={`w-1.5 h-1.5 rounded-full ${isPublished ? 'bg-emerald-500' : 'bg-amber-500'}`}
-              />
-              <span>{isPublished ? 'Publik Aktif' : 'Draf Privat'}</span>
-            </div>
-          </div>
-
           <h1 className='text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight'>
             Portofolio AI & Bukti Nyata
           </h1>

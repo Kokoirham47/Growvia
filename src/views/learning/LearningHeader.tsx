@@ -44,7 +44,7 @@ export default function LearningHeader({
           </div>
           <div className='flex flex-col'>
             <span className='text-xs sm:text-sm font-bold text-slate-900 dark:text-white leading-tight group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors'>
-              {savedModulesCount} Modul Terpilih
+              {savedModulesCount} Modul Tersimpan
             </span>
             <span className='text-[11px] text-slate-500 dark:text-slate-400'>
               {savedModulesCount > 0 ? 'Klik untuk melihat modul tersimpan' : `Menutup ${priorityGapsCount} prioritas skill gap`}

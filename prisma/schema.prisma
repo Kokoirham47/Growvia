@@ -197,6 +197,8 @@ model Profile {
   headline           String?
   portfolioSlug      String?  @unique @map("portfolio_slug")
   portfolioPublished Boolean  @default(false) @map("portfolio_published")
+  portfolioTheme     String?  @default("royal-blue") @map("portfolio_theme")
+  portfolioSections  Json?    @map("portfolio_sections")
   createdAt          DateTime @default(now()) @map("created_at")
   updatedAt          DateTime @updatedAt @map("updated_at")
 

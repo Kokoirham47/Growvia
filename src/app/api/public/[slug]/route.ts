@@ -134,7 +134,9 @@ export async function GET(
       },
       careerTarget,
       skills: mappedSkills,
-      experiences: mappedExperiences
+      experiences: mappedExperiences,
+      theme: (profile.portfolioTheme as any) || 'royal-blue',
+      sections: (profile.portfolioSections as any) || undefined
     }
 
     return apiSuccess(payload, 'Portofolio publik berhasil dimuat')

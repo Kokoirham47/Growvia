@@ -43,7 +43,7 @@ export async function PUT(req: Request) {
     }
 
     const body: PortfolioSettingsPayload = await req.json()
-    const { portfolioPublished, portfolioSlug, headline, bio } = body
+    const { portfolioPublished, portfolioSlug, headline, bio, theme, sections } = body
 
     // 1. Validasi format slug
     const cleanSlug = portfolioSlug
@@ -87,14 +87,18 @@ export async function PUT(req: Request) {
         portfolioSlug: cleanSlug,
         portfolioPublished: Boolean(portfolioPublished),
         ...(headline !== undefined ? { headline } : {}),
-        ...(bio !== undefined ? { bio } : {})
+        ...(bio !== undefined ? { bio } : {}),
+        ...(theme !== undefined ? { portfolioTheme: theme } : {}),
+        ...(sections !== undefined ? { portfolioSections: sections as any } : {})
       },
       create: {
         userId,
         portfolioSlug: cleanSlug,
         portfolioPublished: Boolean(portfolioPublished),
         headline: headline || 'Aspiring Professional',
-        bio: bio || ''
+        bio: bio || '',
+        portfolioTheme: theme || 'royal-blue',
+        portfolioSections: sections ? (sections as any) : undefined
       }
     })
 
@@ -102,6 +106,8 @@ export async function PUT(req: Request) {
       {
         portfolioSlug: updatedProfile.portfolioSlug,
         portfolioPublished: updatedProfile.portfolioPublished,
+        theme: updatedProfile.portfolioTheme,
+        sections: updatedProfile.portfolioSections,
         publicUrl: `/u/${updatedProfile.portfolioSlug}`
       },
       updatedProfile.portfolioPublished
