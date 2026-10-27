@@ -1,8 +1,10 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
+
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+
 import {
   ArrowLeft,
   ArrowRight,
@@ -28,15 +30,15 @@ import {
   Settings,
   Plus,
   Building2,
-  Clock,
-  FileText,
   AlertCircle,
   Loader2,
   Layers
 } from 'lucide-react'
+
 import { useSettings } from '@core/hooks/useSettings'
 import { useAuth } from '@/contexts/AuthContext'
-import SearchableSelect, { SelectOption } from '@/components/ui/SearchableSelect'
+import type { SelectOption } from '@/components/ui/SearchableSelect';
+import SearchableSelect from '@/components/ui/SearchableSelect'
 import { INDONESIAN_UNIVERSITIES, INDONESIAN_MAJORS } from '@/data/indonesianEducation'
 
 const GRADUATION_YEARS = [
@@ -93,13 +95,17 @@ export default function Onboarding() {
 
   // Theme support
   const [systemIsDark, setSystemIsDark] = useState(false)
+
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
+
       setSystemIsDark(mediaQuery.matches)
       const handler = (e: MediaQueryListEvent) => setSystemIsDark(e.matches)
+
       mediaQuery.addEventListener('change', handler)
-      return () => mediaQuery.removeEventListener('change', handler)
+      
+return () => mediaQuery.removeEventListener('change', handler)
     }
   }, [])
 
@@ -122,6 +128,7 @@ export default function Onboarding() {
 
   // Step 3: Experience Form States
   const [showExperienceForm, setShowExperienceForm] = useState(false)
+
   const [experienceData, setExperienceData] = useState({
     title: '',
     type: 'organisation',
@@ -138,12 +145,15 @@ export default function Onboarding() {
     if (user?.name && !fullName) {
       setFullName(user.name)
     }
+
     if (profile?.institution) {
       setSelectedInstitution(profile.institution)
     }
+
     if (profile?.major) {
       setSelectedMajor(profile.major)
     }
+
     if (profile?.graduationYear) {
       setGraduationYear(String(profile.graduationYear))
     }
@@ -154,8 +164,10 @@ export default function Onboarding() {
     const fetchCareerFields = async () => {
       try {
         const res = await fetch('/api/career-fields')
+
         if (res.ok) {
           const json = await res.json()
+
           if (json.success && Array.isArray(json.data) && json.data.length > 0) {
             setCareerFields(json.data)
           }
@@ -168,8 +180,10 @@ export default function Onboarding() {
     const checkExistingStatus = async () => {
       try {
         const res = await fetch('/api/onboarding/status')
+
         if (res.ok) {
           const json = await res.json()
+
           if (json.success && json.data) {
             if (Array.isArray(json.data.interests) && json.data.interests.length > 0) {
               setSelectedCareerIds(json.data.interests.map((ci: DbCareerField) => ci.id))
@@ -188,13 +202,16 @@ export default function Onboarding() {
   // Toggle selection for Career Interests (Max 3)
   const toggleCareer = (careerId: string) => {
     setErrorMessage(null)
+
     if (selectedCareerIds.includes(careerId)) {
       setSelectedCareerIds(prev => prev.filter(id => id !== careerId))
     } else {
       if (selectedCareerIds.length >= 3) {
         setErrorMessage('Kamu hanya dapat memilih maksimal 3 bidang karier utama.')
-        return
+        
+return
       }
+
       setSelectedCareerIds(prev => [...prev, careerId])
     }
   }
@@ -202,6 +219,7 @@ export default function Onboarding() {
   // Handle Back in Stepper
   const handleBack = () => {
     setErrorMessage(null)
+
     if (currentStep === 3) {
       if (showExperienceForm) {
         setShowExperienceForm(false)
@@ -221,22 +239,26 @@ export default function Onboarding() {
 
     if (!fullName.trim()) {
       setErrorMessage('Nama lengkap tidak boleh kosong.')
-      return
+      
+return
     }
 
     if (!selectedInstitution.trim()) {
       setErrorMessage('Silakan pilih atau ketik nama institusi pendidikan Anda.')
-      return
+      
+return
     }
 
     if (!selectedMajor.trim()) {
       setErrorMessage('Silakan pilih atau ketik jurusan/program studi Anda.')
-      return
+      
+return
     }
 
     const gradYearNum = parseInt(graduationYear.replace(/\D/g, ''), 10) || 2026
 
     setIsSubmitting(true)
+
     try {
       const res = await fetch('/api/onboarding/profile', {
         method: 'POST',
@@ -250,9 +272,11 @@ export default function Onboarding() {
       })
 
       const data = await res.json()
+
       if (!res.ok || !data.success) {
         setErrorMessage(data.message || 'Gagal menyimpan profil dasar. Silakan coba lagi.')
-        return
+        
+return
       }
 
       await refreshUser()
@@ -270,10 +294,12 @@ export default function Onboarding() {
 
     if (selectedCareerIds.length === 0) {
       setErrorMessage('Pilih minimal 1 bidang karier atau klik "Lewati untuk sekarang".')
-      return
+      
+return
     }
 
     setIsSubmitting(true)
+
     try {
       const res = await fetch('/api/onboarding/interests', {
         method: 'POST',
@@ -284,9 +310,11 @@ export default function Onboarding() {
       })
 
       const data = await res.json()
+
       if (!res.ok || !data.success) {
         setErrorMessage(data.message || 'Gagal menyimpan pilihan bidang karier.')
-        return
+        
+return
       }
 
       await refreshUser()
@@ -311,22 +339,30 @@ export default function Onboarding() {
 
     if (!experienceData.title.trim()) {
       setErrorMessage('Judul pengalaman wajib diisi.')
-      return
+      
+return
     }
+
     if (!experienceData.role.trim()) {
       setErrorMessage('Peran / posisi wajib diisi.')
-      return
+      
+return
     }
+
     if (!experienceData.institutionName.trim()) {
       setErrorMessage('Nama organisasi / institusi wajib diisi.')
-      return
+      
+return
     }
+
     if (!experienceData.startDate) {
       setErrorMessage('Tanggal / bulan mulai wajib ditentukan.')
-      return
+      
+return
     }
 
     setIsSubmitting(true)
+
     try {
       const res = await fetch('/api/onboarding/experience', {
         method: 'POST',
@@ -344,12 +380,15 @@ export default function Onboarding() {
       })
 
       const data = await res.json()
+
       if (!res.ok || !data.success) {
         setErrorMessage(data.message || 'Gagal menyimpan pengalaman.')
-        return
+        
+return
       }
 
       await refreshUser()
+
       // Selesai onboarding, langsung ke Dashboard
       router.push('/home')
     } catch {
@@ -754,7 +793,9 @@ export default function Onboarding() {
               <div className='grid grid-cols-1 sm:grid-cols-2 gap-2.5 mb-5 max-h-[300px] overflow-y-auto pr-1'>
                 {careerFields.map(career => {
                   const isSelected = selectedCareerIds.includes(career.id)
-                  return (
+
+                  
+return (
                     <button
                       key={career.id}
                       type='button'
@@ -861,6 +902,7 @@ export default function Onboarding() {
               </div>
 
               {!showExperienceForm ? (
+
                 /* Prompt Card: Option A or Option B */
                 <div>
                   <div className='text-center mb-6'>
@@ -935,6 +977,7 @@ export default function Onboarding() {
                   </div>
                 </div>
               ) : (
+
                 /* Quick Experience Input Form */
                 <form onSubmit={handleSaveFirstExperience} className='space-y-3.5'>
                   <div className='text-center mb-4'>
