@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react'
 
+import Image from 'next/image'
 import Link from 'next/link'
 
 import {
@@ -12,7 +13,6 @@ import {
   Target,
   Layers,
   Briefcase,
-  ArrowRight,
   CheckCircle2,
   Workflow,
   Cpu,
@@ -30,15 +30,16 @@ export default function AboutView() {
     <div className='flex flex-col gap-8 max-w-5xl mx-auto pb-16 w-full font-["Poppins",sans-serif] animate-in fade-in duration-200'>
       {/* Page Header */}
       <div className='flex flex-col gap-3 border-b border-slate-200/80 dark:border-slate-800 pb-6'>
-        <div className='flex flex-wrap items-center gap-2.5'>
-          <div className='w-9 h-9 rounded-2xl bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-xs'>
-            <Compass className='w-5 h-5' />
-          </div>
-          <span className='px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200/70 dark:border-blue-800/60'>
-            Growvia Platform Guide · v1.0
-          </span>
-          <span className='px-3 py-1 rounded-full text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'>
-            UINIC 8.0 Web Dev
+        <div className='flex items-center gap-2.5'>
+          <Image
+            src='/images/growvia-logo.png'
+            alt='Growvia Logo'
+            width={32}
+            height={32}
+            className='w-8 h-8 rounded-lg object-contain'
+          />
+          <span className='font-bold text-lg text-slate-900 dark:text-white tracking-tight'>
+            Growvia
           </span>
         </div>
 
@@ -51,14 +52,6 @@ export default function AboutView() {
               Pelajari visi, filosofi verifikasi berbasis bukti, arsitektur kecerdasan buatan, dan panduan lengkap pemanfaatan fitur Growvia untuk akselerasi karier teknologi Anda.
             </p>
           </div>
-
-          <Link
-            href='/profile'
-            className='inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-colors shadow-xs self-start sm:self-auto shrink-0'
-          >
-            <span>Mulai Atur Profil</span>
-            <ArrowRight className='w-4 h-4' />
-          </Link>
         </div>
       </div>
 
