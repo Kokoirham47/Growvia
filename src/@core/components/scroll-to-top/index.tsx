@@ -32,6 +32,7 @@ const ScrollToTop = (props: ScrollToTopProps) => {
   })
 
   const handleClick = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
     const anchor = document.querySelector('body')
 
     if (anchor) {

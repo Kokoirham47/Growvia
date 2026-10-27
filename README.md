@@ -22,7 +22,7 @@ Fitur Profile & Settings memfasilitasi pengguna untuk mengelola identitas pribad
   - **Nama Lengkap**
   - **Institusi Pendidikan & Jurusan**
   - **Tahun Kelulusan / Angkatan**
-  - **Headline Profesional** (contoh: *"Informatics Student \| Aspiring AI Engineer"*).
+  - **Headline Profesional** (contoh: *"Informatics Student | Aspiring AI Engineer"*).
   - **Biografi Singkat** (ringkasan ketertarikan karier).
 - **Unggah Foto Avatar**:
   - Dukungan format: JPEG, PNG, WebP (maksimal 2MB).
@@ -130,6 +130,6 @@ npm run dev
 # http://localhost:3000/profile
 # http://localhost:3000/settings
 
-# 3. Validasi kode
+# 3. Lakukan validasi linting
 npm run lint
 ```

@@ -1,3 +1,14 @@
+// Next Imports
+import type { Metadata } from 'next'
+
+// Component Imports
+import DashboardView from '@/views/dashboard/DashboardView'
+
+export const metadata: Metadata = {
+  title: 'Dashboard — Growvia Career Compass',
+  description: 'AI-Powered Career & Skill Ecosystem Dashboard untuk Mahasiswa dan Fresh Graduate.'
+}
+
 export default function Page() {
-  return <h1>Home page!</h1>
+  return <DashboardView />
 }
