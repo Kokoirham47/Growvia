@@ -49,21 +49,21 @@ export default function AboutView() {
               Tentang Aplikasi & Panduan Growvia
             </h1>
             <p className='text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-2xl leading-relaxed'>
-              Pelajari visi, filosofi verifikasi berbasis bukti, arsitektur kecerdasan buatan, dan panduan lengkap pemanfaatan fitur Growvia untuk akselerasi karier teknologi Anda.
+              Kenali Growvia lebih dekat: cara kerja, keunggulan dibanding CV biasa, dan panduan praktis dari awal sampai siap melamar kerja impianmu.
             </p>
           </div>
         </div>
       </div>
 
       {/* Segmented Tab Bar */}
-      <div className='flex items-center gap-2 p-1.5 rounded-2xl bg-slate-100/90 dark:bg-slate-850/80 border border-slate-200/70 dark:border-slate-800 overflow-x-auto'>
+      <div className='flex items-center gap-2 p-1.5 rounded-2xl bg-slate-100 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 overflow-x-auto'>
         <button
           type='button'
           onClick={() => setActiveTab('overview')}
           className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap transition-all cursor-pointer ${
             activeTab === 'overview'
               ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-xs'
-              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-slate-700/50'
           }`}
         >
           <Compass className='w-4 h-4' />
@@ -76,7 +76,7 @@ export default function AboutView() {
           className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap transition-all cursor-pointer ${
             activeTab === 'guide'
               ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-xs'
-              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-slate-700/50'
           }`}
         >
           <BookOpen className='w-4 h-4' />
@@ -89,7 +89,7 @@ export default function AboutView() {
           className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap transition-all cursor-pointer ${
             activeTab === 'features'
               ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-xs'
-              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-slate-700/50'
           }`}
         >
           <Sparkles className='w-4 h-4' />
@@ -102,11 +102,11 @@ export default function AboutView() {
           className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap transition-all cursor-pointer ${
             activeTab === 'methodology'
               ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-xs'
-              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-slate-700/50'
           }`}
         >
           <Workflow className='w-4 h-4' />
-          <span>Metodologi & Glosarium</span>
+          <span>Tanya Jawab & Penjelasan</span>
         </button>
       </div>
 
@@ -119,13 +119,13 @@ export default function AboutView() {
           <div className='p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-blue-50/80 via-indigo-50/40 to-slate-50 dark:from-slate-900 dark:via-blue-950/20 dark:to-slate-900 border border-blue-100 dark:border-slate-800 shadow-2xs space-y-4'>
             <div className='inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-blue-600 text-white shadow-2xs'>
               <Sparkles className='w-3.5 h-3.5' />
-              <span>Visi Platform</span>
+              <span>Tujuan Kami</span>
             </div>
             <h2 className='text-lg sm:text-2xl font-extrabold text-slate-900 dark:text-white leading-tight'>
-              Menjembatani Kesenjangan Antara Kampus dan Kebutuhan Industri Teknologi
+              Membantu Mahasiswa & Lulusan Baru Lebih Siap Masuk Dunia Kerja
             </h2>
             <p className='text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed max-w-3xl'>
-              Growvia adalah ekosistem navigasi karier cerdas berbasis kecerdasan buatan (AI) yang dirancang khusus untuk mahasiswa, fresh graduate, dan talenta teknologi. Growvia mengubah paradigma resume tradisional dari sekadar daftar klaim keahlian sepihak menjadi portofolio berbasis bukti autentik yang terukur terhadap standar kompetensi industri.
+              Growvia adalah sahabat navigasi kariermu. Kami membantu kamu mencatat pengalaman nyata dari kuliah, proyek, magang, atau organisasi, lalu mencari tahu apa saja keahlian yang masih kurang untuk posisi impianmu, dan membuat portofolio online yang meyakinkan bagi rekruter.
             </p>
           </div>
 
@@ -133,28 +133,27 @@ export default function AboutView() {
           <div className='space-y-4'>
             <div className='flex flex-col gap-1'>
               <h3 className='text-base sm:text-lg font-bold text-slate-900 dark:text-white'>
-                Paradigma Baru Penilaian Kualifikasi
+                Kenapa Harus Pakai Growvia?
               </h3>
               <p className='text-xs text-slate-500 dark:text-slate-400'>
-                Bagaimana Growvia mengatasi kerapuhan metode penilaian resume konvensional.
+                Perbedaan mendasar antara CV biasa dengan portofolio berbasis bukti di Growvia.
               </p>
             </div>
 
             <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
               {/* Kolom 1: Cara Konvensional */}
-              <div className='p-5 sm:p-6 rounded-3xl bg-slate-50/70 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 space-y-3'>
-                <div className='flex items-center gap-2 text-rose-600 dark:text-rose-400 font-bold text-xs uppercase tracking-wider'>
-                  <span className='w-2 h-2 rounded-full bg-rose-500' />
-                  <span>Kelemahan Cara Konvensional</span>
+              <div className='p-5 sm:p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 space-y-3.5 shadow-2xs'>
+                <div className='text-rose-600 dark:text-rose-400 font-bold text-xs uppercase tracking-wider'>
+                  Kelemahan CV Konvensional
                 </div>
 
-                <ul className='space-y-2.5 text-xs text-slate-600 dark:text-slate-400 leading-relaxed'>
+                <ul className='space-y-3 text-xs text-slate-600 dark:text-slate-400 leading-relaxed'>
                   <li className='flex items-start gap-2.5'>
                     <span className='w-5 h-5 rounded-lg bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5'>
                       ✕
                     </span>
                     <span>
-                      <strong>Klaim sepihak tanpa bukti:</strong> Pelamar menulis daftar puluhan skill teknis di CV tanpa verifikasi artefak kode atau riwayat proyek riil.
+                      <strong className='text-slate-800 dark:text-slate-200'>Cuma klaim tanpa bukti:</strong> Di CV pelamar sering menulis panjang daftar skill, tapi rekruter sulit membuktikan apakah skill tersebut benar-benar dikuasai.
                     </span>
                   </li>
                   <li className='flex items-start gap-2.5'>
@@ -162,7 +161,7 @@ export default function AboutView() {
                       ✕
                     </span>
                     <span>
-                      <strong>Buta kesenjangan (Skill Gap):</strong> Talenta tidak mengetahui secara terukur berapa persen keahlian yang kurang untuk memenuhi kualifikasi peran yang dituju.
+                      <strong className='text-slate-800 dark:text-slate-200'>Bingung apa yang kurang:</strong> Sering ditolak lamaran kerja tanpa pernah tahu keahlian apa yang sebenarnya belum memenuhi syarat.
                     </span>
                   </li>
                   <li className='flex items-start gap-2.5'>
@@ -170,36 +169,35 @@ export default function AboutView() {
                       ✕
                     </span>
                     <span>
-                      <strong>Belajar tanpa panduan target:</strong> Mahasiswa mengambil kursus secara acak tanpa sinkronisasi dengan kekurangan prioritas mereka.
+                      <strong className='text-slate-800 dark:text-slate-200'>Belajar tanpa arah:</strong> Banyak menghabiskan waktu ikut kursus acak yang ternyata tidak sesuai dengan kebutuhan lowongan kerja saat ini.
                     </span>
                   </li>
                 </ul>
               </div>
 
               {/* Kolom 2: Pendekatan Growvia */}
-              <div className='p-5 sm:p-6 rounded-3xl bg-blue-50/40 dark:bg-blue-950/20 border border-blue-200/70 dark:border-blue-900/50 space-y-3'>
-                <div className='flex items-center gap-2 text-blue-600 dark:text-blue-400 font-bold text-xs uppercase tracking-wider'>
-                  <span className='w-2 h-2 rounded-full bg-blue-500' />
-                  <span>Pendekatan Cerdas Growvia</span>
+              <div className='p-5 sm:p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 space-y-3.5 shadow-2xs'>
+                <div className='text-blue-600 dark:text-blue-400 font-bold text-xs uppercase tracking-wider'>
+                  Kelebihan Menggunakan Growvia
                 </div>
 
-                <ul className='space-y-2.5 text-xs text-slate-700 dark:text-slate-300 leading-relaxed'>
+                <ul className='space-y-3 text-xs text-slate-700 dark:text-slate-300 leading-relaxed'>
                   <li className='flex items-start gap-2.5'>
                     <CheckCircle2 className='w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5' />
                     <span>
-                      <strong>Evidence-Based Credibility:</strong> Setiap keahlian wajib terhubung dengan artefak autentik (tautan repository, live URL, sertifikat).
+                      <strong className='text-slate-900 dark:text-white'>Dibuktikan dengan karya nyata:</strong> Setiap keahlian langsung ditautkan dengan link proyek, GitHub, website aktif, atau sertifikat asli.
                     </span>
                   </li>
                   <li className='flex items-start gap-2.5'>
                     <CheckCircle2 className='w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5' />
                     <span>
-                      <strong>Algoritma Gap Presisi (Threshold 80%+):</strong> Kesiapan dihitung secara matematis. Rekruter dan talenta dapat melihat status gap secara transparan.
+                      <strong className='text-slate-900 dark:text-white'>Tahu jelas kekuranganmu:</strong> Sistem otomatis menghitung kesiapanmu dan memberitahu skill apa saja yang perlu kamu pelajari lagi.
                     </span>
                   </li>
                   <li className='flex items-start gap-2.5'>
                     <CheckCircle2 className='w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5' />
                     <span>
-                      <strong>Ekosistem Tertutup (Closed-Loop Learning):</strong> Setiap kekurangan skill langsung diarahkan ke modul belajar pilihan dan lowongan yang cocok.
+                      <strong className='text-slate-900 dark:text-white'>Rekomendasi belajar tepat:</strong> Begitu tahu skill yang kurang, kamu langsung diarahkan ke modul belajar pilihan dan lowongan yang cocok.
                     </span>
                   </li>
                 </ul>
@@ -211,10 +209,10 @@ export default function AboutView() {
           <div className='space-y-4'>
             <div className='flex flex-col gap-1'>
               <h3 className='text-base sm:text-lg font-bold text-slate-900 dark:text-white'>
-                Empat Pilar Arsitektur Growvia
+                4 Manfaat Utama Growvia untuk Kariermu
               </h3>
               <p className='text-xs text-slate-500 dark:text-slate-400'>
-                Landasan teknologi dan metodologi di balik sistem evaluasi Growvia.
+                Fitur-fitur andalan yang mempermudah langkahmu meraih karier impian.
               </p>
             </div>
 
@@ -224,10 +222,10 @@ export default function AboutView() {
                   <ShieldCheck className='w-5 h-5' />
                 </div>
                 <h4 className='text-sm sm:text-base font-bold text-slate-900 dark:text-white'>
-                  1. Evidence-Based Credibility
+                  1. Portofolio Berbasis Bukti
                 </h4>
                 <p className='text-xs text-slate-500 dark:text-slate-400 leading-relaxed'>
-                  Kredibilitas kompetensi tidak dinilai dari klaim subjektif. Growvia mewajibkan pengikatan artefak bukti konkret seperti repositori GitHub, dokumen sertifikasi, atau produk digital yang berjalan.
+                  Bukan sekadar menuliskan nama keahlian di kertas, tapi menghubungkannya langsung ke hasil karya nyata, link repositori, dan sertifikat yang bisa diinspeksi rekruter.
                 </p>
               </div>
 
@@ -236,10 +234,10 @@ export default function AboutView() {
                   <Cpu className='w-5 h-5' />
                 </div>
                 <h4 className='text-sm sm:text-base font-bold text-slate-900 dark:text-white'>
-                  2. AI Semantic Skill Extraction
+                  2. Bantuan AI Ekstraksi Keahlian
                 </h4>
                 <p className='text-xs text-slate-500 dark:text-slate-400 leading-relaxed'>
-                  Model kecerdasan buatan membaca narasi rekam jejak pengalaman Anda, mengekstraksi keahlian teknis (hard skills) dan interpersonal (soft skills), serta mengukur tingkat keyakinan (confidence score).
+                  Cukup ceritakan pengalaman proyek atau magang dengan bahasamu sendiri. AI kami akan otomatis menemukan keahlian teknis maupun kerja sama tim yang kamu gunakan.
                 </p>
               </div>
 
@@ -248,10 +246,10 @@ export default function AboutView() {
                   <Target className='w-5 h-5' />
                 </div>
                 <h4 className='text-sm sm:text-base font-bold text-slate-900 dark:text-white'>
-                  3. Algorithmic Gap Analysis (80%+ Benchmark)
+                  3. Pengukur Kesiapan Kerja
                 </h4>
                 <p className='text-xs text-slate-500 dark:text-slate-400 leading-relaxed'>
-                  Membandingkan akumulasi keahlian Anda terhadap kurikulum peran industri target. Skor 80%+ ditetapkan sebagai ambang batas kesiapan kerja nyata (industry-ready benchmark).
+                  Growvia menghitung seberapa cocok keahlianmu dengan standar lowongan kerja saat ini. Nilai di atas 80% menunjukkan kamu sudah siap melamar dengan percaya diri.
                 </p>
               </div>
 
@@ -260,10 +258,10 @@ export default function AboutView() {
                   <Globe className='w-5 h-5' />
                 </div>
                 <h4 className='text-sm sm:text-base font-bold text-slate-900 dark:text-white'>
-                  4. Instant Public Portfolio Engine
+                  4. Website Portofolio Siap Pakai
                 </h4>
                 <p className='text-xs text-slate-500 dark:text-slate-400 leading-relaxed'>
-                  Menghasilkan situs web portofolio profesional siap saji pada tautan <code>growvia.app/u/[slug]</code> dengan tema visual dinamis, bebas repot koding terpisah.
+                  Tidak perlu repot koding website sendiri. Growvia membuatkan halaman portofolio keren beralamat <code>growvia.app/u/namamu</code> yang siap kamu cantumkan di surat lamaran.
                 </p>
               </div>
             </div>
@@ -276,10 +274,10 @@ export default function AboutView() {
         <div className='flex flex-col gap-6'>
           <div className='flex flex-col gap-1'>
             <h3 className='text-base sm:text-lg font-bold text-slate-900 dark:text-white'>
-              Alur Penggunaan Lengkap: Dari Mahasiswa ke Siap Kerja
+              Panduan 8 Langkah Praktis Menggunakan Growvia
             </h3>
             <p className='text-xs text-slate-500 dark:text-slate-400'>
-              Ikuti 8 langkah terstruktur ini untuk memaksimalkan potensi profil dan kesiapan karier Anda.
+              Ikuti langkah sederhana ini untuk membangun profil yang kuat dan siap dilirik rekruter.
             </p>
           </div>
 
@@ -293,7 +291,7 @@ export default function AboutView() {
                   </div>
                   <div>
                     <h4 className='text-sm sm:text-base font-bold text-slate-900 dark:text-white'>
-                      Tentukan Target Peran Karier Anda
+                      Tentukan Karier Impianmu
                     </h4>
                     <span className='text-[11px] text-slate-400 dark:text-slate-500'>
                       Langkah Awal · Estimasi: 2 menit
@@ -311,13 +309,13 @@ export default function AboutView() {
               </div>
 
               <p className='text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed'>
-                Tentukan peran target yang ingin Anda tuju (misalnya <em>Frontend Web Engineer</em>, <em>AI & Machine Learning Engineer</em>, atau <em>Backend Engineer</em>). Target ini menjadi tolok ukur utama bagi seluruh perhitungan matriks kesenjangan (skill gap) dan rekomendasi belajar Anda.
+                Pilih peran yang ingin kamu tuju (contohnya <em>Frontend Web Engineer</em>, <em>Data Analyst</em>, atau <em>AI Engineer</em>). Pilihan peran ini menjadi patokan bagi Growvia untuk menghitung keahlian apa saja yang kamu butuhkan.
               </p>
 
-              <div className='p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-850/60 border border-slate-100 dark:border-slate-800 flex items-start gap-2.5 text-xs text-slate-500 dark:text-slate-400'>
+              <div className='p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-700/60 flex items-start gap-2.5 text-xs text-slate-600 dark:text-slate-400'>
                 <Lightbulb className='w-4 h-4 text-amber-500 shrink-0 mt-0.5' />
                 <span>
-                  <strong>Tips:</strong> Anda dapat mengubah peran target kapan saja di menu Profil apabila fokus studi atau minat Anda bergeser di kemudian hari.
+                  <strong>Tips:</strong> Kamu bisa mengganti peran target kapan saja di menu Profil jika minat kariermu berubah.
                 </span>
               </div>
             </div>
@@ -331,7 +329,7 @@ export default function AboutView() {
                   </div>
                   <div>
                     <h4 className='text-sm sm:text-base font-bold text-slate-900 dark:text-white'>
-                      Catat Rekam Jejak Pengalaman & Manfaatkan Ekstraksi AI
+                      Catat Pengalaman & Gunakan Ekstraksi AI
                     </h4>
                     <span className='text-[11px] text-slate-400 dark:text-slate-500'>
                       Menu Pengalaman · Estimasi: 5-10 menit
@@ -349,20 +347,20 @@ export default function AboutView() {
               </div>
 
               <p className='text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed'>
-                Tambahkan pengalaman Anda, baik magang, proyek mata kuliah, organisasi, kompetisi (hackathon), atau freelance. Gunakan tombol <strong>AI Ekstraksi Keahlian</strong> saat mengisi form untuk membedah narasi proyek Anda menjadi entitas keahlian yang terstruktur.
+                Tambahkan pengalaman yang pernah kamu miliki: magang, proyek tugas kuliah, kepanitiaan, atau lomba. Manfaatkan tombol <strong>Ekstraksi AI</strong> saat mengisi formulir agar AI otomatis merangkum keahlian dari ceritamu.
               </p>
 
               <div className='grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs'>
-                <div className='p-3 rounded-2xl bg-slate-50 dark:bg-slate-850/60 border border-slate-100 dark:border-slate-800'>
-                  <span className='font-bold text-slate-800 dark:text-slate-200 block mb-1'>Tulis Deskripsi Berorientasi Aksi</span>
+                <div className='p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-700/60'>
+                  <span className='font-bold text-slate-800 dark:text-slate-200 block mb-1'>Tulis Alat yang Kamu Pakai</span>
                   <p className='text-slate-500 dark:text-slate-400'>
-                    Sertakan teknologi yang dipakai (React, Next.js, PostgreSQL) dan pencapaian konkrit agar AI mengenali keahlian dengan tepat.
+                    Sebutkan teknologi yang digunakan (misal: React, Python, PostgreSQL) agar AI bisa mendeteksinya dengan akurat.
                   </p>
                 </div>
-                <div className='p-3 rounded-2xl bg-slate-50 dark:bg-slate-850/60 border border-slate-100 dark:border-slate-800'>
-                  <span className='font-bold text-slate-800 dark:text-slate-200 block mb-1'>Lampirkan Bukti Autentik</span>
+                <div className='p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-700/60'>
+                  <span className='font-bold text-slate-800 dark:text-slate-200 block mb-1'>Lampirkan Bukti Asli</span>
                   <p className='text-slate-500 dark:text-slate-400'>
-                    Masukkan URL repositori GitHub, URL demo live aplikasi, atau file sertifikat pada formulir pengalaman.
+                    Masukkan link GitHub, alamat demo aplikasi yang sudah online, atau sertifikat pada formulir pengalaman.
                   </p>
                 </div>
               </div>
@@ -377,10 +375,10 @@ export default function AboutView() {
                   </div>
                   <div>
                     <h4 className='text-sm sm:text-base font-bold text-slate-900 dark:text-white'>
-                      Eksplorasi Peta Keahlian & Graf Interaktif (Skill Matrix)
+                      Lihat Peta Keahlianmu (Skill Matrix)
                     </h4>
                     <span className='text-[11px] text-slate-400 dark:text-slate-500'>
-                      Menu Skill Matrix · Eksplorasi Visual
+                      Menu Skill Matrix · Tampilan Visual Interaktif
                     </span>
                   </div>
                 </div>
@@ -395,7 +393,7 @@ export default function AboutView() {
               </div>
 
               <p className='text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed'>
-                Buka menu <strong>Skill Matrix</strong> untuk melihat sebaran keahlian Anda dalam graf visual interaktif (Skill Map Graph). Graf ini memetakan relasi antara hard skills teknis, soft skills kepemimpinan/kolaborasi, dan bukti yang memperkuat masing-masing keahlian.
+                Masuk ke menu <strong>Skill Matrix</strong> untuk melihat peta keahlianmu. Kamu bisa melihat graf interaktif yang memperlihatkan bagaimana keahlian teknis terhubung dengan proyek nyata dan soft skill yang kamu miliki.
               </p>
             </div>
 
@@ -408,7 +406,7 @@ export default function AboutView() {
                   </div>
                   <div>
                     <h4 className='text-sm sm:text-base font-bold text-slate-900 dark:text-white'>
-                      Analisis Skor Kesiapan Karier & Matriks Kesenjangan (Gap)
+                      Cek Skor Kesiapan & Apa yang Masih Kurang
                     </h4>
                     <span className='text-[11px] text-slate-400 dark:text-slate-500'>
                       Menu Karier & Gap · Tolok Ukur Kesiapan Kerja
@@ -426,7 +424,7 @@ export default function AboutView() {
               </div>
 
               <p className='text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed'>
-                Periksa persentase <em>Career Readiness Score</em> Anda. Pelajari tabel rincian kompetensi: mana keahlian yang telah memenuhi standar industri (skor ≥80%) dan mana keahlian prioritas tinggi yang masih mengalami kesenjangan (gap) untuk segera Anda tingkatkan.
+                Periksa persentase kesiapan kariermu. Kamu bisa melihat dengan jelas: keahlian apa yang sudah kamu kuasai dengan baik dan keahlian prioritas mana yang masih kurang agar kamu bisa segera menutup kekurangannya.
               </p>
             </div>
 
@@ -439,10 +437,10 @@ export default function AboutView() {
                   </div>
                   <div>
                     <h4 className='text-sm sm:text-base font-bold text-slate-900 dark:text-white'>
-                      Tingkatkan Kompetensi Lewat Rekomendasi Belajar
+                      Belajar dari Rekomendasi Materi Terpilih
                     </h4>
                     <span className='text-[11px] text-slate-400 dark:text-slate-500'>
-                      Menu Rekomendasi Belajar · Kurasi Eksternal Terpercaya
+                      Menu Rekomendasi Belajar · Langsung ke Sasaran
                     </span>
                   </div>
                 </div>
@@ -457,7 +455,7 @@ export default function AboutView() {
               </div>
 
               <p className='text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed'>
-                Growvia secara otomatis merekomendasikan modul pembelajaran yang relevan untuk menutup kesenjangan keahlian spesifik Anda. Simpan modul yang ingin Anda pelajari ke daftar tersimpan, buka tautan materi eksternal resmi, dan pelajari secara mandiri.
+                Growvia otomatis mencarikan modul belajar terpercaya yang sesuai dengan kelemahan keahlianmu. Kamu bisa bookmark modul yang ingin kamu pelajari dan langsung membuka link materi resminya.
               </p>
             </div>
 
@@ -470,10 +468,10 @@ export default function AboutView() {
                   </div>
                   <div>
                     <h4 className='text-sm sm:text-base font-bold text-slate-900 dark:text-white'>
-                      Jelajahi Lowongan Karier Sesuai Arah Peran
+                      Jelajahi Lowongan Magang & Pekerjaan
                     </h4>
                     <span className='text-[11px] text-slate-400 dark:text-slate-500'>
-                      Menu Peluang Karier · Magang & Pekerjaan Terkurasi
+                      Menu Peluang Karier · Peluang Kerja Terkurasi
                     </span>
                   </div>
                 </div>
@@ -488,7 +486,7 @@ export default function AboutView() {
               </div>
 
               <p className='text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed'>
-                Buka menu <strong>Peluang Karier</strong> untuk melihat lowongan kerja dan magang dari industri. Gunakan opsi filter <em>Sesuai Arah Karier</em> untuk menyaring lowongan yang paling relevan dengan role target Anda, simpan lowongan favorit, dan lamar langsung.
+                Buka menu <strong>Peluang Karier</strong> untuk melihat lowongan magang dan kerja. Gunakan filter <em>Sesuai Arah Karier</em> agar lowongan yang muncul benar-benar relevan dengan posisi yang kamu tuju.
               </p>
             </div>
 
@@ -501,10 +499,10 @@ export default function AboutView() {
                   </div>
                   <div>
                     <h4 className='text-sm sm:text-base font-bold text-slate-900 dark:text-white'>
-                      Personalisasi & Terbitkan Portofolio Digital AI Anda
+                      Buat & Bagikan Portofolio Onlinemu
                     </h4>
                     <span className='text-[11px] text-slate-400 dark:text-slate-500'>
-                      Menu Portofolio AI · Publikasi URL Resmi
+                      Menu Portofolio AI · Link Publik Siap Dibagikan
                     </span>
                   </div>
                 </div>
@@ -519,7 +517,7 @@ export default function AboutView() {
               </div>
 
               <p className='text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed'>
-                Buka menu <strong>Portofolio AI</strong> untuk memilih tema visual (misalnya <em>Royal Blue</em>, <em>Sleek Slate</em>, atau <em>Modern Emerald</em>), atur seksi yang ingin Anda tampilkan, lalu aktifkan status publik untuk mendapatkan tautan resmi <code>growvia.app/u/[slug]</code> yang siap dibagikan kepada rekruter.
+                Pilih tema warna favoritmu (misal: <em>Royal Blue</em>, <em>Sleek Slate</em>, atau <em>Modern Emerald</em>), pilih bagian mana yang ingin ditampilkan, lalu nyalakan tombol publik agar portofoliomu bisa diakses lewat link <code>growvia.app/u/namamu</code>.
               </p>
             </div>
 
@@ -532,21 +530,21 @@ export default function AboutView() {
                   </div>
                   <div>
                     <h4 className='text-sm sm:text-base font-bold text-slate-900 dark:text-white'>
-                      Lakukan Pembaruan Berkala Sesuai Perkembangan
+                      Perbarui Secara Berkala
                     </h4>
                     <span className='text-[11px] text-slate-400 dark:text-slate-500'>
-                      Siklus Berkelanjutan · Evaluasi Rutin
+                      Siklus Berkelanjutan · Profil Selalu Update
                     </span>
                   </div>
                 </div>
 
-                <span className='px-3 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 shrink-0'>
-                  Continuous Growth
+                <span className='px-3 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200/70 dark:border-emerald-800/70 shrink-0'>
+                  Selalu Bertumbuh
                 </span>
               </div>
 
               <p className='text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed'>
-                Setiap kali Anda menyelesaikan modul belajar, menyelesaikan proyek baru, atau memperoleh sertifikasi, segera tambahkan ke menu Pengalaman. Skor kesiapan Anda akan langsung meningkat secara otomatis dan portofolio publik Anda selalu diperbarui.
+                Setiap kali kamu menyelesaikan proyek baru, lulus pelatihan, atau mendapat sertifikat baru, langsung tambahkan ke Growvia. Skor kesiapan kerjamu akan otomatis naik dan portofolio publikmu selalu terlihat aktif.
               </p>
             </div>
           </div>
@@ -558,10 +556,10 @@ export default function AboutView() {
         <div className='flex flex-col gap-6'>
           <div className='flex flex-col gap-1'>
             <h3 className='text-base sm:text-lg font-bold text-slate-900 dark:text-white'>
-              Katalog Fitur & Spesifikasi Teknis Growvia
+              Fitur Lengkap Growvia
             </h3>
             <p className='text-xs text-slate-500 dark:text-slate-400'>
-              Penjelasan rinci mengenai kemampuan sistem yang bekerja di balik layar.
+              Berbagai kemudahan yang kami siapkan untuk membantu persiapan kariermu.
             </p>
           </div>
 
@@ -572,10 +570,10 @@ export default function AboutView() {
                 <Sparkles className='w-5 h-5' />
               </div>
               <h4 className='text-sm sm:text-base font-bold text-slate-900 dark:text-white'>
-                AI Smart Skill Extractor
+                Ekstraksi Keahlian Otomatis oleh AI
               </h4>
               <p className='text-xs text-slate-500 dark:text-slate-400 leading-relaxed'>
-                Menggunakan teknik pemrosesan bahasa alami (NLP) untuk menganalisis deskripsi pengalaman secara mendalam. Sistem mengenali terminologi teknologi, framework, arsitektur, dan soft skill, lalu memetakannya ke standar taksonomi keahlian industri global.
+                Kamu tidak perlu bingung memilih skill apa saja yang kamu kuasai. Cukup ketik cerita pengalaman kerjamu, dan AI akan otomatis menemukan keahlian teknis maupun kemampuan kerja sama timmu.
               </p>
             </div>
 
@@ -585,10 +583,10 @@ export default function AboutView() {
                 <Layers className='w-5 h-5' />
               </div>
               <h4 className='text-sm sm:text-base font-bold text-slate-900 dark:text-white'>
-                Skill Map Graph Interaktif
+                Peta Visual Keahlian (Skill Map Graph)
               </h4>
               <p className='text-xs text-slate-500 dark:text-slate-400 leading-relaxed'>
-                Graf visualisasi relasi jaringan berbasis node yang memperlihatkan bagaimana keahlian teknis Anda saling berhubungan dengan pengalaman proyek dan soft skills, memungkinkan peninjauan holistik yang tidak dapat disajikan oleh CV datar.
+                Tampilan grafik interaktif yang menyenangkan untuk melihat bagaimana skill teknis, soft skill, dan proyek-proyekmu saling terhubung satu sama lain.
               </p>
             </div>
 
@@ -598,10 +596,10 @@ export default function AboutView() {
                 <Target className='w-5 h-5' />
               </div>
               <h4 className='text-sm sm:text-base font-bold text-slate-900 dark:text-white'>
-                Dynamic Career Gap Matrix
+                Pengukur Gap & Kesiapan Karier
               </h4>
               <p className='text-xs text-slate-500 dark:text-slate-400 leading-relaxed'>
-                Mesin kalkulasi gap yang mengukur jarak antara akumulasi kompetensi nyata talenta dengan persyaratan standar peran industri. Memilah keahlian menjadi kategori siap kerja (≥80%) dan prioritas gap yang harus segera dikejar.
+                Sistem yang secara adil mengukur jarak antara skill yang kamu miliki sekarang dengan syarat lowongan kerja sesungguhnya, lengkap dengan saran apa yang perlu dipelajari.
               </p>
             </div>
 
@@ -611,10 +609,10 @@ export default function AboutView() {
                 <Briefcase className='w-5 h-5' />
               </div>
               <h4 className='text-sm sm:text-base font-bold text-slate-900 dark:text-white'>
-                Career Opportunities Hub
+                Peluang Magang & Kerja Terkurasi
               </h4>
               <p className='text-xs text-slate-500 dark:text-slate-400 leading-relaxed'>
-                Pusat kurasi lowongan kerja dan program magang yang dilengkapi filter kecocokan arah peran karier (Career Direction Matching), fasilitas penyimpanan lowongan, dan integrasi pelamaran langsung.
+                Temukan lowongan dari perusahaan yang memang cocok dengan bidang yang kamu minati, simpan lowongan favorit, dan lamar tanpa proses yang rumit.
               </p>
             </div>
 
@@ -624,10 +622,10 @@ export default function AboutView() {
                 <BookOpen className='w-5 h-5' />
               </div>
               <h4 className='text-sm sm:text-base font-bold text-slate-900 dark:text-white'>
-                Targeted Learning Recommendations
+                Rekomendasi Modul Belajar Pilihan
               </h4>
               <p className='text-xs text-slate-500 dark:text-slate-400 leading-relaxed'>
-                Koleksi materi dan kursus terpercaya dari platform eksternal resmi yang dipetakan secara spesifik untuk menutup kelemahan keahlian tanpa membuang waktu mempelajari hal-hal yang sudah dikuasai.
+                Kumpulan materi dan kursus online terpercaya yang langsung diarahkan untuk menutup kekurangan keahlianmu, sehingga belajarmu jadi efisien dan tidak buang waktu.
               </p>
             </div>
 
@@ -637,10 +635,10 @@ export default function AboutView() {
                 <Globe className='w-5 h-5' />
               </div>
               <h4 className='text-sm sm:text-base font-bold text-slate-900 dark:text-white'>
-                Verified Public Portfolio Engine
+                Website Portofolio Online Otomatis
               </h4>
               <p className='text-xs text-slate-500 dark:text-slate-400 leading-relaxed'>
-                Mesin pembuat portofolio web publik dengan pilihan palet tema visual modern, pengaturan seksi fleksibel, tautan ramah SEO (`/u/[slug]`), dan verifikasi bukti artefak yang siap diinspeksi oleh rekruter profesional.
+                Halaman portofolio cantik dengan link khusus yang siap kamu pamerkan ke rekruter atau dipasang di LinkedIn, lengkap dengan bukti proyek dan sertifikatmu.
               </p>
             </div>
           </div>
@@ -652,10 +650,10 @@ export default function AboutView() {
         <div className='flex flex-col gap-6'>
           <div className='flex flex-col gap-1'>
             <h3 className='text-base sm:text-lg font-bold text-slate-900 dark:text-white'>
-              Metodologi Penilaian & Glosarium Istilah
+              Tanya Jawab & Penjelasan Istilah
             </h3>
             <p className='text-xs text-slate-500 dark:text-slate-400'>
-              Transparansi rumus, konsep pembobotan, dan arti istilah teknis di dalam Growvia.
+              Pertanyaan umum seputar cara penilaian dan keamanan data di Growvia.
             </p>
           </div>
 
@@ -663,60 +661,60 @@ export default function AboutView() {
             {/* Konsep 1: Ambang Batas 80% */}
             <div className='p-5 sm:p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 space-y-3 shadow-2xs'>
               <div className='flex items-center gap-2'>
-                <span className='px-2.5 py-1 rounded-lg text-xs font-bold bg-blue-100 dark:bg-blue-950/70 text-blue-700 dark:text-blue-300'>
-                  Standar Industri
+                <span className='px-2.5 py-1 rounded-lg text-xs font-bold bg-blue-100/70 dark:bg-blue-950/70 text-blue-700 dark:text-blue-300 border border-blue-200/50 dark:border-blue-900/50'>
+                  Standar Kesiapan
                 </span>
                 <h4 className='text-sm sm:text-base font-bold text-slate-900 dark:text-white'>
-                  Mengapa Ambang Batas Kesiapan Ditetapkan pada 80%?
+                  Kenapa Target Kesiapan Ditetapkan 80%, Bukan 100%?
                 </h4>
               </div>
               <p className='text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed'>
-                Dalam standar perekrutan teknologi modern, rekruter tidak mencari kandidat yang menguasai 100% dari seluruh pustaka teknis (yang seringkali tidak realistis). Kandidat yang telah memenuhi minimal <strong>80%</strong> dari matriks keahlian utama dianggap telah memiliki fondasi solid untuk belajar mandiri dan berproduksi secara efektif di lingkungan kerja riil.
+                Di dunia kerja sesungguhnya, perusahaan tidak mengharuskan kamu menguasai 100% semua alat atau teknologi. Memiliki setidaknya <strong>80%</strong> dari keahlian utama sudah sangat cukup membuktikan bahwa kamu punya dasar yang kuat dan siap belajar hal baru dengan cepat di tempat kerja.
               </p>
             </div>
 
             {/* Konsep 2: Confidence Score */}
             <div className='p-5 sm:p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 space-y-3 shadow-2xs'>
               <div className='flex items-center gap-2'>
-                <span className='px-2.5 py-1 rounded-lg text-xs font-bold bg-indigo-100 dark:bg-indigo-950/70 text-indigo-700 dark:text-indigo-300'>
-                  AI Metric
+                <span className='px-2.5 py-1 rounded-lg text-xs font-bold bg-indigo-100/70 dark:bg-indigo-950/70 text-indigo-700 dark:text-indigo-300 border border-indigo-200/50 dark:border-indigo-900/50'>
+                  Tingkat Keyakinan AI
                 </span>
                 <h4 className='text-sm sm:text-base font-bold text-slate-900 dark:text-white'>
                   Apa itu Confidence Score pada Ekstraksi Keahlian?
                 </h4>
               </div>
               <p className='text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed'>
-                <em>Confidence Score</em> adalah nilai keyakinan (0% hingga 100%) yang dihasilkan model AI saat mendeteksi keahlian dari narasi teks Anda. Semakin eksplisit Anda menceritakan penggunaan suatu alat (misalnya: <em>&ldquo;Membangun REST API menggunakan Express.js dan PostgreSQL serta mengimplementasikan JWT authentication&rdquo;</em>), semakin tinggi tingkat keyakinan AI bahwa keahlian tersebut benar-benar diaplikasikan secara mendalam.
+                Ini adalah angka persentase seberapa yakin AI bahwa kamu benar-benar menguasai keahlian tersebut. Semakin jelas dan rinci kamu menceritakan tugas serta alat yang kamu pakai dalam proyek, semakin tinggi nilai keyakinan yang didapatkan.
               </p>
             </div>
 
             {/* Konsep 3: Evidence-to-Skill Mapping */}
             <div className='p-5 sm:p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 space-y-3 shadow-2xs'>
               <div className='flex items-center gap-2'>
-                <span className='px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-100 dark:bg-emerald-950/70 text-emerald-700 dark:text-emerald-300'>
-                  Validasi Data
+                <span className='px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-100/70 dark:bg-emerald-950/70 text-emerald-700 dark:text-emerald-300 border border-emerald-200/50 dark:border-emerald-900/50'>
+                  Bukti Nyata
                 </span>
                 <h4 className='text-sm sm:text-base font-bold text-slate-900 dark:text-white'>
-                  Konsep Relasi Bukti Terhadap Keahlian (Evidence-to-Skill Mapping)
+                  Bagaimana 1 Proyek Bisa Membuktikan Banyak Keahlian Sekaligus?
                 </h4>
               </div>
               <p className='text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed'>
-                Satu artefak proyek riil (misalnya Proyek E-Commerce) dapat memvalidasi beberapa keahlian sekaligus (misal: React, TypeScript, Tailwind, Git). Relasi banyak-ke-banyak (many-to-many) ini memperkuat jaringan bukti Anda di dalam Skill Map Graph dan meningkatkan kredibilitas portofolio publik di mata rekruter.
+                Satu hasil karya (contohnya: Aplikasi Web Toko Online) bisa langsung memvalidasi kemampuan React, desain tampilan, pengaturan database, hingga kerja sama tim. Dengan begitu, kamu tidak perlu membuat proyek terpisah untuk tiap keahlian.
               </p>
             </div>
 
             {/* Konsep 4: Keamanan & Privasi */}
             <div className='p-5 sm:p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 space-y-3 shadow-2xs'>
               <div className='flex items-center gap-2'>
-                <span className='px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300'>
+                <span className='px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700'>
                   Privasi & Keamanan
                 </span>
                 <h4 className='text-sm sm:text-base font-bold text-slate-900 dark:text-white'>
-                  Keamanan Data & Kendali Penuh Pengguna
+                  Apakah Data Portofolio Saya Aman?
                 </h4>
               </div>
               <p className='text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed'>
-                Growvia menghormati privasi data Anda. Informasi kontak dan portofolio Anda hanya dapat diakses secara publik melalui tautan `/u/[slug]` apabila Anda telah mengaktifkan tombol status publikasi di menu Portofolio AI. Anda dapat mencabut atau memperbarui izin publikasi kapan saja sesuai kebutuhan.
+                Sangat aman. Portofoliomu hanya bisa dibuka oleh orang lain lewat internet jika kamu sendiri yang mengaktifkan tombol publikasi di menu Portofolio AI. Kamu juga bebas mematikan atau mengubahnya kapan saja.
               </p>
             </div>
           </div>
@@ -724,17 +722,17 @@ export default function AboutView() {
       )}
 
       {/* Footer Navigasi Cepat */}
-      <div className='p-6 rounded-3xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 mt-4'>
+      <div className='p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 mt-4 shadow-2xs'>
         <div className='flex items-center gap-3'>
           <div className='w-9 h-9 rounded-2xl bg-blue-100 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0'>
             <Compass className='w-4 h-4' />
           </div>
           <div>
             <h4 className='text-xs sm:text-sm font-bold text-slate-900 dark:text-white'>
-              Siap Mengembangkan Karier Anda?
+              Siap Mengembangkan Kariermu?
             </h4>
             <p className='text-xs text-slate-500 dark:text-slate-400'>
-              Lengkapi profil dan mulai rekam pengalaman pertama Anda di Growvia.
+              Lengkapi profil dan mulai rekam pengalaman pertamamu di Growvia.
             </p>
           </div>
         </div>
