@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+
 import {
   X,
   Building2,
@@ -10,11 +11,11 @@ import {
   Pencil,
   Trash2,
   CheckCircle2,
-  Clock,
-  Layers
 } from 'lucide-react'
+
+import type {
+  ExperienceItem} from './experienceUtils';
 import {
-  ExperienceItem,
   EXPERIENCE_TYPE_CONFIG,
   formatExperiencePeriod
 } from './experienceUtils'
@@ -40,6 +41,7 @@ export default function ExperienceDetailModal({
 
   const config =
     EXPERIENCE_TYPE_CONFIG[experience.type] || EXPERIENCE_TYPE_CONFIG.other
+
   const IconComponent = config.icon
 
   const periodText = formatExperiencePeriod(
@@ -49,10 +51,12 @@ export default function ExperienceDetailModal({
   )
 
   const skillEvidences = experience.skillEvidences || []
-  const latestAiJob = experience.aiAnalysisJobs?.[0]
-
+  
   return (
-    <div className='fixed inset-0 z-[1400] flex items-center justify-center p-3 sm:p-6 bg-slate-900/60 dark:bg-black/80 backdrop-blur-md animate-in fade-in duration-200 overflow-hidden'>
+    <div
+      className='experience-page font-poppins fixed inset-0 z-[1400] flex items-center justify-center p-3 sm:p-6 bg-slate-900/60 dark:bg-black/80 backdrop-blur-md animate-in fade-in duration-200 overflow-hidden'
+      style={{ fontFamily: "'Poppins', sans-serif" }}
+    >
       <div className='relative w-full max-w-2xl bg-white dark:bg-[#0F172A] border border-slate-200 dark:border-slate-800 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[88vh] my-auto animate-in zoom-in-95 duration-200'>
         {/* Header (Pinned) */}
         <div className='flex items-start justify-between p-6 pb-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/70 backdrop-blur-xs shrink-0'>

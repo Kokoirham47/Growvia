@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+
 import {
   X,
   Sparkles,
@@ -17,10 +18,9 @@ import {
   Trophy,
   Bookmark
 } from 'lucide-react'
-import {
-  ExperienceItem,
-  EXPERIENCE_TYPE_CONFIG
-} from './experienceUtils'
+
+import type {
+  ExperienceItem} from './experienceUtils';
 
 interface ExperienceFormModalProps {
   isOpen: boolean
@@ -73,6 +73,7 @@ export default function ExperienceFormModal({
         // Format YYYY-MM-DD
         if (initialData.startDate) {
           const d = new Date(initialData.startDate)
+
           if (!isNaN(d.getTime())) {
             setStartDate(d.toISOString().split('T')[0])
           }
@@ -82,6 +83,7 @@ export default function ExperienceFormModal({
 
         if (initialData.endDate) {
           const d = new Date(initialData.endDate)
+
           if (!isNaN(d.getTime())) {
             setEndDate(d.toISOString().split('T')[0])
           }
@@ -104,6 +106,7 @@ export default function ExperienceFormModal({
         setDescription('')
         setProofUrl('')
       }
+
       setGeneralError(null)
       setFieldErrors({})
     }
@@ -150,7 +153,8 @@ export default function ExperienceFormModal({
     }
 
     setFieldErrors(errors)
-    return Object.keys(errors).length === 0
+    
+return Object.keys(errors).length === 0
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -179,6 +183,7 @@ export default function ExperienceFormModal({
       const url = isEdit
         ? `/api/experiences/${initialData!.id}`
         : '/api/experiences'
+
       const method = isEdit ? 'PUT' : 'POST'
 
       const res = await fetch(url, {
@@ -192,13 +197,17 @@ export default function ExperienceFormModal({
       if (!res.ok || !data.success) {
         if (data.errors && typeof data.errors === 'object') {
           const mapped: Record<string, string> = {}
+
           for (const [key, val] of Object.entries(data.errors)) {
             mapped[key] = Array.isArray(val) ? (val as string[])[0] : String(val)
           }
+
           setFieldErrors(mapped)
         }
+
         setGeneralError(data.message || 'Gagal menyimpan pengalaman. Silakan periksa kembali form.')
-        return
+        
+return
       }
 
       onSuccess(data.data, isEdit)
@@ -214,7 +223,10 @@ export default function ExperienceFormModal({
   const charCount = description.trim().length
 
   return (
-    <div className='fixed inset-0 z-[1400] flex items-center justify-center p-3 sm:p-6 bg-slate-900/60 dark:bg-black/80 backdrop-blur-md animate-in fade-in duration-200 overflow-hidden'>
+    <div
+      className='experience-page font-poppins fixed inset-0 z-[1400] flex items-center justify-center p-3 sm:p-6 bg-slate-900/60 dark:bg-black/80 backdrop-blur-md animate-in fade-in duration-200 overflow-hidden'
+      style={{ fontFamily: "'Poppins', sans-serif" }}
+    >
       <div className='relative w-full max-w-2xl bg-white dark:bg-[#0F172A] border border-slate-200 dark:border-slate-800 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[88vh] my-auto animate-in zoom-in-95 duration-200'>
         {/* Modal Header (Pinned) */}
         <div className='flex items-center justify-between px-6 py-4.5 border-b border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/70 backdrop-blur-xs shrink-0'>
@@ -288,7 +300,9 @@ export default function ExperienceFormModal({
               {TYPE_OPTIONS.map(opt => {
                 const isSelected = type === opt.value
                 const Icon = opt.icon
-                return (
+
+                
+return (
                   <button
                     key={opt.value}
                     type='button'
@@ -410,6 +424,7 @@ export default function ExperienceFormModal({
                 checked={isOngoing}
                 onChange={e => {
                   setIsOngoing(e.target.checked)
+
                   if (e.target.checked) {
                     setEndDate('')
                   }

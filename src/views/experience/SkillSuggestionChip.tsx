@@ -1,18 +1,15 @@
 'use client'
 
 import React, { useState } from 'react'
+
 import {
   Check,
   X,
   Edit2,
-  Sparkles,
-  Award,
-  Layers,
-  ChevronDown,
   AlertTriangle,
   HelpCircle
 } from 'lucide-react'
-import { SkillCategory, SkillLevel } from '@prisma/client'
+import type { SkillCategory, SkillLevel } from '@prisma/client'
 
 export interface SuggestionChipData {
   id: string
@@ -82,11 +79,13 @@ export default function SkillSuggestionChip({
     if (nameInput.trim()) {
       onUpdateName(nameInput.trim())
     }
+
     setIsEditing(false)
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') handleSaveName()
+
     if (e.key === 'Escape') {
       setNameInput(data.finalName || data.suggestedName)
       setIsEditing(false)
@@ -95,7 +94,7 @@ export default function SkillSuggestionChip({
 
   return (
     <div
-      className={`relative rounded-2xl border transition-all p-4 ${
+      className={`relative rounded-2xl font-poppins border transition-all p-4 ${
         isSelected
           ? 'bg-white dark:bg-[#0F172A] border-blue-500/70 dark:border-blue-500/80 shadow-xs ring-1 ring-blue-500/20'
           : 'bg-slate-50/70 dark:bg-slate-900/40 border-slate-200/80 dark:border-slate-800 opacity-60 hover:opacity-100'

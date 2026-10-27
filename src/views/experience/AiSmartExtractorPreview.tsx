@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useRef } from 'react'
+
 import {
   Sparkles,
   RotateCcw,
@@ -9,14 +10,9 @@ import {
   FileText,
   Check,
   HelpCircle,
-  Cpu,
   Mic,
   MicOff,
-  Zap,
-  TrendingUp,
-  Lightbulb,
   AlertCircle,
-  ExternalLink
 } from 'lucide-react'
 
 import {
@@ -77,8 +73,7 @@ const QUICK_PROMPTS: QuickPrompt[] = [
 ]
 
 export default function AiSmartExtractorPreview({
-  onConfirmSkills,
-  onOpenLiveAiModal
+  onConfirmSkills
 }: AiSmartExtractorPreviewProps) {
   // Input state - STARTS EMPTY as requested by user
   const [inputText, setInputText] = useState('')
@@ -113,16 +108,19 @@ export default function AiSmartExtractorPreview({
   const toggleListening = () => {
     if (!speechSupported) {
       setErrorMsg('Browser Anda belum mendukung Speech-to-Text. Silakan gunakan Google Chrome, Edge, atau ketik secara manual.')
-      return
+      
+return
     }
 
     if (isListening) {
       if (recognitionRef.current) {
         recognitionRef.current.stop()
       }
+
       setIsListening(false)
       setSpeechInterim('')
-      return
+      
+return
     }
 
     try {
@@ -131,6 +129,7 @@ export default function AiSmartExtractorPreview({
         (window as any).webkitSpeechRecognition
 
       const recognition = new SpeechRecognition()
+
       recognition.lang = 'id-ID' // Bahasa Indonesia
       recognition.continuous = true
       recognition.interimResults = true
@@ -155,7 +154,9 @@ export default function AiSmartExtractorPreview({
         if (finalText) {
           setInputText(prev => {
             const trimmed = prev.trim()
-            return trimmed ? `${trimmed} ${finalText.trim()}` : finalText.trim()
+
+            
+return trimmed ? `${trimmed} ${finalText.trim()}` : finalText.trim()
           })
           setConfirmed(false)
         }
@@ -165,11 +166,13 @@ export default function AiSmartExtractorPreview({
 
       recognition.onerror = (event: any) => {
         console.warn('Speech recognition error:', event.error)
+
         if (event.error === 'not-allowed') {
           setErrorMsg('Izin akses mikrofon ditolak. Silakan izinkan akses mikrofon di pengaturan browser Anda.')
         } else if (event.error !== 'no-speech') {
           setErrorMsg(`Error suara: ${event.error}`)
         }
+
         setIsListening(false)
         setSpeechInterim('')
       }
@@ -194,7 +197,7 @@ export default function AiSmartExtractorPreview({
       if (recognitionRef.current) {
         try {
           recognitionRef.current.stop()
-        } catch (_) {}
+        } catch {}
       }
     }
   }, [])
@@ -202,9 +205,11 @@ export default function AiSmartExtractorPreview({
   // Live Extraction with AI via backend API
   const handleAnalyzeWithAi = async () => {
     const textToAnalyze = inputText.trim()
+
     if (!textToAnalyze || textToAnalyze.length < 15) {
       setErrorMsg('Tulis atau rekam narasi minimal 15 karakter agar AI dapat mengekstrak skill secara akurat.')
-      return
+      
+return
     }
 
     setIsAnalyzing(true)
@@ -215,7 +220,8 @@ export default function AiSmartExtractorPreview({
     if (isListening && recognitionRef.current) {
       try {
         recognitionRef.current.stop()
-      } catch (_) {}
+      } catch {}
+
       setIsListening(false)
     }
 
@@ -227,6 +233,7 @@ export default function AiSmartExtractorPreview({
       })
 
       const json = await res.json()
+
       if (!res.ok || !json.success) {
         throw new Error(json.message || 'Gagal menganalisis narasi dengan AI')
       }
@@ -275,7 +282,8 @@ export default function AiSmartExtractorPreview({
       // Fallback if no jobId (e.g. manual entry without API response)
       setConfirmed(true)
       if (onConfirmSkills) onConfirmSkills(skills.length)
-      return
+      
+return
     }
 
     setIsSaving(true)
@@ -296,11 +304,13 @@ export default function AiSmartExtractorPreview({
       })
 
       const json = await res.json()
+
       if (!res.ok || !json.success) {
         throw new Error(json.message || 'Gagal menyimpan skill ke Skill Matrix')
       }
 
       setConfirmed(true)
+
       if (onConfirmSkills) {
         onConfirmSkills(skills.length)
       }
@@ -320,40 +330,39 @@ export default function AiSmartExtractorPreview({
     setConfirmed(false)
     setErrorMsg(null)
     setSpeechInterim('')
+
     if (isListening && recognitionRef.current) {
       try {
         recognitionRef.current.stop()
-      } catch (_) {}
+      } catch {}
+
       setIsListening(false)
     }
   }
 
   return (
-    <div className='relative rounded-3xl bg-gradient-to-br from-[#F0F5FF] via-[#F8FAFC] to-[#EFF6FF] dark:from-[#0F172A] dark:via-[#131E36] dark:to-[#0F172A] border border-blue-200/70 dark:border-blue-900/50 p-5 sm:p-7 shadow-xs overflow-hidden transition-all'>
-      {/* Decorative Glow */}
-      <div className='absolute -right-16 -top-16 w-64 h-64 bg-blue-400/10 dark:bg-blue-600/10 rounded-full blur-3xl pointer-events-none' />
+    <div
+      className='relative rounded-3xl font-poppins bg-gradient-to-br from-[#F5F8FF] via-[#EEF4FE] to-[#F8FAFF] dark:from-[#0B1528] dark:via-[#0F1C36] dark:to-[#0A101D] border-2 border-blue-300/80 dark:border-blue-600/50 p-5 sm:p-7 shadow-lg shadow-blue-500/[0.08] dark:shadow-blue-500/[0.04] overflow-hidden transition-all ring-1 ring-blue-500/20'
+      style={{ fontFamily: "'Poppins', sans-serif" }}
+    >
+
+      {/* Decorative Glow Orbs */}
+      <div className='absolute -right-16 -top-16 w-72 h-72 bg-gradient-to-br from-blue-400/20 via-indigo-500/20 to-transparent rounded-full blur-3xl pointer-events-none' />
+      <div className='absolute -left-16 -bottom-16 w-72 h-72 bg-gradient-to-tr from-indigo-500/15 via-blue-500/15 to-transparent rounded-full blur-3xl pointer-events-none' />
 
       {/* Header Banner */}
-      <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-blue-100 dark:border-slate-800/80'>
-        <div className='flex items-start gap-3.5'>
-          <div className='w-11 h-11 rounded-2xl bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 shadow-xs border border-blue-100 dark:border-slate-700 mt-0.5'>
-            <Zap className='w-5 h-5 text-blue-600 dark:text-blue-400 animate-pulse' />
+      <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-blue-200/60 dark:border-slate-800/80 relative z-10'>
+        <div className='flex items-start gap-4'>
+          <div className='w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-violet-600 text-white flex items-center justify-center shrink-0 shadow-md shadow-blue-500/30 mt-0.5 border border-white/20'>
+            <Sparkles className='w-6 h-6 text-white animate-pulse' />
           </div>
           <div>
-            <div className='flex items-center gap-2 flex-wrap'>
+            <div className='flex items-center gap-2.5 flex-wrap'>
               <h2 className='text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white tracking-tight'>
-                AI Quick Skill Booster & Catat Aktivitas
+                AI Skill Booster & Catat Aktivitas
               </h2>
-              <span className='inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-blue-600 text-white shadow-xs'>
-                <Sparkles className='w-3 h-3' />
-                Live AI Extractor
-              </span>
-              <span className='inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'>
-                <Mic className='w-3 h-3 text-emerald-600 dark:text-emerald-400' />
-                Speech-to-Text Ready
-              </span>
             </div>
-            <p className='text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-1 max-w-2xl leading-relaxed'>
+            <p className='text-xs sm:text-sm text-slate-600 dark:text-slate-300 mt-1 max-w-2xl leading-relaxed'>
               Baru selesai coding, latihan, atau projek harian? Ceritakan lewat tulisan atau suara langsung di sini. AI akan mengekstrak kompetensi terukur dan menambah persentase di Skill Matrix kamu!
             </p>
           </div>
@@ -388,8 +397,7 @@ export default function AiSmartExtractorPreview({
         <div className='mt-4 p-4 rounded-2xl bg-white/95 dark:bg-slate-900/95 border border-blue-200 dark:border-blue-900/60 text-xs text-slate-700 dark:text-slate-300 space-y-2 animate-in fade-in duration-200 shadow-xs'>
           <div className='flex items-center justify-between'>
             <span className='font-bold text-blue-600 dark:text-blue-400 flex items-center gap-1.5'>
-              <Cpu className='w-4 h-4' />
-              <span>Arsitektur AI Skill Booster (Groq Qwen & Gemini 3-Tier Fallback)</span>
+              <span>Arsitektur AI Skill Booster</span>
             </span>
             <button
               type='button'
@@ -423,7 +431,7 @@ export default function AiSmartExtractorPreview({
       {/* Main 2-Column Grid (Left: Narasi + Voice, Right: Hasil Ekstraksi) */}
       <div className='grid grid-cols-1 lg:grid-cols-12 gap-5 mt-6'>
         {/* LEFT COLUMN: Input Narasi Aktivitas Harian */}
-        <div className='lg:col-span-5 flex flex-col justify-between rounded-2xl bg-white dark:bg-[#0B132B] border border-slate-200 dark:border-slate-800 p-5 shadow-xs'>
+        <div className='lg:col-span-5 flex flex-col justify-between rounded-2xl bg-white/95 dark:bg-[#0B132B]/95 backdrop-blur-xs border border-blue-200/80 dark:border-slate-800 p-5 shadow-sm'>
           <div>
             <div className='flex items-center justify-between pb-3'>
               <span className='inline-flex items-center gap-1.5 text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider'>
@@ -478,12 +486,12 @@ export default function AiSmartExtractorPreview({
             {/* Quick Inspiration Pills */}
             <div className='mt-3 space-y-1.5'>
               <div className='flex items-center gap-1 text-[11px] font-semibold text-slate-500 dark:text-slate-400'>
-                <Lightbulb className='w-3 h-3 text-amber-500' />
                 <span>Pilih contoh cepat untuk dicoba:</span>
               </div>
               <div className='flex flex-wrap gap-1.5'>
                 {QUICK_PROMPTS.map((prompt, idx) => {
                   const Icon = prompt.icon
+
                   return (
                     <button
                       key={idx}
@@ -534,16 +542,16 @@ export default function AiSmartExtractorPreview({
               type='button'
               onClick={handleAnalyzeWithAi}
               disabled={isAnalyzing || !inputText.trim() || inputText.trim().length < 15}
-              className='inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-xs shadow-blue-600/25 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shrink-0'
+              className='inline-flex items-center gap-1.5 px-4.5 py-2.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-700 hover:via-indigo-700 hover:to-blue-800 shadow-md shadow-blue-500/25 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shrink-0'
             >
               <Sparkles className={`w-3.5 h-3.5 ${isAnalyzing ? 'animate-spin' : ''}`} />
-              <span>{isAnalyzing ? 'Memproses dengan AI...' : 'Ekstrak Skill dengan AI ✨'}</span>
+              <span>{isAnalyzing ? 'Memproses dengan AI...' : 'Ekstrak Skill dengan AI'}</span>
             </button>
           </div>
         </div>
 
         {/* RIGHT COLUMN: Hasil Ekstraksi AI & Simpan ke Skill Matrix */}
-        <div className='lg:col-span-7 flex flex-col justify-between rounded-2xl bg-white dark:bg-[#0B132B] border border-slate-200 dark:border-slate-800 p-5 shadow-xs'>
+        <div className='lg:col-span-7 flex flex-col justify-between rounded-2xl bg-white/95 dark:bg-[#0B132B]/95 backdrop-blur-xs border border-blue-200/80 dark:border-slate-800 p-5 shadow-sm'>
           <div>
             <div className='flex items-center justify-between pb-3'>
               <span className='inline-flex items-center gap-1.5 text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider'>
@@ -587,16 +595,16 @@ export default function AiSmartExtractorPreview({
                 </p>
               </div>
             ) : skills.length === 0 ? (
-              <div className='py-12 px-6 text-center rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-100 dark:border-slate-800 mt-2 space-y-3'>
-                <div className='w-12 h-12 rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 mx-auto flex items-center justify-center'>
-                  <TrendingUp className='w-6 h-6' />
+              <div className='py-12 px-6 text-center rounded-xl bg-slate-50/80 dark:bg-slate-900/60 border border-blue-100 dark:border-slate-800 mt-2 space-y-3.5'>
+                <div className='w-14 h-14 rounded-2xl bg-gradient-to-tr from-blue-500/10 via-indigo-500/10 to-violet-500/10 dark:from-blue-500/20 dark:via-indigo-500/20 dark:to-violet-500/20 border border-blue-200/80 dark:border-blue-800/80 text-blue-600 dark:text-blue-400 mx-auto flex items-center justify-center shadow-xs'>
+                  <Sparkles className='w-7 h-7 text-blue-600 dark:text-blue-400 animate-pulse' />
                 </div>
                 <div>
-                  <h4 className='text-sm font-bold text-slate-800 dark:text-slate-200'>
-                    Belum Ada Skill Diekstrak
+                  <h4 className='text-sm font-bold text-slate-900 dark:text-white'>
+                    Siap Mengekstrak Skill Otomatis
                   </h4>
-                  <p className='text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto mt-1'>
-                    Ketik atau rekam suara aktivitas harianmu di sisi kiri, lalu klik <span className='font-semibold text-blue-600 dark:text-blue-400'>&ldquo;Ekstrak Skill dengan AI&rdquo;</span> untuk melihat hasil rekomendasi skill dan bukti relevannya di sini.
+                  <p className='text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto mt-1 leading-relaxed'>
+                    Ketik atau rekam suara aktivitas harianmu di sisi kiri, lalu klik <span className='font-semibold text-blue-600 dark:text-blue-400'>&ldquo;Ekstrak Skill dengan AI&rdquo;</span> untuk melihat rekomendasi skill dan bukti relevannya di sini.
                   </p>
                 </div>
               </div>
@@ -692,8 +700,8 @@ export default function AiSmartExtractorPreview({
               disabled={skills.length === 0 || isSaving}
               className={`w-full inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-xs sm:text-sm font-bold text-white transition-all shadow-md active:scale-[0.99] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
                 confirmed
-                  ? 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-500/25'
-                  : 'bg-[#1E3A8A] hover:bg-[#1E3A8A]/90 dark:bg-blue-600 dark:hover:bg-blue-700 shadow-blue-900/20'
+                  ? 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 shadow-emerald-500/25'
+                  : 'bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-700 hover:via-indigo-700 hover:to-blue-800 shadow-blue-500/25'
               }`}
             >
               {isSaving ? (

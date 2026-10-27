@@ -1,12 +1,11 @@
 'use client'
 
-import React, { useState, useEffect, useMemo, useCallback } from 'react'
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react'
+
 import {
   Briefcase,
   Plus,
   Search,
-  Filter,
-  Sparkles,
   Clock,
   Award,
   Layers,
@@ -20,17 +19,21 @@ import {
   FolderGit2,
   Trophy,
   Bookmark,
-  TrendingUp
+  TrendingUp,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react'
+
 import ExperienceCard from './ExperienceCard'
 import ExperienceFormModal from './ExperienceFormModal'
 import ExperienceDetailModal from './ExperienceDetailModal'
 import DeleteExperienceModal from './DeleteExperienceModal'
 import AiSmartExtractorPreview from './AiSmartExtractorPreview'
 import AISkillReviewModal from './AISkillReviewModal'
-import {
+import type {
   ExperienceItem,
-  ExperienceStats,
+  ExperienceStats} from './experienceUtils';
+import {
   EXPERIENCE_TYPE_CONFIG
 } from './experienceUtils'
 
@@ -44,6 +47,22 @@ const FILTER_TABS = [
   { key: 'competition', label: 'Kompetisi', icon: Trophy },
   { key: 'other', label: 'Lainnya', icon: Bookmark }
 ]
+
+function getPaginationRange(currentPage: number, totalPages: number): (number | string)[] {
+  if (totalPages <= 5) {
+    return Array.from({ length: totalPages }, (_, i) => i + 1)
+  }
+
+  if (currentPage <= 3) {
+    return [1, 2, 3, 4, '...', totalPages]
+  }
+
+  if (currentPage >= totalPages - 2) {
+    return [1, '...', totalPages - 3, totalPages - 2, totalPages - 1, totalPages]
+  }
+
+  return [1, '...', currentPage - 1, currentPage, currentPage + 1, '...', totalPages]
+}
 
 export default function ExperienceView() {
   const [experiences, setExperiences] = useState<ExperienceItem[]>([])
@@ -68,10 +87,29 @@ export default function ExperienceView() {
   const [isDeleteOpen, setIsDeleteOpen] = useState(false)
   const [deleteTargetExperience, setDeleteTargetExperience] = useState<ExperienceItem | null>(null)
 
-  // AI Skill Review Modal State (F04 Core)
+  // AI Skill Review Modal State
   const [isAiReviewOpen, setIsAiReviewOpen] = useState(false)
   const [aiReviewExperience, setAiReviewExperience] = useState<ExperienceItem | null>(null)
   const [aiCustomText, setAiCustomText] = useState<string | null>(null)
+
+  // Reference for scrolling to grid on page change
+  const gridAnchorRef = useRef<HTMLDivElement>(null)
+
+  // Responsive Breakpoint Detection (Desktop: 6 cards/page, Mobile/Tablet: 4 cards/page)
+  const [isDesktop, setIsDesktop] = useState(true)
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsDesktop(window.innerWidth >= 1024)
+    }
+
+    handleResize()
+    window.addEventListener('resize', handleResize)
+    
+return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
+  const itemsPerPage = isDesktop ? 6 : 4
 
   const handleOpenAiReview = (exp: ExperienceItem) => {
     setAiReviewExperience(exp)
@@ -94,6 +132,7 @@ export default function ExperienceView() {
   const fetchExperiences = useCallback(async () => {
     setLoading(true)
     setError(null)
+
     try {
       const res = await fetch('/api/experiences')
       const json = await res.json()
@@ -122,7 +161,9 @@ export default function ExperienceView() {
       const timer = setTimeout(() => {
         setToastMessage(null)
       }, 4000)
-      return () => clearTimeout(timer)
+
+      
+return () => clearTimeout(timer)
     }
   }, [toastMessage])
 
@@ -141,12 +182,47 @@ export default function ExperienceView() {
         const matchRole = exp.role?.toLowerCase().includes(q)
         const matchInst = exp.institutionName?.toLowerCase().includes(q)
         const matchDesc = exp.description?.toLowerCase().includes(q)
-        return matchTitle || matchRole || matchInst || matchDesc
+
+        
+return matchTitle || matchRole || matchInst || matchDesc
       }
 
       return true
     })
   }, [experiences, activeTab, searchQuery])
+
+  // Pagination states & clamping
+  const [currentPage, setCurrentPage] = useState(1)
+  const totalPages = Math.max(1, Math.ceil(filteredExperiences.length / itemsPerPage))
+
+  // Clamp current page if total pages decrease
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages)
+    }
+  }, [currentPage, totalPages])
+
+  // Reset to page 1 on filter or search change
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchQuery, activeTab])
+
+  // Only render cards for the active page
+  const paginatedExperiences = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage
+
+    
+return filteredExperiences.slice(start, start + itemsPerPage)
+  }, [filteredExperiences, currentPage, itemsPerPage])
+
+  const handlePageChange = (newPage: number) => {
+    if (newPage < 1 || newPage > totalPages || newPage === currentPage) return
+    setCurrentPage(newPage)
+
+    if (gridAnchorRef.current) {
+      gridAnchorRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }
 
   // Handlers for Modals
   const handleOpenAdd = () => {
@@ -177,7 +253,6 @@ export default function ExperienceView() {
         : `Pengalaman "${savedExp.title}" berhasil ditambahkan.`
     )
 
-    // Otomatis buka dialog ekstraksi AI jika baru ditambahkan dan memiliki narasi deskripsi
     if (!isEdit && savedExp.description && savedExp.description.trim().length >= 30) {
       setTimeout(() => {
         handleOpenAiReview(savedExp)
@@ -185,7 +260,7 @@ export default function ExperienceView() {
     }
   }
 
-  const handleDeleteSuccess = (deletedId: string) => {
+  const handleDeleteSuccess = () => {
     fetchExperiences()
     setToastMessage('Pengalaman berhasil dihapus.')
   }
@@ -195,17 +270,20 @@ export default function ExperienceView() {
     if (!stats?.typeBreakdown) return null
     let maxCount = 0
     let dominantKey = ''
+
     for (const [key, count] of Object.entries(stats.typeBreakdown)) {
       if (key !== 'all' && count > maxCount) {
         maxCount = count
         dominantKey = key
       }
     }
-    return dominantKey ? EXPERIENCE_TYPE_CONFIG[dominantKey]?.label : '-'
+
+    
+return dominantKey ? EXPERIENCE_TYPE_CONFIG[dominantKey]?.label : '-'
   }, [stats])
 
   return (
-    <div className='min-h-screen space-y-6 pb-12'>
+    <div className='experience-page min-h-screen font-poppins space-y-6 pb-12' style={{ fontFamily: "'Poppins', sans-serif" }}>
       {/* Toast Notification Banner */}
       {toastMessage && (
         <div className='fixed bottom-6 right-6 z-50 animate-in slide-in-from-bottom-5 fade-in duration-300'>
@@ -226,16 +304,11 @@ export default function ExperienceView() {
       {/* Page Header */}
       <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4'>
         <div>
-          <div className='inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 border border-blue-200/60 dark:border-blue-900/60 mb-2'>
-            <Briefcase className='w-3.5 h-3.5' />
-            <span>Rekam Jejak & Portofolio Aktivitas</span>
-          </div>
-          <h1 className='text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight'>
+          <h1 className='text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white tracking-tight'>
             Manajemen Pengalaman
           </h1>
-          <p className='text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1 max-w-2xl'>
-            Kelola pengalaman organisasi, kepanitiaan, magang, dan proyek Anda.
-            AI akan mengekstrak skill dan bukti relevan untuk memperkuat portofolio Anda.
+          <p className='text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1 max-w-2xl leading-relaxed'>
+            Kelola rekam jejak kepanitiaan, organisasi, magang, dan proyek Anda untuk diekstrak menjadi skill tervalidasi oleh AI.
           </p>
         </div>
 
@@ -244,7 +317,7 @@ export default function ExperienceView() {
           <button
             type='button'
             onClick={handleOpenAdd}
-            className='inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-500/25 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer'
+            className='inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 shadow-sm transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer'
           >
             <Plus className='w-4 h-4' />
             <span>Tambah Pengalaman</span>
@@ -252,156 +325,90 @@ export default function ExperienceView() {
         </div>
       </div>
 
-      {/* Metrics Stat Cards (Consistent with Dashboard View) */}
+      {/* Metrics Stat Cards */}
       <div className='grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4'>
         {/* Card 1: Total Pengalaman */}
-        <div className='bg-white dark:bg-[#0F172A] rounded-2xl border border-slate-200/80 dark:border-slate-800 p-5 shadow-xs flex flex-col justify-between hover:border-slate-300 dark:hover:border-slate-700 transition-all'>
-          <div>
-            <div className='flex items-center justify-between'>
-              <span className='text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider'>
-                Total Pengalaman
-              </span>
-              <div className='w-7 h-7 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center'>
-                <Briefcase className='w-4 h-4' />
-              </div>
-            </div>
-
-            <div className='flex items-baseline gap-2 mt-3'>
-              <span className='text-3xl font-extrabold text-[#1E293B] dark:text-white tracking-tight'>
-                {stats?.total ?? 0}
-              </span>
-              <span className='inline-flex items-center gap-0.5 text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300'>
-                <span>Tercatat Rapi</span>
-              </span>
-            </div>
-
-            <div className='w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full mt-3 overflow-hidden'>
-              <div
-                className='bg-blue-600 h-full rounded-full transition-all duration-500'
-                style={{ width: `${Math.min(100, Math.max(10, (stats?.total ?? 0) * 20))}%` }}
-              />
+        <div className='bg-white dark:bg-[#0F172A] rounded-2xl border border-slate-200/80 dark:border-slate-800 p-4 sm:p-5 shadow-xs hover:border-slate-300 dark:hover:border-slate-700 transition-all'>
+          <div className='flex items-center justify-between'>
+            <span className='text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider'>
+              Total Pengalaman
+            </span>
+            <div className='w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center'>
+              <Briefcase className='w-4 h-4' />
             </div>
           </div>
-
-          <p className='text-xs text-slate-500 dark:text-slate-400 mt-3 font-normal'>
-            Riwayat aktivitas terdata di profil
-          </p>
+          <div className='mt-3'>
+            <span className='text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight'>
+              {stats?.total ?? 0}
+            </span>
+            <p className='text-xs text-slate-500 dark:text-slate-400 mt-1 font-normal'>
+              Riwayat aktivitas terdata
+            </p>
+          </div>
         </div>
 
         {/* Card 2: Sedang Aktif */}
-        <div className='bg-white dark:bg-[#0F172A] rounded-2xl border border-slate-200/80 dark:border-slate-800 p-5 shadow-xs flex flex-col justify-between hover:border-slate-300 dark:hover:border-slate-700 transition-all'>
-          <div>
-            <div className='flex items-center justify-between'>
-              <span className='text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider'>
-                Sedang Aktif
-              </span>
-              <div className='w-7 h-7 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center'>
-                <Clock className='w-4 h-4' />
-              </div>
-            </div>
-
-            <div className='flex items-baseline gap-2 mt-3'>
-              <span className='text-3xl font-extrabold text-[#1E293B] dark:text-white tracking-tight'>
-                {stats?.ongoing ?? 0}
-              </span>
-              <span className='inline-flex items-center gap-0.5 text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300'>
-                <span>Sedang Berjalan</span>
-              </span>
-            </div>
-
-            <div className='w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full mt-3 overflow-hidden'>
-              <div
-                className='bg-emerald-500 h-full rounded-full transition-all duration-500'
-                style={{
-                  width: `${
-                    stats?.total && stats.total > 0
-                      ? Math.min(100, Math.round(((stats.ongoing ?? 0) / stats.total) * 100))
-                      : (stats?.ongoing ?? 0) > 0
-                      ? 100
-                      : 0
-                  }%`
-                }}
-              />
+        <div className='bg-white dark:bg-[#0F172A] rounded-2xl border border-slate-200/80 dark:border-slate-800 p-4 sm:p-5 shadow-xs hover:border-slate-300 dark:hover:border-slate-700 transition-all'>
+          <div className='flex items-center justify-between'>
+            <span className='text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider'>
+              Sedang Aktif
+            </span>
+            <div className='w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center'>
+              <Clock className='w-4 h-4' />
             </div>
           </div>
-
-          <p className='text-xs text-slate-500 dark:text-slate-400 mt-3 font-normal'>
-            Aktivitas saat ini ditekuni
-          </p>
+          <div className='mt-3'>
+            <span className='text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight'>
+              {stats?.ongoing ?? 0}
+            </span>
+            <p className='text-xs text-slate-500 dark:text-slate-400 mt-1 font-normal'>
+              Aktivitas saat ini ditekuni
+            </p>
+          </div>
         </div>
 
         {/* Card 3: Validasi Skill */}
-        <div className='bg-white dark:bg-[#0F172A] rounded-2xl border border-slate-200/80 dark:border-slate-800 p-5 shadow-xs flex flex-col justify-between hover:border-slate-300 dark:hover:border-slate-700 transition-all'>
-          <div>
-            <div className='flex items-center justify-between'>
-              <span className='text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider'>
-                Validasi Skill
-              </span>
-              <div className='w-7 h-7 rounded-lg bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center'>
-                <Award className='w-4 h-4' />
-              </div>
-            </div>
-
-            <div className='flex items-baseline gap-2 mt-3'>
-              <span className='text-3xl font-extrabold text-[#1E293B] dark:text-white tracking-tight'>
-                {stats?.skillsExtracted ?? 0}
-              </span>
-              <span className='inline-flex items-center gap-0.5 text-xs font-semibold px-2 py-0.5 rounded-full bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300'>
-                <span>Bukti Konkret</span>
-              </span>
-            </div>
-
-            <div className='w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full mt-3 overflow-hidden'>
-              <div
-                className='bg-purple-600 h-full rounded-full transition-all duration-500'
-                style={{
-                  width: `${Math.min(100, Math.max(15, (stats?.skillsExtracted ?? 0) * 12))}%`
-                }}
-              />
+        <div className='bg-white dark:bg-[#0F172A] rounded-2xl border border-slate-200/80 dark:border-slate-800 p-4 sm:p-5 shadow-xs hover:border-slate-300 dark:hover:border-slate-700 transition-all'>
+          <div className='flex items-center justify-between'>
+            <span className='text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider'>
+              Validasi Skill
+            </span>
+            <div className='w-8 h-8 rounded-xl bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center'>
+              <Award className='w-4 h-4' />
             </div>
           </div>
-
-          <p className='text-xs text-slate-500 dark:text-slate-400 mt-3 font-normal'>
-            Terhubung bukti kegiatan
-          </p>
+          <div className='mt-3'>
+            <span className='text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight'>
+              {stats?.skillsExtracted ?? 0}
+            </span>
+            <p className='text-xs text-slate-500 dark:text-slate-400 mt-1 font-normal'>
+              Terhubung bukti kegiatan
+            </p>
+          </div>
         </div>
 
         {/* Card 4: Fokus Utama */}
-        <div className='bg-white dark:bg-[#0F172A] rounded-2xl border border-slate-200/80 dark:border-slate-800 p-5 shadow-xs flex flex-col justify-between hover:border-slate-300 dark:hover:border-slate-700 transition-all'>
-          <div>
-            <div className='flex items-center justify-between'>
-              <span className='text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider'>
-                Fokus Utama
-              </span>
-              <div className='w-7 h-7 rounded-lg bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center'>
-                <TrendingUp className='w-4 h-4' />
-              </div>
-            </div>
-
-            <div className='flex items-baseline gap-2 mt-3 min-w-0'>
-              <span className='text-xl sm:text-2xl font-extrabold text-[#1E293B] dark:text-white tracking-tight truncate'>
-                {dominantType || '-'}
-              </span>
-              <span className='inline-flex items-center gap-0.5 text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 shrink-0'>
-                <span>Porsi Terbanyak</span>
-              </span>
-            </div>
-
-            <div className='w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full mt-3 overflow-hidden'>
-              <div
-                className='bg-amber-500 h-full rounded-full transition-all duration-500'
-                style={{ width: stats?.total ? '75%' : '0%' }}
-              />
+        <div className='bg-white dark:bg-[#0F172A] rounded-2xl border border-slate-200/80 dark:border-slate-800 p-4 sm:p-5 shadow-xs hover:border-slate-300 dark:hover:border-slate-700 transition-all'>
+          <div className='flex items-center justify-between'>
+            <span className='text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider'>
+              Fokus Utama
+            </span>
+            <div className='w-8 h-8 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center'>
+              <TrendingUp className='w-4 h-4' />
             </div>
           </div>
-
-          <p className='text-xs text-slate-500 dark:text-slate-400 mt-3 font-normal'>
-            Kategori paling dominan
-          </p>
+          <div className='mt-3'>
+            <span className='text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight truncate block'>
+              {dominantType || '-'}
+            </span>
+            <p className='text-xs text-slate-500 dark:text-slate-400 mt-1 font-normal'>
+              Kategori paling dominan
+            </p>
+          </div>
         </div>
       </div>
 
-      {/* AI Smart Extractor Preview Component */}
+      {/* AI Skill Booster Card */}
       <AiSmartExtractorPreview
         onOpenLiveAiModal={handleOpenAiReviewCustomText}
         onConfirmSkills={(count) => {
@@ -411,8 +418,8 @@ export default function ExperienceView() {
       />
 
       {/* Unified Search & Filter Card */}
-      <div className='bg-white dark:bg-[#0F172A] rounded-2xl border border-slate-200/80 dark:border-slate-800 p-4 sm:p-5 shadow-xs space-y-4'>
-        {/* Top Row: Search Input (Bounded Width) + Counter Indicator */}
+      <div ref={gridAnchorRef} className='bg-white dark:bg-[#0F172A] rounded-2xl border border-slate-200/80 dark:border-slate-800 p-4 sm:p-5 shadow-xs space-y-4 scroll-mt-24'>
+        {/* Top Row: Search Input + Range Counter */}
         <div className='flex flex-col sm:flex-row sm:items-center justify-between gap-3'>
           <div className='relative w-full sm:max-w-md'>
             <Search className='w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none' />
@@ -435,18 +442,26 @@ export default function ExperienceView() {
           </div>
 
           <div className='text-xs text-slate-500 dark:text-slate-400 font-medium shrink-0 flex items-center gap-1.5'>
-            <span>Menampilkan</span>
-            <span className='font-bold text-slate-900 dark:text-white'>{filteredExperiences.length}</span>
-            <span>dari</span>
-            <span className='font-bold text-slate-900 dark:text-white'>{experiences.length}</span>
-            <span>pengalaman</span>
+            {filteredExperiences.length > 0 ? (
+              <>
+                <span>Menampilkan</span>
+                <span className='font-bold text-slate-900 dark:text-white'>
+                  {(currentPage - 1) * itemsPerPage + 1}–{Math.min(currentPage * itemsPerPage, filteredExperiences.length)}
+                </span>
+                <span>dari</span>
+                <span className='font-bold text-slate-900 dark:text-white'>{filteredExperiences.length}</span>
+                <span>pengalaman</span>
+              </>
+            ) : (
+              <span>0 pengalaman ditemukan</span>
+            )}
           </div>
         </div>
 
         {/* Separator Line */}
         <div className='border-t border-slate-100 dark:border-slate-800/80' />
 
-        {/* Bottom Row: Type Filter Tabs Pills */}
+        {/* Bottom Row: Type Filter Tabs */}
         <div className='flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar'>
           {FILTER_TABS.map(tab => {
             const isActive = activeTab === tab.key
@@ -485,13 +500,13 @@ export default function ExperienceView() {
 
       {/* Main Content Area */}
       {loading ? (
-        <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-          {[1, 2, 3, 4].map(n => (
+        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5'>
+          {[1, 2, 3, 4, 5, 6].map(n => (
             <div
               key={n}
-              className='p-6 rounded-2xl bg-white dark:bg-[#0F172A] border border-slate-200 dark:border-slate-800 animate-pulse space-y-3'
+              className='p-5 rounded-2xl bg-white dark:bg-[#0F172A] border border-slate-200 dark:border-slate-800 animate-pulse space-y-3'
             >
-              <div className='w-24 h-6 bg-slate-200 dark:bg-slate-800 rounded-full' />
+              <div className='w-20 h-5 bg-slate-200 dark:bg-slate-800 rounded-full' />
               <div className='w-3/4 h-5 bg-slate-200 dark:bg-slate-800 rounded-lg' />
               <div className='w-1/2 h-4 bg-slate-200 dark:bg-slate-800 rounded-lg' />
               <div className='w-full h-12 bg-slate-100 dark:bg-slate-800/50 rounded-lg mt-3' />
@@ -517,10 +532,11 @@ export default function ExperienceView() {
           </button>
         </div>
       ) : experiences.length === 0 ? (
+
         /* Empty State: 0 Experiences in DB */
         <div className='p-8 sm:p-12 rounded-3xl bg-white dark:bg-[#0F172A] border border-slate-200 dark:border-slate-800 text-center space-y-4'>
-          <div className='w-16 h-16 rounded-3xl bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 border border-blue-200/60 dark:border-blue-900/60 flex items-center justify-center mx-auto shadow-sm'>
-            <Briefcase className='w-8 h-8' />
+          <div className='w-14 h-14 rounded-2xl bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 border border-blue-200/60 dark:border-blue-900/60 flex items-center justify-center mx-auto shadow-xs'>
+            <Briefcase className='w-7 h-7' />
           </div>
           <div className='max-w-md mx-auto'>
             <h3 className='text-lg font-bold text-slate-900 dark:text-white'>
@@ -535,16 +551,17 @@ export default function ExperienceView() {
           <button
             type='button'
             onClick={handleOpenAdd}
-            className='inline-flex items-center gap-2 px-6 py-2.5 rounded-2xl text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-500/20 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer'
+            className='inline-flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 shadow-sm transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer'
           >
             <Plus className='w-4 h-4' />
             <span>Tambah Pengalaman Pertama</span>
           </button>
         </div>
       ) : filteredExperiences.length === 0 ? (
+
         /* Empty State: Search / Filter yields 0 results */
         <div className='p-8 sm:p-12 rounded-3xl bg-white dark:bg-[#0F172A] border border-slate-200 dark:border-slate-800 text-center space-y-3'>
-          <Search className='w-10 h-10 text-slate-400 mx-auto' />
+          <Search className='w-8 h-8 text-slate-400 mx-auto' />
           <h3 className='text-base font-bold text-slate-900 dark:text-white'>
             Tidak Ada Pengalaman yang Cocok
           </h3>
@@ -558,25 +575,100 @@ export default function ExperienceView() {
               setSearchQuery('')
               setActiveTab('all')
             }}
-            className='inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-750 transition-colors cursor-pointer'
+            className='inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer'
           >
             <RotateCcw className='w-3.5 h-3.5' />
             <span>Reset Pencarian & Filter</span>
           </button>
         </div>
       ) : (
-        /* Experiences Card Grid */
-        <div className='grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5'>
-          {filteredExperiences.map(exp => (
-            <ExperienceCard
-              key={exp.id}
-              experience={exp}
-              onEdit={handleOpenEdit}
-              onDelete={handleOpenDelete}
-              onViewDetail={handleOpenDetail}
-              onTriggerAI={handleOpenAiReview}
-            />
-          ))}
+
+        /* Experiences Card Grid: Desktop max 3 cols, Tablet max 2 cols, Mobile 1 col */
+        <div className='space-y-6'>
+          <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5'>
+            {paginatedExperiences.map(exp => (
+              <ExperienceCard
+                key={exp.id}
+                experience={exp}
+                onEdit={handleOpenEdit}
+                onDelete={handleOpenDelete}
+                onViewDetail={handleOpenDetail}
+                onTriggerAI={handleOpenAiReview}
+              />
+            ))}
+          </div>
+
+          {/* Pagination Navigation */}
+          {totalPages > 1 && (
+            <div className='flex flex-col sm:flex-row items-center justify-between gap-3 pt-2 pb-2'>
+              <p className='text-xs text-slate-500 dark:text-slate-400 order-2 sm:order-1'>
+                Halaman <span className='font-bold text-slate-900 dark:text-white'>{currentPage}</span> dari{' '}
+                <span className='font-bold text-slate-900 dark:text-white'>{totalPages}</span>
+              </p>
+
+              <div className='flex items-center gap-1.5 order-1 sm:order-2'>
+                {/* Previous Button */}
+                <button
+                  type='button'
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage <= 1}
+                  aria-label='Halaman sebelumnya'
+                  className='inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0F172A] text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-xs cursor-pointer'
+                >
+                  <ChevronLeft className='w-3.5 h-3.5' />
+                  <span className='hidden sm:inline'>Sebelumnya</span>
+                </button>
+
+                {/* Page Numbers */}
+                <div className='flex items-center gap-1'>
+                  {getPaginationRange(currentPage, totalPages).map((p, idx) => {
+                    if (p === '...') {
+                      return (
+                        <span
+                          key={`ellipsis-${idx}`}
+                          className='w-8 h-8 flex items-center justify-center text-xs text-slate-400 select-none'
+                        >
+                          ...
+                        </span>
+                      )
+                    }
+
+                    const pageNum = Number(p)
+                    const isActive = pageNum === currentPage
+
+                    return (
+                      <button
+                        key={`page-${pageNum}`}
+                        type='button'
+                        onClick={() => handlePageChange(pageNum)}
+                        aria-label={`Halaman ${pageNum}`}
+                        aria-current={isActive ? 'page' : undefined}
+                        className={`w-8 h-8 rounded-xl text-xs font-semibold flex items-center justify-center transition-all cursor-pointer ${
+                          isActive
+                            ? 'bg-blue-600 text-white shadow-xs'
+                            : 'border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0F172A] text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
+                        }`}
+                      >
+                        {pageNum}
+                      </button>
+                    )
+                  })}
+                </div>
+
+                {/* Next Button */}
+                <button
+                  type='button'
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage >= totalPages}
+                  aria-label='Halaman berikutnya'
+                  className='inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0F172A] text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-xs cursor-pointer'
+                >
+                  <span className='hidden sm:inline'>Selanjutnya</span>
+                  <ChevronRight className='w-3.5 h-3.5' />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -606,7 +698,7 @@ export default function ExperienceView() {
         experience={deleteTargetExperience}
       />
 
-      {/* AI Skill Review Modal (F04 Core) */}
+      {/* AI Skill Review Modal */}
       <AISkillReviewModal
         isOpen={isAiReviewOpen}
         onClose={() => setIsAiReviewOpen(false)}

@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
+
 import {
   AlertTriangle,
   Loader2,
@@ -8,7 +9,8 @@ import {
   X,
   AlertCircle
 } from 'lucide-react'
-import { ExperienceItem } from './experienceUtils'
+
+import type { ExperienceItem } from './experienceUtils'
 
 interface DeleteExperienceModalProps {
   isOpen: boolean
@@ -44,7 +46,8 @@ export default function DeleteExperienceModal({
 
       if (!res.ok || !data.success) {
         setError(data.message || 'Gagal menghapus pengalaman. Silakan coba lagi.')
-        return
+        
+return
       }
 
       onSuccess(experience.id)
@@ -58,7 +61,10 @@ export default function DeleteExperienceModal({
   }
 
   return (
-    <div className='fixed inset-0 z-[1400] flex items-center justify-center p-4 bg-slate-900/60 dark:bg-black/80 backdrop-blur-md animate-in fade-in duration-200 overflow-hidden'>
+    <div
+      className='experience-page font-poppins fixed inset-0 z-[1400] flex items-center justify-center p-4 bg-slate-900/60 dark:bg-black/80 backdrop-blur-md animate-in fade-in duration-200 overflow-hidden'
+      style={{ fontFamily: "'Poppins', sans-serif" }}
+    >
       <div className='relative w-full max-w-md bg-white dark:bg-[#0F172A] border border-slate-200 dark:border-slate-800 rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200'>
         {/* Header Close */}
         <button

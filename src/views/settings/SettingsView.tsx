@@ -226,9 +226,6 @@ return
       {/* Page Header */}
       <div className='flex flex-col gap-1 border-b border-slate-200/80 dark:border-slate-800 pb-5'>
         <div className='flex items-center gap-2'>
-          <div className='w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 border border-indigo-100 dark:border-indigo-900'>
-            <Settings className='w-4 h-4' />
-          </div>
           <h1 className='text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight'>
             Pengaturan Akun & Keamanan
           </h1>
@@ -397,7 +394,7 @@ return
         <div className='p-5 sm:p-7 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-2xs space-y-6 animate-in fade-in duration-150'>
           <div className='flex flex-col gap-1 border-b border-slate-100 dark:border-slate-800 pb-4'>
             <div className='flex items-center gap-2'>
-              <Globe className='w-4 h-4 text-emerald-600 dark:text-emerald-400' />
+              <Globe className='w-4 h-4 text-blue-600 dark:text-blue-400' />
               <h2 className='text-sm sm:text-base font-bold text-slate-900 dark:text-white'>
                 Kontrol Visibilitas Portofolio Publik
               </h2>

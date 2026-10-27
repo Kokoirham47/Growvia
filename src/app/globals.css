@@ -7,6 +7,9 @@
 @custom-variant dark (&:where([data-mui-color-scheme="dark"], [data-mui-color-scheme="dark"] *, [data-theme="dark"], [data-theme="dark"] *, .dark, .dark *));
 
 @theme {
+  --font-sans: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-poppins: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+
   --radius-none: 0px;
   --radius-xs: var(--mui-shape-customBorderRadius-xs);
   --radius-sm: var(--mui-shape-customBorderRadius-sm);
@@ -127,7 +130,7 @@
   input,
   select,
   textarea {
-    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
   }
 }
 
@@ -135,10 +138,21 @@ html {
   display: flex;
   inline-size: 100%;
   min-block-size: 100%;
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
 }
 
 body {
-  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
+}
+
+/* Universal Poppins enforcement for Experience Page, modals, and components */
+.experience-page,
+.experience-page *,
+.experience-page input,
+.experience-page textarea,
+.experience-page button,
+.experience-page select {
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
 }
 
 a {

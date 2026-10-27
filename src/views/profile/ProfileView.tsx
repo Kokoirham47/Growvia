@@ -257,9 +257,6 @@ return
       <div className='flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 dark:border-slate-800 pb-5'>
         <div className='flex flex-col gap-1'>
           <div className='flex items-center gap-2'>
-            <div className='w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 border border-blue-100 dark:border-blue-900'>
-              <User className='w-4 h-4' />
-            </div>
             <h1 className='text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight'>
               Profil & Identitas Diri
             </h1>
@@ -276,7 +273,7 @@ return
             className='inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 hover:bg-blue-100 dark:hover:bg-blue-900/60 border border-blue-200/70 dark:border-blue-800 transition-all self-start sm:self-auto cursor-pointer'
           >
             <ExternalLink className='w-3.5 h-3.5' />
-            <span>Lihat Portofolio Publik</span>
+            <span>Portfolio</span>
           </Link>
         )}
       </div>

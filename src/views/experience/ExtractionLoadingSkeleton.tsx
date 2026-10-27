@@ -1,7 +1,8 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Sparkles, Cpu, CheckCircle2, Loader2 } from 'lucide-react'
+
+import { Sparkles, CheckCircle2, Loader2 } from 'lucide-react'
 
 const PIPELINE_STEPS = [
   'Mengekstraksi kata kunci kompetensi & metrik narasi...',
@@ -22,7 +23,7 @@ export default function ExtractionLoadingSkeleton() {
   }, [])
 
   return (
-    <div className='py-8 px-4 sm:px-6 rounded-2xl bg-gradient-to-br from-blue-50/50 via-white to-indigo-50/50 dark:from-slate-900/60 dark:via-[#0F172A] dark:to-slate-900/60 border border-blue-200/60 dark:border-blue-900/40 text-center space-y-6'>
+    <div className='py-8 px-4 sm:px-6 rounded-2xl font-poppins bg-gradient-to-br from-blue-50/50 via-white to-indigo-50/50 dark:from-slate-900/60 dark:via-[#0F172A] dark:to-slate-900/60 border border-blue-200/60 dark:border-blue-900/40 text-center space-y-6'>
       <div className='relative w-16 h-16 mx-auto'>
         <div className='absolute inset-0 rounded-2xl bg-blue-500/20 dark:bg-blue-600/30 blur-xl animate-pulse' />
         <div className='relative w-16 h-16 rounded-2xl bg-white dark:bg-slate-800 border border-blue-200 dark:border-slate-700 flex items-center justify-center shadow-md'>

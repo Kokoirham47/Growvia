@@ -1,21 +1,21 @@
 'use client'
 
 import React, { useState, useEffect, useCallback } from 'react'
+
 import {
   Sparkles,
   X,
   CheckCircle2,
   AlertCircle,
-  Briefcase,
-  Check,
-  RotateCcw,
-  Sliders,
-  Layers,
-  ArrowRight
+  RotateCcw
 } from 'lucide-react'
-import SkillSuggestionChip, { SuggestionChipData } from './SkillSuggestionChip'
+
+import type { SkillLevel } from '@prisma/client'
+
+import type { SuggestionChipData } from './SkillSuggestionChip';
+import SkillSuggestionChip from './SkillSuggestionChip'
 import ExtractionLoadingSkeleton from './ExtractionLoadingSkeleton'
-import { SkillLevel } from '@prisma/client'
+
 
 interface AISkillReviewModalProps {
   isOpen: boolean
@@ -78,6 +78,7 @@ export default function AISkillReviewModal({
 
       // Auto-select skills dengan confidence >= 40% (sesuai PRD)
       const initialSelected = new Set<string>()
+
       list.forEach(s => {
         if (s.confidenceScore >= 40) {
           initialSelected.add(s.id)
@@ -112,7 +113,9 @@ export default function AISkillReviewModal({
     } else {
       document.body.style.overflow = 'unset'
     }
-    return () => {
+
+    
+return () => {
       document.body.style.overflow = 'unset'
     }
   }, [isOpen])
@@ -121,17 +124,21 @@ export default function AISkillReviewModal({
   const handleToggleSelect = (id: string) => {
     setSelectedIds(prev => {
       const next = new Set(prev)
+
       if (next.has(id)) {
         next.delete(id)
       } else {
         next.add(id)
       }
-      return next
+
+      
+return next
     })
   }
 
   const handleSelectAll = () => {
     const all = new Set(suggestions.map(s => s.id))
+
     setSelectedIds(all)
   }
 
@@ -155,8 +162,10 @@ export default function AISkillReviewModal({
     // Unselect and remove from list
     setSelectedIds(prev => {
       const next = new Set(prev)
+
       next.delete(id)
-      return next
+      
+return next
     })
     setSuggestions(prev => prev.filter(s => s.id !== id))
   }
@@ -214,7 +223,8 @@ export default function AISkillReviewModal({
     <div
       role='dialog'
       aria-modal='true'
-      className='fixed inset-0 z-[1400] flex items-center justify-center p-3 sm:p-5 overflow-y-auto animate-in fade-in duration-200'
+      className='experience-page font-poppins fixed inset-0 z-[1400] flex items-center justify-center p-3 sm:p-5 overflow-y-auto animate-in fade-in duration-200'
+      style={{ fontFamily: "'Poppins', sans-serif" }}
     >
       {/* Full Backdrop Blur */}
       <div
@@ -232,12 +242,9 @@ export default function AISkillReviewModal({
             </div>
             <div className='min-w-0'>
               <div className='flex items-center gap-2 flex-wrap'>
-                <h3 className='text-base sm:text-lg font-extrabold text-slate-900 dark:text-white tracking-tight truncate'>
+                <h3 className='text-base sm:text-lg font-bold text-slate-900 dark:text-white tracking-tight truncate'>
                   Review Ekstraksi Skill AI
                 </h3>
-                <span className='px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-blue-100 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300'>
-                  F04 AI Core
-                </span>
               </div>
               <p className='text-xs text-slate-500 dark:text-slate-400 mt-0.5 truncate'>
                 {experienceData?.title ? (
@@ -283,6 +290,7 @@ export default function AISkillReviewModal({
           {loading ? (
             <ExtractionLoadingSkeleton />
           ) : suggestions.length === 0 ? (
+
             /* Empty State */
             <div className='py-12 text-center space-y-3'>
               <div className='w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400 mx-auto flex items-center justify-center'>
@@ -304,6 +312,7 @@ export default function AISkillReviewModal({
               </button>
             </div>
           ) : (
+
             /* Results View */
             <div className='space-y-4'>
               {/* Quick Toolbar / Counter & Bulk Select */}
