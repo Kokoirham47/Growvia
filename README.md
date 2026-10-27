@@ -1,53 +1,53 @@
-# 🔐 Feature: F01 — Authentication
+# ⚙️ Feature: F12 — Profile & Account Settings
 
-> **Branch:** `feature/f01-authentication`  
-> **PIC / Assignee:** Anggota A (Beban: 40% — *Foundation & Core AI Loop*)  
+> **Branch:** `feature/f12-profile-settings`  
+> **PIC / Assignee:** Anggota C (Beban: 20% — *Discovery & Identity*)  
 > **Prioritas:** P0 (Must Have)  
-> **Target Merge:** `develop` (Merge ke-1 — *Fondasi Sistem*)  
-> **Dokumen Terkait:** [PRD (F01)](./plan-md/prd.md#f01--authentication) · [Task Management](./plan-md/task-management.md#f01--authentication) · [ERD](./plan-md/erd_growvia.md)
+> **Dependency:** F01 (Authentication) selesai (dapat dikerjakan secara independen)  
+> **Target Merge:** `develop` (Merge Paralel)  
+> **Dokumen Terkait:** [PRD (F12)](./plan-md/prd.md#f12--profile--settings) · [Task Management](./plan-md/task-management.md#f12--profile--settings) · [ERD](./plan-md/erd_growvia.md)
 
 ---
 
 ## 📌 Deskripsi Fitur
 
-Fitur autentikasi dan otorisasi adalah **tulang punggung (foundation)** seluruh sistem Growvia. Menyediakan mekanisme pendaftaran mahasiswa/fresh graduate yang aman, verifikasi email, login bersesi panjang (JWT + refresh token 30 hari), lupa password, dan middleware keamanan (`authMiddleware`) yang akan digunakan oleh seluruh branch fitur lainnya.
+Fitur Profile & Settings memfasilitasi pengguna untuk mengelola identitas pribadi, foto profil, preferensi akun, keamanan kredensial, kontrol privasi publik, hingga penghapusan akun secara aman (*Soft Delete*). Fitur ini berdiri secara independen dan dapat mulai dikembangkan segera setelah modul autentikasi dasar (F01) tersedia.
 
 ---
 
 ## 🎯 Spesifikasi Kebutuhan & Sub-Fitur (PRD)
 
-### F01.1 Register
-- Form input:
+### F12.1 Pengelolaan Profil (Edit Profile)
+- Pengguna dapat memperbarui informasi diri:
   - **Nama Lengkap**
-  - **Email** (format email valid)
-  - **Password** (min. 8 karakter, minimal 1 huruf besar, minimal 1 angka)
-  - **Konfirmasi Password**
-- Validasi *real-time* per field dengan pesan error interaktif.
-- Enkripsi password menggunakan `bcrypt` (salt rounds ≥ 10).
-- Setelah submit sukses:
-  - Simpan akun dengan status `unverified`.
-  - Generate token verifikasi dan kirim email verifikasi.
-  - Tampilkan state loading saat submit, dan error feedback jika email sudah terdaftar.
+  - **Institusi Pendidikan & Jurusan**
+  - **Tahun Kelulusan / Angkatan**
+  - **Headline Profesional** (contoh: *"Informatics Student | Aspiring AI Engineer"*).
+  - **Biografi Singkat** (ringkasan ketertarikan karier).
+- **Unggah Foto Avatar**:
+  - Dukungan format: JPEG, PNG, WebP (maksimal 2MB).
+  - Integrasi penyimpanan awan (*Cloud Storage*: S3 / Supabase Storage / GCS).
+  - Pratinjau gambar instan sebelum disimpan.
 
-### F01.2 Email Verification
-- Token verifikasi acak yang aman dan valid selama **24 jam**.
-- Batas resend email: cooldown **60 detik**.
-- Setelah verifikasi berhasil: ubah status user menjadi `active`, simpan timestamp `email_verified_at`, dan redirect otomatis ke halaman Login dengan notifikasi sukses.
+### F12.2 Keamanan Akun (Account Settings)
+- **Ganti Password**:
+  - Input: Password saat ini, Password baru, Konfirmasi password baru.
+  - Validasi ketat sama seperti pendaftaran (min. 8 karakter, 1 huruf besar, 1 angka).
+  - Pesan error informatif jika password lama salah.
+- **Ubah Alamat Email**:
+  - Input alamat email baru.
+  - Sistem mengirimkan email konfirmasi ke alamat baru; status email berganti setelah link verifikasi di alamat baru diakses.
 
-### F01.3 Login & Session
-- Form input: **Email** + **Password**.
-- Responsif terhadap *rate limiting* untuk mencegah brute-force.
-- Pesan error generik demi keamanan: *"Email atau password salah"* (tanpa membocorkan apakah email terdaftar).
-- User tidak dapat login bila email belum diverifikasi (status `unverified`).
-- Penyimpanan session dengan JWT token & refresh token (stay logged in 30 hari).
-- **Logika Redireksi Pasca Login**:
-  - Jika profil belum lengkap (`PROFILE` belum ada / belum onboarding) ➔ redirect ke `/onboarding`.
-  - Jika profil sudah lengkap ➔ redirect ke `/dashboard`.
+### F12.3 Pengaturan Privasi (Privacy Settings)
+- **Visibilitas Portofolio Publik**:
+  - *Toggle switch*: `Publik` (portofolio dapat dilihat via link `/u/:slug`) vs `Privat` (halaman publik dinonaktifkan sementara dan mengembalikan 404).
 
-### F01.4 Forgot & Reset Password
-- Request link reset password melalui email.
-- Token reset password dengan masa berlaku terbatas (1 jam).
-- Form set password baru dengan validasi keamanan identik dengan registrasi.
+### F12.4 Penghapusan Akun (Delete Account / Danger Zone)
+- Mekanisme **Soft Delete** demi keamanan data:
+  - Pengguna harus melewati konfirmasi 2 langkah: mengetik kata konfirmasi (e.g. *"HAPUS AKUN SAYA"*) dan memasukkan password akun.
+  - Status user diubah menjadi `deleted` dan kolom `deleted_at` diisi timestamp saat ini.
+  - Data dipertahankan selama masa tenggang retensi 30 hari sebelum dihapus permanen.
+  - Session user langsung dihanguskan dan diarahkan ke halaman login.
 
 ---
 
@@ -57,23 +57,15 @@ Fitur autentikasi dan otorisasi adalah **tulang punggung (foundation)** seluruh 
 
 | Method | Endpoint | Deskripsi | Proteksi Auth |
 |---|---|---|---|
-| `POST` | `/api/auth/register` | Mendaftarkan akun baru & kirim token email | Publik |
-| `POST` | `/api/auth/verify-email` | Memvalidasi token verifikasi email | Publik |
-| `POST` | `/api/auth/resend-verification` | Kirim ulang token verifikasi (cooldown 60s) | Publik |
-| `POST` | `/api/auth/login` | Login user, issue JWT access & refresh token | Publik |
-| `POST` | `/api/auth/logout` | Menghapus token session aktif | User Auth |
-| `POST` | `/api/auth/forgot-password` | Kirim email instruksi reset password | Publik |
-| `POST` | `/api/auth/reset-password` | Validasi token & update password baru | Publik |
-| `GET` | `/api/auth/me` | Ambil data identitas sesi login aktif | User Auth |
+| `GET` | `/api/profile` | Mengambil data profil lengkap pengguna yang sedang login | User Auth |
+| `PUT` | `/api/profile` | Memperbarui data profil (nama, bio, headline, institusi, jurusan) | User Auth |
+| `POST` | `/api/profile/avatar` | Upload file gambar avatar ke Cloud Storage & simpan URL | User Auth |
+| `PUT` | `/api/account/password` | Mengubah password akun dengan validasi password lama | User Auth |
+| `PUT` | `/api/account/email` | Mengajukan perubahan email akun | User Auth |
+| `PUT` | `/api/account/privacy` | Mengubah pengaturan privasi portofolio | User Auth |
+| `DELETE` | `/api/account` | Melakukan soft delete terhadap akun pengguna | User Auth |
 
-### Middleware Bersama (`authMiddleware`)
-> ⚠️ **Sangat Penting:** `authMiddleware` harus diuji secara menyeluruh dan di-merge ke `develop` terlebih dahulu agar anggota lain (B dan C) dapat memanfaatkannya di branch masing-masing.
-
-- Memeriksa header `Authorization: Bearer <token>` atau HTTP-only cookie session.
-- Mengurai user payload (`userId`, `email`, `role = user`).
-- Menghentikan request dengan status `401 Unauthorized` jika token tidak valid/kadaluarsa.
-
-### Entitas Basis Data (Ownership: Anggota A)
+### Entitas Basis Data (Ownership: Anggota C & Anggota A)
 
 ```mermaid
 erDiagram
@@ -84,60 +76,47 @@ erDiagram
         string password_hash
         string avatar_url
         enum status "active | unverified | suspended | deleted"
-        timestamp email_verified_at
-        timestamp created_at
-        timestamp updated_at
         timestamp deleted_at
     }
 
-    EMAIL_VERIFICATION {
+    PROFILE {
         uuid id PK
-        uuid user_id FK
-        string token UK
-        timestamp expires_at
-        boolean used
-        timestamp created_at
+        uuid user_id FK "1-to-1"
+        string institution
+        string major
+        int graduation_year
+        text bio
+        string headline
+        string portfolio_slug UK
     }
 
-    SESSION {
-        uuid id PK
-        uuid user_id FK
-        string refresh_token UK
-        string device_info
-        timestamp expires_at
-        timestamp created_at
-    }
-
-    USER ||--o{ EMAIL_VERIFICATION : "verifies"
-    USER ||--o{ SESSION : "has"
+    USER ||--|| PROFILE : "maintains"
 ```
 
 ---
 
 ## 💻 Lingkup Frontend
 
-### Rute & Halaman
-- `src/app/(blank-layout-pages)/login/page.tsx` ➔ Halaman masuk.
-- `src/app/(blank-layout-pages)/register/page.tsx` ➔ Halaman pendaftaran.
-- `src/app/(blank-layout-pages)/verify-email/page.tsx` ➔ Halaman status verifikasi email.
-- `src/app/(blank-layout-pages)/forgot-password/page.tsx` ➔ Halaman permohonan reset password.
-- `src/app/(blank-layout-pages)/reset-password/page.tsx` ➔ Halaman input password baru.
+### Rute Halaman
+- `src/app/(dashboard)/profile/page.tsx` ➔ Halaman tampilan & edit profil.
+- `src/app/(dashboard)/settings/page.tsx` ➔ Halaman pengaturan akun, privasi, dan danger zone.
 
-### Komponen & State Management
-- `src/contexts/AuthContext.tsx` ➔ React Context penyimpan session user, token, fungsi `login()`, `logout()`, dan status `isAuthenticated`.
-- `LoginForm.tsx`, `RegisterForm.tsx`, `ForgotPasswordForm.tsx`.
-- Feedback UI: Alert banner MUI, loading spinner tombol saat submit, input password dengan toggle visibilitas intip password.
+### Komponen UI
+- `ProfileEditForm.tsx` ➔ Formulir data identitas diri dan pendidikan.
+- `AvatarUploader.tsx` ➔ Komponen upload foto dengan drag & drop dan pratinjau.
+- `SecuritySettings.tsx` ➔ Form ubah password dan email.
+- `PrivacySettings.tsx` ➔ Saklar pengaturan visibilitas portofolio publik.
+- `DeleteAccountModal.tsx` ➔ Dialog peringatan konfirmasi hapus akun dua langkah.
 
 ---
 
 ## ✅ Kriteria Penerimaan (Acceptance Criteria)
 
-- [ ] User tidak bisa login tanpa verifikasi email aktif.
-- [ ] Validasi form menampilkan error real-time yang jelas dan aman.
-- [ ] Session login tersimpan (stay logged in) hingga 30 hari via refresh token.
-- [ ] Redireksi dinamis tepat: belum onboarding ➔ `/onboarding`, sudah onboarding ➔ `/dashboard`.
-- [ ] Rate limiting aktif pada endpoint autentikasi.
-- [ ] `authMiddleware` berfungsi dengan baik dan siap dipakai oleh branch lain setelah merge ke `develop`.
+- [ ] Pengguna dapat mengedit profil biodata dan foto avatar terunggah dengan benar.
+- [ ] Validasi penggantian password mewajibkan verifikasi password lama yang sesuai.
+- [ ] Pengaturan privasi portofolio efektif mengatur akses publik URL `/u/:slug`.
+- [ ] Penghapusan akun menerapkan sistem soft delete dengan konfirmasi pengamanan ganda.
+- [ ] Feedback notifikasi sukses atau error ditampilkan secara interaktif.
 
 ---
 
@@ -147,11 +126,10 @@ erDiagram
 # 1. Jalankan development server
 npm run dev
 
-# 2. Uji endpoint auth & tampilan di:
-# http://localhost:3000/login
-# http://localhost:3000/register
-# http://localhost:3000/forgot-password
+# 2. Buka pengaturan akun & profil:
+# http://localhost:3000/profile
+# http://localhost:3000/settings
 
-# 3. Lakukan linting sebelum submit PR
+# 3. Lakukan validasi linting
 npm run lint
 ```

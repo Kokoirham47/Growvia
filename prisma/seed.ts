@@ -11,7 +11,11 @@ async function main() {
     { name: 'Software Engineering', slug: 'software-engineering', icon: 'code' },
     { name: 'Product Management', slug: 'product-management', icon: 'briefcase' },
     { name: 'Data Science & AI', slug: 'data-science-ai', icon: 'chart-bar' },
-    { name: 'Digital Marketing & Growth', slug: 'digital-marketing', icon: 'trending-up' }
+    { name: 'Digital Marketing & Growth', slug: 'digital-marketing', icon: 'trending-up' },
+    { name: 'Finance & Business', slug: 'finance-business', icon: 'dollar-sign' },
+    { name: 'Human Resources & People', slug: 'human-resources', icon: 'users' },
+    { name: 'Content & Creative Writing', slug: 'content-creative', icon: 'feather' },
+    { name: 'Operations & Strategy', slug: 'operations-strategy', icon: 'settings' }
   ]
 
   for (const field of careerFields) {
