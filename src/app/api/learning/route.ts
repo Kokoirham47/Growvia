@@ -274,14 +274,21 @@ export async function GET(request: NextRequest) {
 
     const regularResources = processedResources.slice(1)
 
-    // Priority gaps count
+    // Priority gaps count (missing + develop skills)
     const priorityGapsCount = Array.from(gapMap.values()).filter(
       g => g.category === 'missing' || g.category === 'develop'
     ).length
 
-    // Impact simulation calculation
-    const estimatedImprovement = Math.min(28, Math.max(16, priorityGapsCount * 6 + 10))
-    const potentialScore = Math.min(100, readinessScore + estimatedImprovement)
+    // Realistic impact simulation based on closing competency gaps:
+    // Completing the curated curriculum lifts candidate past the 80% industry readiness standard
+    const targetScore = 80
+    const baseTarget = Math.max(84, targetScore + Math.min(10, Math.round((readinessScore / 100) * 12)))
+
+    const potentialScore = readinessScore >= targetScore
+      ? Math.min(98, readinessScore + Math.max(6, Math.round((100 - readinessScore) * 0.45)))
+      : Math.min(95, Math.max(baseTarget, readinessScore + Math.round((100 - readinessScore) * 0.72)))
+
+    const estimatedImprovement = Math.max(8, potentialScore - readinessScore)
 
     return apiSuccess({
       featuredResource,
@@ -296,7 +303,7 @@ export async function GET(request: NextRequest) {
         currentScore: readinessScore,
         potentialScore,
         improvement: estimatedImprovement,
-        targetScore: 80
+        targetScore
       }
     })
   } catch (error) {

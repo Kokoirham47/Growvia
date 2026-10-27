@@ -76,10 +76,6 @@ export default function HeroMatchCard({ career }: HeroMatchCardProps) {
               <span className='w-2.5 h-2.5 rounded-full bg-[#2563EB]' />
               <span>Skill Dikuasai</span>
             </span>
-            <span className='flex items-center gap-1.5'>
-              <span className='w-2.5 h-2.5 rounded-full bg-[#1E3A8A] dark:bg-blue-400' />
-              <span>Potensi AI Gap</span>
-            </span>
           </div>
         </div>
 

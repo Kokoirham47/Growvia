@@ -11,9 +11,8 @@ import {
   BarChart2,
   Star,
   Lightbulb,
-  Play,
   Briefcase,
-  ArrowRight,
+  ExternalLink,
   Bookmark
 } from 'lucide-react'
 
@@ -23,7 +22,6 @@ interface FeaturedRecommendationCardProps {
   item: LearningCardItem
   isBookmarked: boolean
   onToggleBookmark: (id: string) => void
-  onOpenSyllabus: (item: LearningCardItem) => void
   onStartLearning: (item: LearningCardItem) => void
 }
 
@@ -31,7 +29,6 @@ export default function FeaturedRecommendationCard({
   item,
   isBookmarked,
   onToggleBookmark,
-  onOpenSyllabus,
   onStartLearning
 }: FeaturedRecommendationCardProps) {
   return (
@@ -42,12 +39,6 @@ export default function FeaturedRecommendationCard({
         <div className='inline-flex items-center gap-2 text-indigo-700 dark:text-indigo-300 font-bold text-xs sm:text-sm'>
           <Compass className='w-4 h-4 text-indigo-600 dark:text-indigo-400' />
           <span>Paling Direkomendasikan untuk Kamu</span>
-        </div>
-
-        {/* Right: "Missing Skill Gap Priority" badge */}
-        <div className='inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-red-50 dark:bg-red-950/50 text-red-600 dark:text-red-400 border border-red-200/60 dark:border-red-800/50'>
-          <span className='w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse' />
-          <span>Missing Skill Gap Priority</span>
         </div>
       </div>
 
@@ -128,15 +119,10 @@ export default function FeaturedRecommendationCard({
 
             {/* Overlay Badges */}
             <div className='absolute bottom-3 left-3 right-3 flex items-center justify-between gap-2 z-10'>
-              {/* Pratinjau Silabus & Lab */}
-              <button
-                type='button'
-                onClick={() => onOpenSyllabus(item)}
-                className='inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-900/85 hover:bg-slate-900 text-white text-[11px] font-medium backdrop-blur-xs transition-colors cursor-pointer border border-white/10'
-              >
-                <Play className='w-3 h-3 fill-current text-blue-400' />
-                <span>Pratinjau Silabus & Lab</span>
-              </button>
+              <div className='inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-900/85 text-white text-[11px] font-medium backdrop-blur-xs border border-white/10'>
+                <CheckCircle2 className='w-3 h-3 text-blue-400' />
+                <span>{item.platform}</span>
+              </div>
 
               {/* 3 Proyek Portfolio */}
               <div className='inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-900/85 text-white text-[11px] font-medium backdrop-blur-xs border border-white/10'>
@@ -146,15 +132,15 @@ export default function FeaturedRecommendationCard({
             </div>
           </div>
 
-          {/* Action Buttons: Mulai Belajar Sekarang (Blue) + Simpan */}
+          {/* Action Buttons: Akses Materi Kursus (Blue) + Simpan */}
           <div className='flex items-center gap-2.5'>
             <button
               type='button'
               onClick={() => onStartLearning(item)}
               className='flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-[0.99] text-white text-xs sm:text-sm font-semibold transition-all shadow-md shadow-blue-600/25 hover:shadow-blue-600/35 cursor-pointer'
             >
-              <span>Mulai Belajar Sekarang</span>
-              <ArrowRight className='w-4 h-4' />
+              <span>Akses Materi Kursus</span>
+              <ExternalLink className='w-4 h-4' />
             </button>
 
             <button

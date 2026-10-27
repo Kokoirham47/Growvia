@@ -3,7 +3,6 @@
 import React from 'react'
 
 import {
-  LayoutGrid,
   Code2,
   Users2,
   CheckCircle2,
@@ -84,7 +83,6 @@ export default function DetailedSkillMatrix({ career, onOpenLearning }: Detailed
       {/* Matrix Section Title & Legend */}
       <div className='flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1'>
         <div className='flex items-center gap-2'>
-          <LayoutGrid className='w-5 h-5 text-[#2563EB]' />
           <h2 className='text-lg font-bold text-slate-900 dark:text-white tracking-tight'>
             Detail Pemetaan Skill Matrix
           </h2>

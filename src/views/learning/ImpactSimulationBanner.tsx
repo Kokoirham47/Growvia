@@ -11,13 +11,15 @@ interface ImpactSimulationBannerProps {
   potentialScore?: number
   improvement?: number
   targetScore?: number
+  moduleCount?: number
 }
 
 export default function ImpactSimulationBanner({
   currentScore = 68,
   potentialScore = 89,
   improvement = 21,
-  targetScore = 80
+  targetScore = 80,
+  moduleCount = 4
 }: ImpactSimulationBannerProps) {
   return (
     <div className='flex flex-col gap-4 w-full pt-3'>
@@ -40,7 +42,7 @@ export default function ImpactSimulationBanner({
               </h3>
 
               <p className='text-xs sm:text-[13px] text-slate-500 dark:text-slate-400 leading-relaxed'>
-                Selesaikan 4 modul ini untuk melompat ke tier kandidat yang siap dilirik recruiter.
+                Selesaikan {moduleCount} modul rekomendasi ini untuk melompat ke tier kandidat yang siap kerja ({potentialScore}%).
               </p>
             </div>
           </div>

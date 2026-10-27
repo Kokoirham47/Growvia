@@ -2,14 +2,21 @@
 
 import React, { useState, useMemo, useEffect, useCallback } from 'react'
 
-import { CheckCircle2, RotateCcw, Search, AlertCircle } from 'lucide-react'
+import {
+  CheckCircle2,
+  RotateCcw,
+  Search,
+  AlertCircle,
+  ChevronLeft,
+  ChevronRight
+} from 'lucide-react'
 
 import LearningHeader from './LearningHeader'
 import FeaturedRecommendationCard from './FeaturedRecommendationCard'
 import LearningFilterBar from './LearningFilterBar'
 import LearningCard from './LearningCard'
 import ImpactSimulationBanner from './ImpactSimulationBanner'
-import CourseDetailModal from './CourseDetailModal'
+import SavedModulesModal from './SavedModulesModal'
 import type {
   LearningCategory,
   DifficultyLevel,
@@ -61,9 +68,28 @@ export default function LearningRecommendationsView() {
   const [selectedDifficulty, setSelectedDifficulty] = useState<DifficultyLevel>('all')
   const [selectedSort, setSelectedSort] = useState<SortOption>('match')
 
-  // Modal State
-  const [activeModalItem, setActiveModalItem] = useState<LearningCardItem | null>(null)
-  const [isModalOpen, setIsModalOpen] = useState(false)
+  // Pagination State (Max 6 cards per page)
+  const ITEMS_PER_PAGE = 6
+  const [currentPage, setCurrentPage] = useState(1)
+
+  // Filter change handlers that reset page to 1
+  const handleSelectCategory = (cat: LearningCategory) => {
+    setSelectedCategory(cat)
+    setCurrentPage(1)
+  }
+
+  const handleSelectDifficulty = (diff: DifficultyLevel) => {
+    setSelectedDifficulty(diff)
+    setCurrentPage(1)
+  }
+
+  const handleSelectSort = (sort: SortOption) => {
+    setSelectedSort(sort)
+    setCurrentPage(1)
+  }
+
+  // Saved Modules Modal State
+  const [isSavedModalOpen, setIsSavedModalOpen] = useState(false)
 
   // Toast feedback state
   const [toastMessage, setToastMessage] = useState<string | null>(null)
@@ -152,30 +178,12 @@ export default function LearningRecommendationsView() {
     }
   }
 
-  // Handle Open Syllabus / Course Detail
-  const handleOpenSyllabus = (item: LearningCardItem) => {
-    setActiveModalItem(item)
-    setIsModalOpen(true)
-  }
-
-  // Handle Start Learning
+  // Handle Access Learning Resource directly via URL
   const handleStartLearning = (item: LearningCardItem) => {
-    if (item.syllabus && item.syllabus.length > 0) {
-      setActiveModalItem(item)
-      setIsModalOpen(true)
-    } else if (item.url) {
+    if (item.url) {
       window.open(item.url, '_blank', 'noopener,noreferrer')
       showToast(`Membuka ${item.title} di platform ${item.platform}...`)
     }
-  }
-
-  // Handle Enroll / Launch from Modal
-  const handleEnroll = (item: LearningCardItem) => {
-    if (item.url) {
-      window.open(item.url, '_blank', 'noopener,noreferrer')
-    }
-
-    showToast(`Membuka ${item.title} di platform ${item.platform}...`)
   }
 
   // Combine featured and regular resources for category counts
@@ -232,6 +240,20 @@ export default function LearningRecommendationsView() {
     return result
   }, [resources, selectedCategory, selectedDifficulty, selectedSort])
 
+  // Saved resources for the modal
+  const savedResources = useMemo(() => {
+    return allResources.filter(item => bookmarkedIds.includes(item.id))
+  }, [allResources, bookmarkedIds])
+
+  // Pagination calculation
+  const totalPages = Math.ceil(filteredAndSortedResources.length / ITEMS_PER_PAGE)
+
+  const paginatedResources = useMemo(() => {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE
+
+    return filteredAndSortedResources.slice(start, start + ITEMS_PER_PAGE)
+  }, [filteredAndSortedResources, currentPage])
+
   return (
     <div
       style={{ fontFamily: "'Poppins', sans-serif" }}
@@ -252,8 +274,9 @@ export default function LearningRecommendationsView() {
       {/* 1. PAGE HEADER */}
       <LearningHeader
         careerTarget={headerData.careerTarget}
-        selectedModulesCount={headerData.selectedModulesCount}
+        savedModulesCount={bookmarkedIds.length}
         priorityGapsCount={headerData.priorityGapsCount}
+        onOpenSavedModal={() => setIsSavedModalOpen(true)}
       />
 
       {/* Loading Skeleton */}
@@ -266,11 +289,11 @@ export default function LearningRecommendationsView() {
           <div className='w-full h-12 rounded-xl bg-slate-100 dark:bg-slate-800' />
 
           {/* Grid Cards Skeleton */}
-          <div className='grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6'>
-            {[1, 2, 3, 4].map(idx => (
+          <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6'>
+            {[1, 2, 3, 4, 5, 6].map(idx => (
               <div
                 key={idx}
-                className='h-60 rounded-2xl bg-slate-100 dark:bg-slate-800 border border-slate-200/60 dark:border-slate-700'
+                className='h-64 rounded-2xl bg-slate-100 dark:bg-slate-800 border border-slate-200/60 dark:border-slate-700'
               />
             ))}
           </div>
@@ -305,7 +328,6 @@ export default function LearningRecommendationsView() {
               item={featuredResource}
               isBookmarked={bookmarkedIds.includes(featuredResource.id)}
               onToggleBookmark={handleToggleBookmark}
-              onOpenSyllabus={handleOpenSyllabus}
               onStartLearning={handleStartLearning}
             />
           )}
@@ -313,26 +335,83 @@ export default function LearningRecommendationsView() {
           {/* 3. FILTER BAR */}
           <LearningFilterBar
             selectedCategory={selectedCategory}
-            onSelectCategory={setSelectedCategory}
+            onSelectCategory={handleSelectCategory}
             selectedDifficulty={selectedDifficulty}
-            onSelectDifficulty={setSelectedDifficulty}
+            onSelectDifficulty={handleSelectDifficulty}
             selectedSort={selectedSort}
-            onSelectSort={setSelectedSort}
+            onSelectSort={handleSelectSort}
             counts={counts}
           />
 
-          {/* 4. RESOURCE LIST (2 COLUMNS ON DESKTOP) */}
+          {/* 4. RESOURCE LIST (3 COLUMNS ON DESKTOP - MAX 6 CARDS PER PAGE) */}
           {filteredAndSortedResources.length > 0 ? (
-            <div className='grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6'>
-              {filteredAndSortedResources.map(resource => (
-                <LearningCard
-                  key={resource.id}
-                  item={resource}
-                  isBookmarked={bookmarkedIds.includes(resource.id)}
-                  onToggleBookmark={handleToggleBookmark}
-                  onStartLearning={handleStartLearning}
-                />
-              ))}
+            <div className='flex flex-col gap-6'>
+              <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6'>
+                {paginatedResources.map(resource => (
+                  <LearningCard
+                    key={resource.id}
+                    item={resource}
+                    isBookmarked={bookmarkedIds.includes(resource.id)}
+                    onToggleBookmark={handleToggleBookmark}
+                    onStartLearning={handleStartLearning}
+                  />
+                ))}
+              </div>
+
+              {/* Pagination Controls */}
+              {totalPages > 1 && (
+                <div className='flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-slate-100 dark:border-slate-800/80'>
+                  <div className='text-xs text-slate-500 dark:text-slate-400'>
+                    Menampilkan{' '}
+                    <span className='font-semibold text-slate-800 dark:text-slate-200'>
+                      {(currentPage - 1) * ITEMS_PER_PAGE + 1}–
+                      {Math.min(currentPage * ITEMS_PER_PAGE, filteredAndSortedResources.length)}
+                    </span>{' '}
+                    dari{' '}
+                    <span className='font-semibold text-slate-800 dark:text-slate-200'>
+                      {filteredAndSortedResources.length}
+                    </span>{' '}
+                    modul belajar
+                  </div>
+
+                  <div className='flex items-center gap-1.5'>
+                    <button
+                      type='button'
+                      onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                      disabled={currentPage === 1}
+                      className='inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-semibold border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer'
+                    >
+                      <ChevronLeft className='w-4 h-4' />
+                      <span>Sebelumnya</span>
+                    </button>
+
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                      <button
+                        key={page}
+                        type='button'
+                        onClick={() => setCurrentPage(page)}
+                        className={`w-8 h-8 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                          currentPage === page
+                            ? 'bg-blue-600 text-white shadow-xs'
+                            : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200/60 dark:border-slate-800'
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    ))}
+
+                    <button
+                      type='button'
+                      onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                      disabled={currentPage === totalPages}
+                      className='inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-semibold border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer'
+                    >
+                      <span>Selanjutnya</span>
+                      <ChevronRight className='w-4 h-4' />
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
 
@@ -350,8 +429,8 @@ export default function LearningRecommendationsView() {
               <button
                 type='button'
                 onClick={() => {
-                  setSelectedCategory('semua')
-                  setSelectedDifficulty('all')
+                  handleSelectCategory('semua')
+                  handleSelectDifficulty('all')
                 }}
                 className='inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 hover:bg-blue-100 transition-colors cursor-pointer mt-1'
               >
@@ -367,14 +446,16 @@ export default function LearningRecommendationsView() {
             potentialScore={impactData.potentialScore}
             improvement={impactData.improvement}
             targetScore={impactData.targetScore}
+            moduleCount={bookmarkedIds.length > 0 ? bookmarkedIds.length : (headerData.priorityGapsCount || 4)}
           />
 
-          {/* Course Detail / Syllabus Modal */}
-          <CourseDetailModal
-            item={activeModalItem}
-            isOpen={isModalOpen}
-            onClose={() => setIsModalOpen(false)}
-            onEnroll={handleEnroll}
+          {/* Saved Modules Modal */}
+          <SavedModulesModal
+            isOpen={isSavedModalOpen}
+            onClose={() => setIsSavedModalOpen(false)}
+            savedItems={savedResources}
+            onToggleBookmark={handleToggleBookmark}
+            onStartLearning={handleStartLearning}
           />
         </>
       )}
