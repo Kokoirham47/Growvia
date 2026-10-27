@@ -10,9 +10,9 @@ import BlankLayout from '@layouts/BlankLayout'
 import { getSystemMode, getServerMode } from '@core/utils/serverHelpers'
 
 export const metadata: Metadata = {
-  title: 'Growvia — Turn Experience Into Opportunity',
+  title: 'Growvia — Ubah Pengalamanmu Jadi Skill dan Karier',
   description:
-    'Growvia adalah ekosistem karier berbasis AI yang membantu mahasiswa dan fresh graduate mengubah pengalaman nyata menjadi skill terstruktur, memetakan kesiapan karier, dan menemukan peluang impian.'
+    'Tulis pengalaman organisasi, magang, atau proyekmu. Growvia mengusulkan skill, menghitung Career Readiness Score, dan menyiapkan portofolio. Gratis.'
 }
 
 const RootPage = async () => {
