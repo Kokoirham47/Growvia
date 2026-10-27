@@ -423,8 +423,15 @@ model LearningResource {
   type            LearningResourceType
   difficulty      Difficulty           @default(beginner)
   durationMinutes Int?                 @map("duration_minutes")
-  rating          Float?
-  isActive        Boolean              @default(true) @map("is_active")
+  rating                 Float?
+  description            String?              @db.Text
+  instructor             String?
+  reviewsCount           String?              @map("reviews_count")
+  enrolledCount          String?              @map("enrolled_count")
+  hasCertificate         Boolean              @default(true) @map("has_certificate")
+  portfolioProjectsCount Int                  @default(1) @map("portfolio_projects_count")
+  syllabus               Json?
+  isActive               Boolean              @default(true) @map("is_active")
   source          ContentSource        @default(admin)
   createdBy       String?              @map("created_by") @db.Uuid
   createdAt       DateTime             @default(now()) @map("created_at")

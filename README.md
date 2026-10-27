@@ -1,62 +1,53 @@
-# 📚 Feature: F07 — Learning Recommendation
+# ⚙️ Feature: F12 — Profile & Account Settings
 
-> **Branch:** `feature/f07-learning`  
-> **PIC / Assignee:** Anggota B (Beban: 40% — *Intelligence & Career Engine*)  
-> **Prioritas:** P1 (Should Have)  
-> **Dependency:** F06 (Career Gap Analysis) harus sudah di-merge (`SKILL_GAP_RESULT` dibutuhkan)  
-> **Target Merge:** `develop` (Merge ke-7 — *Menutup Kesenjangan Keahlian*)  
-> **Dokumen Terkait:** [PRD (F07)](./plan-md/prd.md#f07--learning-recommendation) · [Task Management](./plan-md/task-management.md#f07--learning) · [ERD](./plan-md/erd_growvia.md)
+> **Branch:** `feature/f12-profile-settings`  
+> **PIC / Assignee:** Anggota C (Beban: 20% — *Discovery & Identity*)  
+> **Prioritas:** P0 (Must Have)  
+> **Dependency:** F01 (Authentication) selesai (dapat dikerjakan secara independen)  
+> **Target Merge:** `develop` (Merge Paralel)  
+> **Dokumen Terkait:** [PRD (F12)](./plan-md/prd.md#f12--profile--settings) · [Task Management](./plan-md/task-management.md#f12--profile--settings) · [ERD](./plan-md/erd_growvia.md)
 
 ---
 
 ## 📌 Deskripsi Fitur
 
-Learning Recommendation menyediakan rekomendasi materi pembelajaran yang dipersonalisasi untuk mahasiswa guna mengakselerasi penutupan kesenjangan keahlian (*skill gap*). Fitur ini mengadopsi **Hybrid Recommendation Pipeline**: backend menyaring modul materi yang relevan dari basis data kurasi, kemudian model AI (LLM) melakukan perangkingan kontekstual dan menyusun narasi alasan rekomendasi (*AI reasoning*).
-
-> ℹ️ **Integritas Sumber Data:** Modul AI tidak menciptakan sumber materi fiktif. AI bertindak murni sebagai mesin perangkingan cerdas (*ranking & reasoning engine*) dari entitas `LEARNING_RESOURCE` terverifikasi yang dikelola admin.
+Fitur Profile & Settings memfasilitasi pengguna untuk mengelola identitas pribadi, foto profil, preferensi akun, keamanan kredensial, kontrol privasi publik, hingga penghapusan akun secara aman (*Soft Delete*). Fitur ini berdiri secara independen dan dapat mulai dikembangkan segera setelah modul autentikasi dasar (F01) tersedia.
 
 ---
 
-## 🎯 Spesifikasi Kebutuhan & Pipeline Hybrid (PRD)
+## 🎯 Spesifikasi Kebutuhan & Sub-Fitur (PRD)
 
-```text
-Kesenjangan Skill Pengguna (Missing & Develop dari F06)
-                       │
-                       ▼
-[ Tahap 1: Candidate Retrieval (Backend) ]
-Saring kandidat resource dari LEARNING_RESOURCE yang memiliki kesesuaian skill tags
-                       │
-                       ▼
-[ Tahap 2: AI Contextual Ranking (LLM Gemini / Groq) ]
-Kirim kandidat + profil user ke AI ➔ Hasilkan urutan rangking & snippet alasan personalisasi
-                       │
-                       ▼
-[ Tahap 3: Penyajian Antarmuka Pengguna ]
-Tampilkan kartu materi terurut dengan label alasan: "Direkomendasikan karena..."
-```
+### F12.1 Pengelolaan Profil (Edit Profile)
+- Pengguna dapat memperbarui informasi diri:
+  - **Nama Lengkap**
+  - **Institusi Pendidikan & Jurusan**
+  - **Tahun Kelulusan / Angkatan**
+  - **Headline Profesional** (contoh: *"Informatics Student | Aspiring AI Engineer"*).
+  - **Biografi Singkat** (ringkasan ketertarikan karier).
+- **Unggah Foto Avatar**:
+  - Dukungan format: JPEG, PNG, WebP (maksimal 2MB).
+  - Integrasi penyimpanan awan (*Cloud Storage*: S3 / Supabase Storage / GCS).
+  - Pratinjau gambar instan sebelum disimpan.
 
-### F07.1 Hybrid Recommendation Pipeline
-1. **Candidate Retrieval (Backend)**: Query mengambil seluruh materi dari `LEARNING_RESOURCE` yang aktif dan berelasi dengan daftar `missing_skills` dan `develop_skills` pengguna.
-2. **AI Ranking (LLM)**: LLM mengevaluasi preferensi, latar belakang jurusan, dan tingkat kesulitan untuk menghasilkan urutan prioritas belajar yang logis.
-3. **Penyajian**: Menampilkan minimal 3 materi teratas per skill yang perlu ditingkatkan (jika ketersediaan data memenuhi).
+### F12.2 Keamanan Akun (Account Settings)
+- **Ganti Password**:
+  - Input: Password saat ini, Password baru, Konfirmasi password baru.
+  - Validasi ketat sama seperti pendaftaran (min. 8 karakter, 1 huruf besar, 1 angka).
+  - Pesan error informatif jika password lama salah.
+- **Ubah Alamat Email**:
+  - Input alamat email baru.
+  - Sistem mengirimkan email konfirmasi ke alamat baru; status email berganti setelah link verifikasi di alamat baru diakses.
 
-### F07.2 Kartu Materi Pembelajaran (Resource Card)
-- Metadata materi:
-  - **Judul Kursus / Artikel / Video**.
-  - **Platform Penyedia** (contoh: *Coursera, Dicoding, Udemy, YouTube Edu, edX*).
-  - **Tipe Materi** (`Course` | `Artikel` | `Video Tutorial` | `Buku / Dokumentasi`).
-  - **Estimasi Durasi Belajar** (contoh: *"4 Jam"* atau *"3 Minggu"*).
-  - **Tingkat Kesulitan** (`Beginner` | `Intermediate` | `Advanced`).
-  - **Skill Target**: Keahlian spesifik yang akan ditingkatkan.
-  - **AI Reasoning Snippet**: Kalimat penjelasan personal (contoh: *"Direkomendasikan karena sangat cocok untuk menutup gap React State Management kamu sebelum melamar Frontend Role"*).
-- Tombol Aksi:
-  - **"Mulai Belajar"**: Membuka tautan URL eksternal di tab baru.
-  - **"Simpan / Bookmark"**: Menyimpan materi ke daftar belajar pribadi.
+### F12.3 Pengaturan Privasi (Privacy Settings)
+- **Visibilitas Portofolio Publik**:
+  - *Toggle switch*: `Publik` (portofolio dapat dilihat via link `/u/:slug`) vs `Privat` (halaman publik dinonaktifkan sementara dan mengembalikan 404).
 
-### F07.3 Penyimpanan & Pelacakan Kemajuan (Save & Track)
-- Tab **"Materi Tersimpan"**: Menyimpan modul belajar favorit pengguna.
-- Aksi **"Tandai Selesai" (Mark as Completed)**:
-  - Ketika pengguna menyelesaikan materi, sistem memperbarui progres keahlian di F05 (*Skill Profile*).
+### F12.4 Penghapusan Akun (Delete Account / Danger Zone)
+- Mekanisme **Soft Delete** demi keamanan data:
+  - Pengguna harus melewati konfirmasi 2 langkah: mengetik kata konfirmasi (e.g. *"HAPUS AKUN SAYA"*) dan memasukkan password akun.
+  - Status user diubah menjadi `deleted` dan kolom `deleted_at` diisi timestamp saat ini.
+  - Data dipertahankan selama masa tenggang retensi 30 hari sebelum dihapus permanen.
+  - Session user langsung dihanguskan dan diarahkan ke halaman login.
 
 ---
 
@@ -66,56 +57,40 @@ Tampilkan kartu materi terurut dengan label alasan: "Direkomendasikan karena..."
 
 | Method | Endpoint | Deskripsi | Proteksi Auth |
 |---|---|---|---|
-| `GET` | `/api/learning/recommendations` | Mengambil daftar rekomendasi hasil perankingan AI | User Auth |
-| `POST` | `/api/learning/recommendations/generate` | Memicu komputasi pipeline rekomendasi hybrid baru | User Auth |
-| `POST` | `/api/learning/saved` | Menyimpan modul materi ke koleksi pribadi | User Auth |
-| `GET` | `/api/learning/saved` | Mengambil seluruh daftar materi yang disimpan pengguna | User Auth |
-| `PUT` | `/api/learning/saved/:id/complete` | Menandai materi selesai & memperbarui progres skill | User Auth |
+| `GET` | `/api/profile` | Mengambil data profil lengkap pengguna yang sedang login | User Auth |
+| `PUT` | `/api/profile` | Memperbarui data profil (nama, bio, headline, institusi, jurusan) | User Auth |
+| `POST` | `/api/profile/avatar` | Upload file gambar avatar ke Cloud Storage & simpan URL | User Auth |
+| `PUT` | `/api/account/password` | Mengubah password akun dengan validasi password lama | User Auth |
+| `PUT` | `/api/account/email` | Mengajukan perubahan email akun | User Auth |
+| `PUT` | `/api/account/privacy` | Mengubah pengaturan privasi portofolio | User Auth |
+| `DELETE` | `/api/account` | Melakukan soft delete terhadap akun pengguna | User Auth |
 
-### Entitas Basis Data (Ownership: Anggota B)
+### Entitas Basis Data (Ownership: Anggota C & Anggota A)
 
 ```mermaid
 erDiagram
-    LEARNING_RESOURCE {
+    USER {
         uuid id PK
-        string title
-        string platform
-        string url
-        enum type "course | article | video | project"
-        enum difficulty "beginner | intermediate | advanced"
-        string duration
-        float rating
-        boolean is_active
+        string name
+        string email UK
+        string password_hash
+        string avatar_url
+        enum status "active | unverified | suspended | deleted"
+        timestamp deleted_at
     }
 
-    RESOURCE_SKILL_TAG {
+    PROFILE {
         uuid id PK
-        uuid learning_resource_id FK
-        uuid skill_id FK
+        uuid user_id FK "1-to-1"
+        string institution
+        string major
+        int graduation_year
+        text bio
+        string headline
+        string portfolio_slug UK
     }
 
-    LEARNING_RECOMMENDATION {
-        uuid id PK
-        uuid user_id FK
-        uuid learning_resource_id FK
-        uuid skill_id FK
-        int rank
-        text ai_reasoning
-        timestamp created_at
-    }
-
-    USER_SAVED_RESOURCE {
-        uuid id PK
-        uuid user_id FK
-        uuid learning_resource_id FK
-        enum status "saved | in_progress | completed"
-        timestamp saved_at
-        timestamp completed_at
-    }
-
-    LEARNING_RESOURCE ||--o{ RESOURCE_SKILL_TAG : "tagged with"
-    LEARNING_RESOURCE ||--o{ LEARNING_RECOMMENDATION : "recommended in"
-    LEARNING_RESOURCE ||--o{ USER_SAVED_RESOURCE : "saved as"
+    USER ||--|| PROFILE : "maintains"
 ```
 
 ---
@@ -123,36 +98,38 @@ erDiagram
 ## 💻 Lingkup Frontend
 
 ### Rute Halaman
-- `src/app/(dashboard)/learning/page.tsx` ➔ Halaman rekomendasi materi belajar & saved list.
+- `src/app/(dashboard)/profile/page.tsx` ➔ Halaman tampilan & edit profil.
+- `src/app/(dashboard)/settings/page.tsx` ➔ Halaman pengaturan akun, privasi, dan danger zone.
 
 ### Komponen UI
-- `LearningRecommendationList.tsx` ➔ Grid daftar kartu materi terkurasi.
-- `ResourceCard.tsx` ➔ Kartu materi lengkap dengan badge platform, estimasi durasi, dan kutipan AI reasoning.
-- `SavedResourceList.tsx` ➔ Daftar materi tersimpan dengan tombol aksi tandai selesai.
-- `ResourceFilterChips.tsx` ➔ Filter cepat berdasarkan tipe materi (Video, Kursus, Artikel).
+- `ProfileEditForm.tsx` ➔ Formulir data identitas diri dan pendidikan.
+- `AvatarUploader.tsx` ➔ Komponen upload foto dengan drag & drop dan pratinjau.
+- `SecuritySettings.tsx` ➔ Form ubah password dan email.
+- `PrivacySettings.tsx` ➔ Saklar pengaturan visibilitas portofolio publik.
+- `DeleteAccountModal.tsx` ➔ Dialog peringatan konfirmasi hapus akun dua langkah.
 
 ---
 
 ## ✅ Kriteria Penerimaan (Acceptance Criteria)
 
-- [ ] Pipeline hybrid sukses menyaring materi dari database dan merankingnya via LLM.
-- [ ] Reasoning AI informatif dan ditampilkan jelas pada masing-masing kartu rekomendasi.
-- [ ] Pengguna dapat menyimpan materi ke daftar bookmark pribadi.
-- [ ] Menandai materi selesai secara otomatis memicu pembaruan kemajuan skill terkait.
-- [ ] Penanganan graceful jika kandidat materi < 3 (menampilkan materi yang tersedia tanpa error).
+- [ ] Pengguna dapat mengedit profil biodata dan foto avatar terunggah dengan benar.
+- [ ] Validasi penggantian password mewajibkan verifikasi password lama yang sesuai.
+- [ ] Pengaturan privasi portofolio efektif mengatur akses publik URL `/u/:slug`.
+- [ ] Penghapusan akun menerapkan sistem soft delete dengan konfirmasi pengamanan ganda.
+- [ ] Feedback notifikasi sukses atau error ditampilkan secara interaktif.
 
 ---
 
 ## 🛠️ Panduan Pengembangan
 
 ```bash
-# 1. Pastikan API key LLM terkonfigurasi di .env.local
-# 2. Jalankan development server
+# 1. Jalankan development server
 npm run dev
 
-# 3. Kunjungi modul pembelajaran:
-# http://localhost:3000/learning
+# 2. Buka pengaturan akun & profil:
+# http://localhost:3000/profile
+# http://localhost:3000/settings
 
-# 4. Jalankan validasi linting
+# 3. Lakukan validasi linting
 npm run lint
 ```

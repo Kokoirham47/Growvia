@@ -1,33 +1,39 @@
 'use client'
 
 import React, { useState } from 'react'
-import { X, Briefcase, Check, Building2, TrendingUp, Sparkles, ChevronRight } from 'lucide-react'
-import { CAREER_TARGETS } from './careerData'
-import { CareerTargetProfile } from '@/types/career'
+
+import { X, Briefcase, Check } from 'lucide-react'
+
+export interface CareerRoleOption {
+  id: string
+  name: string
+  slug: string
+  industry?: string
+  description?: string
+}
 
 interface ChangeTargetModalProps {
   isOpen: boolean
   currentCareerId: string
+  roles?: CareerRoleOption[]
   onClose: () => void
-  onSelectCareer: (career: CareerTargetProfile) => void
+  onSelectRole: (roleId: string) => void
 }
 
 export default function ChangeTargetModal({
   isOpen,
   currentCareerId,
+  roles = [],
   onClose,
-  onSelectCareer
+  onSelectRole
 }: ChangeTargetModalProps) {
   const [selectedId, setSelectedId] = useState(currentCareerId)
 
   if (!isOpen) return null
 
-  const careersList = Object.values(CAREER_TARGETS)
-
   const handleApply = () => {
-    const selected = CAREER_TARGETS[selectedId]
-    if (selected) {
-      onSelectCareer(selected)
+    if (selectedId) {
+      onSelectRole(selectedId)
       onClose()
     }
   }
@@ -46,7 +52,7 @@ export default function ChangeTargetModal({
                 Pilih Target Karier Impian
               </h3>
               <p className='text-xs text-slate-500 dark:text-slate-400'>
-                Sesuaikan analisis skill gap dengan posisi target yang ingin kamu tuju
+                Sesuaikan analisis skill gap dengan posisi target dari data Supabase
               </p>
             </div>
           </div>
@@ -61,8 +67,9 @@ export default function ChangeTargetModal({
 
         {/* Modal Body */}
         <div className='p-5 overflow-y-auto flex flex-col gap-3 custom-scrollbar'>
-          {careersList.map(item => {
+          {roles.map(item => {
             const isSelected = item.id === selectedId
+
             return (
               <div
                 key={item.id}
@@ -87,31 +94,18 @@ export default function ChangeTargetModal({
                   <div className='flex flex-col'>
                     <div className='flex items-center gap-2'>
                       <span className='font-bold text-sm text-slate-900 dark:text-white'>
-                        {item.title}
+                        {item.name}
                       </span>
-                      <span className='text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'>
-                        {item.companyType}
-                      </span>
+                      {item.industry && (
+                        <span className='text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'>
+                          {item.industry}
+                        </span>
+                      )}
                     </div>
-                    <span className='text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-1'>
-                      {item.summary}
-                    </span>
-                    <span className='text-[11px] text-slate-400 dark:text-slate-500 mt-1 font-medium'>
-                      {item.verifiedJobsCount}+ lowongan terverifikasi • {item.salaryRange}
+                    <span className='text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-2'>
+                      {item.description}
                     </span>
                   </div>
-                </div>
-
-                <div className='flex flex-col items-end shrink-0'>
-                  <span className='text-base font-bold text-slate-900 dark:text-white'>
-                    {item.readinessScore}%
-                  </span>
-                  <span
-                    style={{ color: item.readinessBadgeColor }}
-                    className='text-[10px] font-semibold uppercase tracking-wider'
-                  >
-                    {item.readinessStatus}
-                  </span>
                 </div>
               </div>
             )

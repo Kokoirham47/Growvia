@@ -42,3 +42,8 @@ src/assets/iconify-icons/generated-icons.css
 
 # temporary scratch scripts
 /scratch
+
+# uploads
+/public/uploads/*
+!/public/uploads/.gitkeep
+
