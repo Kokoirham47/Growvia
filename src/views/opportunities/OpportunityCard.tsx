@@ -23,61 +23,6 @@ interface OpportunityCardProps {
   isSaving?: boolean
 }
 
-// Helper untuk styling perusahaan (Warna Monogram & Initial)
-function getCompanyStyle(company: string) {
-  const comp = company.toLowerCase()
-
-  if (comp.includes('goto') || comp.includes('tokopedia') || comp.includes('gojek')) {
-    return { bg: 'bg-[#00AA13]/10 text-[#00AA13] border-[#00AA13]/30', initial: 'GT' }
-  }
-
-  if (comp.includes('traveloka')) {
-    return { bg: 'bg-[#0194F3]/10 text-[#0194F3] border-[#0194F3]/30', initial: 'TV' }
-  }
-
-  if (comp.includes('bca')) {
-    return { bg: 'bg-[#0060AF]/10 text-[#0060AF] border-[#0060AF]/30', initial: 'BCA' }
-  }
-
-  if (comp.includes('shopee')) {
-    return { bg: 'bg-[#EE4D2D]/10 text-[#EE4D2D] border-[#EE4D2D]/30', initial: 'SH' }
-  }
-
-  if (comp.includes('dicoding')) {
-    return { bg: 'bg-slate-900/10 dark:bg-slate-700 text-slate-800 dark:text-white border-slate-300 dark:border-slate-600', initial: 'DC' }
-  }
-
-  if (comp.includes('astra')) {
-    return { bg: 'bg-[#E52320]/10 text-[#E52320] border-[#E52320]/30', initial: 'AS' }
-  }
-
-  if (comp.includes('blibli')) {
-    return { bg: 'bg-[#0095DA]/10 text-[#0095DA] border-[#0095DA]/30', initial: 'BL' }
-  }
-
-  if (comp.includes('bangkit')) {
-    return { bg: 'bg-amber-500/10 text-amber-600 border-amber-500/30', initial: 'BK' }
-  }
-
-  if (comp.includes('kredivo')) {
-    return { bg: 'bg-orange-500/10 text-orange-600 border-orange-500/30', initial: 'KR' }
-  }
-
-  if (comp.includes('telkom')) {
-    return { bg: 'bg-rose-500/10 text-rose-600 border-rose-500/30', initial: 'TL' }
-  }
-
-  // Fallback styling
-  const initials = company
-    .split(' ')
-    .map(w => w[0])
-    .join('')
-    .substring(0, 2)
-    .toUpperCase()
-
-  return { bg: 'bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800', initial: initials || 'CO' }
-}
-
 // Label & warna jenis peluang
 function getTypeInfo(type: OpportunityType) {
   switch (type) {
@@ -151,7 +96,6 @@ export default function OpportunityCard({
   onApply,
   isSaving = false
 }: OpportunityCardProps) {
-  const companyStyle = getCompanyStyle(item.company)
   const typeInfo = getTypeInfo(item.type)
   const deadlineText = formatDeadline(item.deadline)
 
@@ -175,27 +119,18 @@ export default function OpportunityCard({
     <div className='flex flex-col justify-between bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-5 shadow-2xs hover:shadow-md hover:border-blue-300 dark:hover:border-blue-800/80 transition-all group'>
       {/* Upper Content */}
       <div className='flex flex-col gap-4'>
-        {/* Header: Company Monogram + Type Badge + Save Bookmark Button */}
+        {/* Header: Company Name & Role Title + Save Bookmark Button */}
         <div className='flex items-start justify-between gap-3'>
-          <div className='flex items-center gap-3'>
-            {/* Company Monogram Avatar */}
-            <div
-              className={`w-12 h-12 rounded-xl flex items-center justify-center font-extrabold text-sm border shadow-2xs shrink-0 ${companyStyle.bg}`}
+          <div className='flex flex-col min-w-0 flex-1'>
+            <span className='text-xs font-semibold text-slate-500 dark:text-slate-400 truncate'>
+              {item.company}
+            </span>
+            <h3
+              onClick={() => onSelect(item)}
+              className='text-base sm:text-lg font-bold text-slate-900 dark:text-white leading-snug group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-1 cursor-pointer'
             >
-              {companyStyle.initial}
-            </div>
-
-            <div className='flex flex-col min-w-0'>
-              <span className='text-xs font-semibold text-slate-500 dark:text-slate-400 truncate'>
-                {item.company}
-              </span>
-              <h3
-                onClick={() => onSelect(item)}
-                className='text-base sm:text-lg font-bold text-slate-900 dark:text-white leading-snug group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-1 cursor-pointer'
-              >
-                {item.title}
-              </h3>
-            </div>
+              {item.title}
+            </h3>
           </div>
 
           {/* Bookmark Button */}

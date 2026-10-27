@@ -7,9 +7,7 @@ import {
   X,
   MapPin,
   ArrowUpDown,
-  Flame,
-  Bookmark,
-  Globe
+  Compass
 } from 'lucide-react'
 
 import type { OpportunityType, OpportunitiesFilterState } from '@/types/opportunities'
@@ -18,7 +16,7 @@ interface OpportunitiesFilterBarProps {
   filterState: OpportunitiesFilterState
   onSearchChange: (search: string) => void
   onTypeChange: (type: OpportunityType | 'all') => void
-  onQuickFilterChange: (quick: 'all' | 'high_match' | 'saved' | 'remote') => void
+  onQuickFilterChange: (quick: 'all' | 'career_target') => void
   onLocationChange: (loc: string) => void
   onSortChange: (sort: 'match_desc' | 'deadline_asc' | 'newest') => void
   onResetFilters: () => void
@@ -29,8 +27,7 @@ interface OpportunitiesFilterBarProps {
     part_time: number
     freelance: number
     competition: number
-    highMatch: number
-    saved: number
+    careerTarget: number
   }
 }
 
@@ -104,13 +101,13 @@ export default function OpportunitiesFilterBar({
           </div>
         </div>
 
-        {/* Sort Dropdown */}
-        <div className='relative shrink-0 sm:w-52'>
+        {/* Sort Dropdown - Lebar disesuaikan agar teks 'Kecocokan Tertinggi' tidak terpotong */}
+        <div className='relative shrink-0 w-full sm:w-auto sm:min-w-[215px]'>
           <ArrowUpDown className='w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none' />
           <select
             value={filterState.sort}
             onChange={e => onSortChange(e.target.value as any)}
-            className='w-full appearance-none pl-9 pr-8 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all cursor-pointer'
+            className='w-full appearance-none pl-9 pr-8 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all cursor-pointer whitespace-nowrap'
           >
             <option value='match_desc'>Kecocokan Tertinggi</option>
             <option value='deadline_asc'>Tenggat Terdekat</option>
@@ -130,65 +127,26 @@ export default function OpportunitiesFilterBar({
             type='button'
             onClick={() =>
               onQuickFilterChange(
-                filterState.quickFilter === 'high_match' ? 'all' : 'high_match'
+                filterState.quickFilter === 'career_target' ? 'all' : 'career_target'
               )
             }
             className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-              filterState.quickFilter === 'high_match'
-                ? 'bg-emerald-600 text-white shadow-xs'
-                : 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/40'
-            }`}
-          >
-            <Flame className='w-3.5 h-3.5 fill-current' />
-            <span>Match Tinggi ≥70%</span>
-            <span
-              className={`text-[10px] px-1.5 py-0.2 rounded-full ${
-                filterState.quickFilter === 'high_match'
-                  ? 'bg-emerald-500 text-white'
-                  : 'bg-emerald-200/70 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200'
-              }`}
-            >
-              {counts.highMatch}
-            </span>
-          </button>
-
-          <button
-            type='button'
-            onClick={() =>
-              onQuickFilterChange(filterState.quickFilter === 'saved' ? 'all' : 'saved')
-            }
-            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-              filterState.quickFilter === 'saved'
-                ? 'bg-amber-500 text-white shadow-xs'
-                : 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60 hover:bg-amber-100 dark:hover:bg-amber-900/40'
-            }`}
-          >
-            <Bookmark className='w-3.5 h-3.5 fill-current' />
-            <span>Tersimpan</span>
-            <span
-              className={`text-[10px] px-1.5 py-0.2 rounded-full ${
-                filterState.quickFilter === 'saved'
-                  ? 'bg-amber-400 text-white'
-                  : 'bg-amber-200/70 dark:bg-amber-900 text-amber-800 dark:text-amber-200'
-              }`}
-            >
-              {counts.saved}
-            </span>
-          </button>
-
-          <button
-            type='button'
-            onClick={() =>
-              onQuickFilterChange(filterState.quickFilter === 'remote' ? 'all' : 'remote')
-            }
-            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-              filterState.quickFilter === 'remote'
+              filterState.quickFilter === 'career_target'
                 ? 'bg-blue-600 text-white shadow-xs'
                 : 'bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/60 hover:bg-blue-100 dark:hover:bg-blue-900/40'
             }`}
           >
-            <Globe className='w-3.5 h-3.5' />
-            <span>Remote Saja</span>
+            <Compass className='w-3.5 h-3.5' />
+            <span>Sesuai Arah Karier</span>
+            <span
+              className={`text-[10px] px-1.5 py-0.2 rounded-full ${
+                filterState.quickFilter === 'career_target'
+                  ? 'bg-blue-500 text-white'
+                  : 'bg-blue-200/70 dark:bg-blue-900 text-blue-800 dark:text-blue-200'
+              }`}
+            >
+              {counts.careerTarget}
+            </span>
           </button>
 
           {isFiltered && (

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react'
 
-import { CheckCircle2, AlertTriangle } from 'lucide-react'
+import { CheckCircle2, AlertTriangle, ChevronLeft, ChevronRight } from 'lucide-react'
 
 import type {
   OpportunityItem,
@@ -14,7 +14,10 @@ import OpportunitiesHeader from './OpportunitiesHeader'
 import OpportunitiesFilterBar from './OpportunitiesFilterBar'
 import OpportunityCard from './OpportunityCard'
 import OpportunityDetailModal from './OpportunityDetailModal'
+import SavedOpportunitiesModal from './SavedOpportunitiesModal'
 import OpportunitiesEmptyState from './OpportunitiesEmptyState'
+
+const ITEMS_PER_PAGE = 6
 
 export default function OpportunitiesView() {
   const [opportunities, setOpportunities] = useState<OpportunityItem[]>([])
@@ -22,18 +25,8 @@ export default function OpportunitiesView() {
   const [error, setError] = useState<string | null>(null)
   const [toastMessage, setToastMessage] = useState<string | null>(null)
 
-  // Metadata profil pengguna & matching
-  const [meta, setMeta] = useState<{
-    total: number
-    userSkillsCount: number
-    averageMatchScore: number
-    userTargetRole: string | null
-  }>({
-    total: 0,
-    userSkillsCount: 0,
-    averageMatchScore: 0,
-    userTargetRole: null
-  })
+  // State pagination
+  const [currentPage, setCurrentPage] = useState<number>(1)
 
   // Filter & Urutan
   const [filters, setFilters] = useState<OpportunitiesFilterState>({
@@ -44,9 +37,10 @@ export default function OpportunitiesView() {
     sort: 'match_desc'
   })
 
-  // State modal detail
+  // State modal detail & modal tersimpan
   const [selectedOpportunity, setSelectedOpportunity] = useState<OpportunityItem | null>(null)
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false)
+  const [isSavedModalOpen, setIsSavedModalOpen] = useState<boolean>(false)
 
   // State loading bookmark per item
   const [savingIds, setSavingIds] = useState<Set<string>>(new Set())
@@ -86,10 +80,6 @@ export default function OpportunitiesView() {
       }
 
       setOpportunities(data.data || [])
-
-      if (data.meta) {
-        setMeta(data.meta)
-      }
     } catch (err: any) {
       console.error('Error fetching opportunities:', err)
       setError(err.message || 'Terjadi kesalahan pada sistem saat memuat data')
@@ -101,6 +91,11 @@ export default function OpportunitiesView() {
   useEffect(() => {
     fetchOpportunities()
   }, [fetchOpportunities])
+
+  // Reset pagination ke halaman 1 saat filter atau pencarian berubah
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [filters.search, filters.type, filters.quickFilter, filters.location, filters.sort])
 
   // Filter di sisi klien untuk search & quick filters agar responsif instan
   const filteredOpportunities = useMemo(() => {
@@ -118,20 +113,11 @@ export default function OpportunitiesView() {
         }
       }
 
-      // 2. Quick filters
-      if (filters.quickFilter === 'high_match' && opp.matchScore < 70) {
-        return false
-      }
-
-      if (filters.quickFilter === 'saved' && !opp.isSaved) {
-        return false
-      }
-
-      if (
-        filters.quickFilter === 'remote' &&
-        !opp.location?.toLowerCase().includes('remote')
-      ) {
-        return false
+      // 2. Quick filters: Sesuai arah karier
+      if (filters.quickFilter === 'career_target') {
+        if (!opp.isCareerTargetMatch) {
+          return false
+        }
       }
 
       return true
@@ -147,10 +133,24 @@ export default function OpportunitiesView() {
       part_time: opportunities.filter(o => o.type === 'part_time').length,
       freelance: opportunities.filter(o => o.type === 'freelance').length,
       competition: opportunities.filter(o => o.type === 'competition').length,
-      highMatch: opportunities.filter(o => o.matchScore >= 70).length,
+      careerTarget: opportunities.filter(o => o.isCareerTargetMatch).length,
       saved: opportunities.filter(o => o.isSaved).length
     }
   }, [opportunities])
+
+  // Daftar lowongan yang tersimpan
+  const savedOpportunities = useMemo(() => {
+    return opportunities.filter(o => o.isSaved)
+  }, [opportunities])
+
+  // Data terpaginasi (maksimal 6 card per halaman)
+  const totalPages = Math.max(1, Math.ceil(filteredOpportunities.length / ITEMS_PER_PAGE))
+
+  const paginatedOpportunities = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE
+
+    return filteredOpportunities.slice(startIndex, startIndex + ITEMS_PER_PAGE)
+  }, [filteredOpportunities, currentPage])
 
   // Handler toggle save bookmark secara optimistik
   const handleToggleSave = async (item: OpportunityItem) => {
@@ -255,16 +255,8 @@ return next
 
       {/* 1. Header Section */}
       <OpportunitiesHeader
-        userTargetRole={meta.userTargetRole}
-        averageMatchScore={meta.averageMatchScore}
-        userSkillsCount={meta.userSkillsCount}
-        totalOpportunities={meta.total}
-        onQuickFilterHighMatch={() =>
-          setFilters(prev => ({
-            ...prev,
-            quickFilter: prev.quickFilter === 'high_match' ? 'all' : 'high_match'
-          }))
-        }
+        savedOpportunitiesCount={counts.saved}
+        onOpenSavedModal={() => setIsSavedModalOpen(true)}
       />
 
       {/* 2. Filter & Controls Bar */}
@@ -304,12 +296,9 @@ return next
               key={i}
               className='p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 space-y-4 animate-pulse'
             >
-              <div className='flex items-center gap-3'>
-                <div className='w-12 h-12 rounded-xl bg-slate-200 dark:bg-slate-800' />
-                <div className='space-y-1.5 flex-1'>
-                  <div className='h-3 bg-slate-200 dark:bg-slate-800 rounded w-1/3' />
-                  <div className='h-4 bg-slate-200 dark:bg-slate-800 rounded w-4/5' />
-                </div>
+              <div className='space-y-2 flex-1'>
+                <div className='h-3 bg-slate-200 dark:bg-slate-800 rounded w-1/4' />
+                <div className='h-4 bg-slate-200 dark:bg-slate-800 rounded w-3/4' />
               </div>
               <div className='h-3 bg-slate-100 dark:bg-slate-800/60 rounded w-full' />
               <div className='h-3 bg-slate-100 dark:bg-slate-800/60 rounded w-2/3' />
@@ -329,7 +318,7 @@ return next
         />
       ) : (
         <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5'>
-          {filteredOpportunities.map(opp => (
+          {paginatedOpportunities.map(opp => (
             <OpportunityCard
               key={opp.id}
               item={opp}
@@ -342,7 +331,60 @@ return next
         </div>
       )}
 
-      {/* 5. Detail Modal */}
+      {/* 5. Pagination Controls (Maksimal 6 card per page) */}
+      {!isLoading && filteredOpportunities.length > 0 && totalPages > 1 && (
+        <div className='flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-slate-200/80 dark:border-slate-800'>
+          <p className='text-xs sm:text-sm text-slate-500 dark:text-slate-400'>
+            Menampilkan <span className='font-semibold text-slate-700 dark:text-slate-200'>{(currentPage - 1) * ITEMS_PER_PAGE + 1}</span> -{' '}
+            <span className='font-semibold text-slate-700 dark:text-slate-200'>
+              {Math.min(currentPage * ITEMS_PER_PAGE, filteredOpportunities.length)}
+            </span>{' '}
+            dari{' '}
+            <span className='font-semibold text-slate-700 dark:text-slate-200'>{filteredOpportunities.length}</span> peluang
+          </p>
+
+          <div className='flex items-center gap-1.5'>
+            <button
+              type='button'
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              className='inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer'
+            >
+              <ChevronLeft className='w-4 h-4' />
+              <span>Sebelumnya</span>
+            </button>
+
+            <div className='flex items-center gap-1'>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(pageNum => (
+                <button
+                  key={pageNum}
+                  type='button'
+                  onClick={() => setCurrentPage(pageNum)}
+                  className={`w-8 h-8 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+                    currentPage === pageNum
+                      ? 'bg-blue-600 text-white shadow-xs'
+                      : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+                  }`}
+                >
+                  {pageNum}
+                </button>
+              ))}
+            </div>
+
+            <button
+              type='button'
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+              className='inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer'
+            >
+              <span>Selanjutnya</span>
+              <ChevronRight className='w-4 h-4' />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* 6. Detail Modal */}
       <OpportunityDetailModal
         item={selectedOpportunity}
         isOpen={isModalOpen}
@@ -350,6 +392,16 @@ return next
         onToggleSave={handleToggleSave}
         onApply={handleApply}
         isSaving={selectedOpportunity ? savingIds.has(selectedOpportunity.id) : false}
+      />
+
+      {/* 7. Saved Opportunities Modal */}
+      <SavedOpportunitiesModal
+        isOpen={isSavedModalOpen}
+        onClose={() => setIsSavedModalOpen(false)}
+        savedItems={savedOpportunities}
+        onSelect={handleOpenDetail}
+        onToggleSave={handleToggleSave}
+        onApply={handleApply}
       />
     </div>
   )

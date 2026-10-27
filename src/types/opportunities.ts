@@ -27,6 +27,7 @@ export interface OpportunityItem {
   isActive: boolean
   matchScore: number
   isSaved: boolean
+  isCareerTargetMatch?: boolean
   matchedSkills: OpportunitySkillItem[]
   missingSkills: OpportunitySkillItem[]
   allSkills: OpportunitySkillItem[]
@@ -47,7 +48,7 @@ export interface OpportunitiesResponse {
 export interface OpportunitiesFilterState {
   search: string
   type: OpportunityType | 'all'
-  quickFilter: 'all' | 'high_match' | 'saved' | 'remote'
+  quickFilter: 'all' | 'career_target'
   location: string
   sort: 'match_desc' | 'deadline_asc' | 'newest'
 }

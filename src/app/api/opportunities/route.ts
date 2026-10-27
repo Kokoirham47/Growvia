@@ -30,18 +30,35 @@ export async function GET(request: NextRequest) {
         })
       : []
 
-    const userSkillIds = new Set(userSkills.map(us => us.skillId))
+    const userSkillMap = new Map(userSkills.map(us => [us.skillId, us]))
 
-    // 2. Dapatkan target peran karier user untuk konteks header
+    // 2. Dapatkan target peran karier user untuk konteks header & relevansi arah karier
     const userTarget = userId
       ? await prisma.userCareerTarget.findFirst({
           where: { userId, isActive: true },
-          include: { careerRole: true }
+          include: {
+            careerRole: {
+              include: {
+                roleSkills: true
+              }
+            }
+          }
         })
       : null
 
     const userTargetRole =
       userTarget?.careerRole?.name || userTarget?.customCareerName || null
+
+    const targetRoleSkillIds = new Set(
+      userTarget?.careerRole?.roleSkills?.map(rs => rs.skillId) || []
+    )
+
+    const roleKeywords = userTargetRole
+      ? userTargetRole
+          .toLowerCase()
+          .split(/[\s,/-]+/)
+          .filter(w => w.length >= 3 && !['and', 'the', 'for'].includes(w))
+      : []
 
     // 3. Dapatkan daftar lowongan yang telah di-bookmark user
     const savedOpportunities = userId
@@ -60,6 +77,7 @@ export async function GET(request: NextRequest) {
     const minMatchParam = searchParams.get('minMatch')
     const minMatch = minMatchParam ? parseInt(minMatchParam, 10) : 0
     const savedOnly = searchParams.get('savedOnly') === 'true'
+    const careerTargetOnly = searchParams.get('careerTargetOnly') === 'true'
     const sortParam = searchParams.get('sort') || 'match_desc'
 
     // 5. Query active opportunities from DB
@@ -80,7 +98,7 @@ export async function GET(request: NextRequest) {
       orderBy: { createdAt: 'desc' }
     })
 
-    // 6. Hitung Skill Match Score secara deterministik
+    // 6. Hitung Skill Match Score secara realistis & cek keselarasan arah karier
     const mappedOpportunities: OpportunityItem[] = dbOpportunities.map(opp => {
       let totalWeight = 0
       let matchedWeight = 0
@@ -94,7 +112,8 @@ export async function GET(request: NextRequest) {
 
         totalWeight += weight
 
-        const hasSkill = userSkillIds.has(tag.skillId)
+        const userSkill = userSkillMap.get(tag.skillId)
+        const hasSkill = Boolean(userSkill)
 
         const skillItem: OpportunitySkillItem = {
           id: tag.skill.id,
@@ -105,20 +124,54 @@ export async function GET(request: NextRequest) {
 
         allSkills.push(skillItem)
 
-        if (hasSkill) {
-          matchedWeight += weight
+        if (hasSkill && userSkill) {
+          // Perhitungkan tingkat penguasaan skill (score 0-100)
+          const mastery = Math.max(0.45, Math.min(1.0, (userSkill.score || 50) / 100))
+
+          matchedWeight += weight * mastery
           matchedSkills.push(skillItem)
         } else {
           missingSkills.push(skillItem)
         }
       }
 
-      const matchScore =
+      // Hitung skor dasar kecocokan
+      let rawScore =
         totalWeight === 0
-          ? 100
-          : Math.min(100, Math.round((matchedWeight / totalWeight) * 100))
+          ? 50
+          : Math.round((matchedWeight / totalWeight) * 100)
 
+      // Kalibrasi realistis: portofolio skill yang baru sedikit tidak langsung mendapat 100%
+      if (userSkills.length <= 2) {
+        rawScore = Math.min(rawScore, 68)
+      } else if (userSkills.length <= 4) {
+        rawScore = Math.min(rawScore, 82)
+      } else if (missingSkills.length > 0) {
+        rawScore = Math.min(rawScore, 88)
+      } else {
+        rawScore = Math.min(rawScore, 96)
+      }
+
+      const matchScore = Math.max(15, rawScore)
       const isSaved = savedOppIds.has(opp.id)
+
+      // Cek keselarasan dengan target peran karier
+      const titleLower = opp.title.toLowerCase()
+      const descLower = (opp.description || '').toLowerCase()
+
+      const hasKeywordMatch =
+        roleKeywords.length > 0 &&
+        roleKeywords.some(kw => titleLower.includes(kw) || descLower.includes(kw))
+
+      const matchingTargetSkillsCount = opp.skillTags.filter(t =>
+        targetRoleSkillIds.has(t.skillId)
+      ).length
+
+      const hasRoleSkillMatch =
+        targetRoleSkillIds.size > 0 &&
+        matchingTargetSkillsCount >= Math.min(2, Math.max(1, opp.skillTags.length))
+
+      const isCareerTargetMatch = hasKeywordMatch || hasRoleSkillMatch
 
       return {
         id: opp.id,
@@ -133,16 +186,22 @@ export async function GET(request: NextRequest) {
         isActive: opp.isActive,
         matchScore,
         isSaved,
+        isCareerTargetMatch,
         matchedSkills,
         missingSkills,
         allSkills
       }
     })
 
-    // 7. Filter berdasarkan search, lokasi, minMatch, dan savedOnly
+    // 7. Filter berdasarkan search, lokasi, minMatch, savedOnly, dan careerTargetOnly
     let filtered = mappedOpportunities.filter(item => {
       // Saved filter
       if (savedOnly && !item.isSaved) {
+        return false
+      }
+
+      // Career target filter
+      if (careerTargetOnly && !item.isCareerTargetMatch) {
         return false
       }
 
