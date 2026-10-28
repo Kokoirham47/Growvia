@@ -1,4 +1,4 @@
-import { SkillItem, SkillCategorySummary, SkillMapNode, SkillMapEdge, EvidenceDetail } from '@/types/skills'
+import type { SkillItem, SkillCategorySummary, SkillMapNode, SkillMapEdge, EvidenceDetail } from '@/types/skills'
 
 export const INITIAL_SKILLS: SkillItem[] = [
   {
@@ -405,7 +405,7 @@ export const EVIDENCE_DETAILS: EvidenceDetail[] = [
     period: 'Jun 2024 - Agu 2024',
     type: 'Magang',
     impactNote: 'Mengkoordinir tim lintas divisi (2 engineer, 1 QA) dalam perilisan fitur onboarding instan.',
-    proofUrl: 'https://growvia.app/certificate-fintech-nabila.pdf',
+    proofUrl: 'https://growvia.app/certificate-fintech.pdf',
     aiExtracted: true
   },
   {
@@ -418,7 +418,7 @@ export const EVIDENCE_DETAILS: EvidenceDetail[] = [
     period: 'Jun 2024 - Agu 2024',
     type: 'Magang',
     impactNote: 'Meredesain funnel registrasi e-wallet dan menghasilkan peningkatan conversion rate pengguna sebesar 18.4%.',
-    proofUrl: 'https://figma.com/@nabila-fintech-case',
+    proofUrl: 'https://figma.com/@portfolio-fintech-case',
     aiExtracted: true
   },
   {
@@ -431,7 +431,7 @@ export const EVIDENCE_DETAILS: EvidenceDetail[] = [
     period: 'Sep 2024 - Sekarang',
     type: 'Freelance',
     impactNote: 'Membangun design system lengkap 80+ komponen dengan token warna dan tipografi multi-platform.',
-    proofUrl: 'https://figma.com/@nabila-edusmart',
+    proofUrl: 'https://figma.com/@portfolio-edusmart',
     aiExtracted: true
   },
   {
@@ -457,7 +457,7 @@ export const EVIDENCE_DETAILS: EvidenceDetail[] = [
     period: 'Feb 2024 - Agu 2024',
     type: 'Proyek',
     impactNote: 'Memimpin proyek inovasi sistem pertanian pintar IoT yang lolos pendanaan nasional dan seleksi PIMNAS 37.',
-    proofUrl: 'https://simbelmawa.kemdikbud.go.id/pkm-nabila',
+    proofUrl: 'https://simbelmawa.kemdikbud.go.id/pkm-growvia',
     aiExtracted: true
   }
 ]

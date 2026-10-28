@@ -1,5 +1,6 @@
-import { NextResponse } from 'next/server'
+
 import { cookies } from 'next/headers'
+
 import { prisma } from '@/libs/prisma'
 import { AUTH_COOKIE_NAME, verifyJwtToken } from '@/server/utils/auth'
 import { apiSuccess, apiError } from '@/server/utils/response'
@@ -12,20 +13,16 @@ export async function GET(req: Request) {
     // Fallback: periksa Authorization header
     if (!token) {
       const authHeader = req.headers.get('authorization')
+
       if (authHeader?.startsWith('Bearer ')) {
         token = authHeader.substring(7)
       }
     }
 
     if (!token) {
-      // In development / demo mode, fallback to active user (preferring Nabila Saftri)
+      // In development / demo mode, fallback to active user
       let demoUser = await prisma.user.findFirst({
-        where: {
-          OR: [
-            { name: { contains: 'Nabila', mode: 'insensitive' } },
-            { email: { contains: 'nabila', mode: 'insensitive' } }
-          ]
-        },
+        where: { email: 'demo@growvia.id' },
         include: { profile: true }
       })
 
@@ -56,6 +53,7 @@ export async function GET(req: Request) {
     }
 
     const decoded = await verifyJwtToken(token)
+
     if (!decoded?.userId) {
       return apiError('Sesi tidak valid atau telah kedaluwarsa', 401)
     }
@@ -92,6 +90,7 @@ export async function GET(req: Request) {
     })
   } catch (error) {
     console.error('Error on /api/auth/me:', error)
-    return apiError('Gagal mengambil data sesi pengguna', 500, error)
+    
+return apiError('Gagal mengambil data sesi pengguna', 500, error)
   }
 }

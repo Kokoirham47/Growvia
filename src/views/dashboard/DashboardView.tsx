@@ -62,13 +62,11 @@ interface DashboardSummaryData {
       trend: string
       targetRole: string
       note: string
-      sparkline?: number[]
     }
     totalSkills: {
       count: number
       hardSkillsCount: number
       softSkillsCount: number
-      sparkline?: number[]
     }
     skillGaps: {
       count: number
@@ -79,7 +77,6 @@ interface DashboardSummaryData {
       completeness: number
       status: string
       previewUrl: string
-      sparkline?: number[]
     }
   }
   metodologi: {
@@ -157,43 +154,6 @@ interface DashboardSummaryData {
   }>
 }
 
-/**
- * Mini bar sparkline matching the reference design:
- * Rounded vertical pill bars with 1 highlighted vibrant accent bar.
- */
-function MiniBarSparkline({
-  values,
-  accentColor = '#2563EB',
-  mutedColor = 'rgba(37, 99, 235, 0.18)',
-  accentIndex = 3
-}: {
-  values: number[]
-  accentColor?: string
-  mutedColor?: string
-  accentIndex?: number
-}) {
-  const max = Math.max(...values, 1)
-
-  return (
-    <div className='flex items-end gap-1 h-7 py-0.5' aria-hidden='true'>
-      {values.map((v, i) => {
-        const isAccent = i === accentIndex
-        const heightPercent = Math.max(20, Math.round((v / max) * 100))
-
-        return (
-          <div
-            key={i}
-            className='w-1 rounded-full transition-all duration-300'
-            style={{
-              height: `${heightPercent}%`,
-              backgroundColor: isAccent ? accentColor : mutedColor
-            }}
-          />
-        )
-      })}
-    </div>
-  )
-}
 
 export default function DashboardView() {
   const [data, setData] = useState<DashboardSummaryData | null>(null)
@@ -363,31 +323,13 @@ export default function DashboardView() {
     )
   }
 
-  const userFirstName = data.user.name ? data.user.name.split(' ')[0] : 'Nabila'
+  const userFirstName = data.user.name ? data.user.name.split(' ')[0] : 'Pengguna'
 
-  // Sparklines for top stat cards
-  const readinessSparkline = data.statCards.careerReadiness.sparkline || [25, 38, 45, 52, 60, 50, 78, 65, 55, 70]
-  const skillsSparkline = data.statCards.totalSkills.sparkline || [4, 6, 8, 9, 11, 14, 12, 10, 13, 14]
-  const gapsSparkline = [5, 4, 4, 3, 3, 2, 2, 3, 2, 2]
-  const portfolioSparkline = data.statCards.publicPortfolio.sparkline || [35, 45, 58, 65, 75, 82, 92, 85, 80, 88]
-
-  // PRD Widget #2: Mini Skill Pattern Map Data (Directly explainable!)
+  // Skill Pattern Map Data from real database
   const patternMap = data.charts?.skillPatternMap || {
-    targetRole: data.targetCareer.roleName || 'Associate Product Designer',
-    targetSkills: [
-      { name: 'Figma Systems', shortName: 'Figma UI', score: 88, status: 'Tervalidasi', level: 'Mahir', isGap: false },
-      { name: 'Wireframing', shortName: 'Wireframe', score: 82, status: 'Tervalidasi', level: 'Mahir', isGap: false },
-      { name: 'Usability Testing', shortName: 'Usability', score: 76, status: 'Tervalidasi', level: 'Menengah', isGap: false },
-      { name: 'Product Discovery', shortName: 'Discovery', score: 70, status: 'Tervalidasi', level: 'Menengah', isGap: false },
-      { name: 'Design System Tokens', shortName: 'Tokens', score: 35, status: 'Gap Missing', level: 'Belum Dikuasai', isGap: true },
-      { name: 'Quantitative Analytics', shortName: 'Analytics', score: 25, status: 'Gap Develop', level: 'Perlu Ditingkatkan', isGap: true }
-    ],
-    competencyLevels: [
-      { label: 'Pemula', shortName: 'Beginner', count: 3, score: 21, note: '3 skill pemula' },
-      { label: 'Menengah', shortName: 'Intermed', count: 6, score: 43, note: '6 skill operasional' },
-      { label: 'Mahir', shortName: 'Advanced', count: 4, score: 29, note: '4 skill portofolio' },
-      { label: 'Ahli', shortName: 'Expert', count: 1, score: 7, note: '1 skill spesialisasi' }
-    ]
+    targetRole: data.targetCareer.roleName || 'Belum Memilih Target',
+    targetSkills: [],
+    competencyLevels: []
   }
 
   // Active bar chart config based on selected mode
@@ -409,48 +351,16 @@ export default function DashboardView() {
 
   const activeIndex = hoveredBarIndex !== null ? hoveredBarIndex : 0
 
-  // Skill Distribution data for Donut chart
-  const distributionData = data.charts?.skillDistribution || [
-    { name: 'Hard Skill Teknis', count: 8, percentage: 57, color: '#2563EB' },
-    { name: 'Soft Skill & Tim', count: 4, percentage: 29, color: '#10B981' },
-    { name: 'Tools & Frameworks', count: 2, percentage: 14, color: '#F59E0B' }
-  ]
+  // Skill Distribution data for Donut chart from real database
+  const distributionData = data.charts?.skillDistribution || []
 
   // SVG Donut calculation
   const donutRadius = 38
   const donutCircumference = 2 * Math.PI * donutRadius
   let accumulatedPercent = 0
 
-  // Opportunities list fallback
-  const opportunities = data.recentOpportunities || [
-    {
-      id: 'opp-1',
-      title: 'Junior UI/UX Designer',
-      company: 'GoTo Financial',
-      location: 'Jakarta (Hybrid)',
-      matchScore: 88,
-      type: 'Magang',
-      url: '/career'
-    },
-    {
-      id: 'opp-2',
-      title: 'Associate Product Designer',
-      company: 'Tokopedia',
-      location: 'Jakarta Selatan',
-      matchScore: 82,
-      type: 'Penuh Waktu',
-      url: '/career'
-    },
-    {
-      id: 'opp-3',
-      title: 'Product Design Intern',
-      company: 'Traveloka',
-      location: 'Tangerang / Remote',
-      matchScore: 80,
-      type: 'Magang',
-      url: '/career'
-    }
-  ]
+  // Opportunities list from real database
+  const opportunities = data.recentOpportunities || []
 
   return (
     <div
@@ -489,7 +399,7 @@ export default function DashboardView() {
         </div>
       </section>
 
-      {/* 2. ROW OF 4 STAT CARDS (PRD Widget #1, #5 with Modern Mini Bar Sparklines) */}
+      {/* 2. ROW OF 4 STAT CARDS (Actual Data from Database) */}
       <section className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4'>
         {/* Card 1: Skor Kesiapan Karier */}
         <div className='bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 p-5 shadow-xs hover:shadow-sm transition-all flex flex-col justify-between'>
@@ -505,25 +415,27 @@ export default function DashboardView() {
               <h2 className='text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight'>
                 {data.statCards.careerReadiness.percentage}%
               </h2>
-              <span className='text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 leading-tight flex items-center gap-0.5'>
+              <span className='text-[11px] font-semibold text-blue-600 dark:text-blue-400 leading-tight flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/50 border border-blue-200/60 dark:border-blue-900/60'>
                 <TrendingUp className='w-3 h-3' />
                 <span>{data.statCards.careerReadiness.trend}</span>
               </span>
             </div>
           </div>
 
-          <div className='flex items-end justify-between gap-2.5 mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800 min-h-[44px]'>
-            <div className='flex-1 min-w-0 flex flex-col justify-end'>
-              <span
-                className='text-xs text-slate-600 dark:text-slate-400 font-medium leading-snug line-clamp-2 block'
-                title={data.statCards.careerReadiness.targetRole}
-              >
-                {data.statCards.careerReadiness.targetRole}
-              </span>
-            </div>
-            <div className='shrink-0' title='Indikator tren kesiapan'>
-              <MiniBarSparkline values={readinessSparkline.slice(-5)} accentColor='#2563EB' mutedColor='rgba(37, 99, 235, 0.2)' accentIndex={3} />
-            </div>
+          <div className='mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800 min-h-[44px] flex items-center justify-between'>
+            <span
+              className='text-xs text-slate-600 dark:text-slate-400 font-medium leading-snug line-clamp-2 block flex-1 mr-2'
+              title={data.statCards.careerReadiness.targetRole}
+            >
+              {data.statCards.careerReadiness.targetRole}
+            </span>
+            <Link
+              href='/career'
+              className='text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline shrink-0 inline-flex items-center gap-0.5'
+            >
+              <span>Detail</span>
+              <ChevronRight className='w-3 h-3' />
+            </Link>
           </div>
         </div>
 
@@ -545,15 +457,17 @@ export default function DashboardView() {
             </div>
           </div>
 
-          <div className='flex items-end justify-between gap-2.5 mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800 min-h-[44px]'>
-            <div className='flex-1 min-w-0 flex flex-col justify-end'>
-              <span className='text-xs text-slate-600 dark:text-slate-400 font-medium leading-snug line-clamp-2 block'>
-                {data.statCards.totalSkills.hardSkillsCount} Hard Skill • {data.statCards.totalSkills.softSkillsCount} Soft Skill
-              </span>
-            </div>
-            <div className='shrink-0' title='Indikator tren keahlian'>
-              <MiniBarSparkline values={skillsSparkline.slice(-5)} accentColor='#10B981' mutedColor='rgba(16, 185, 129, 0.2)' accentIndex={3} />
-            </div>
+          <div className='mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800 min-h-[44px] flex items-center justify-between'>
+            <span className='text-xs text-slate-600 dark:text-slate-400 font-medium leading-snug line-clamp-2 block flex-1 mr-2'>
+              {data.statCards.totalSkills.hardSkillsCount} Hard Skill • {data.statCards.totalSkills.softSkillsCount} Soft Skill
+            </span>
+            <Link
+              href='/skills'
+              className='text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:underline shrink-0 inline-flex items-center gap-0.5'
+            >
+              <span>Kelola</span>
+              <ChevronRight className='w-3 h-3' />
+            </Link>
           </div>
         </div>
 
@@ -577,18 +491,20 @@ export default function DashboardView() {
             </div>
           </div>
 
-          <div className='flex items-end justify-between gap-2.5 mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800 min-h-[44px]'>
-            <div className='flex-1 min-w-0 flex flex-col justify-end'>
-              <span
-                className='text-xs text-slate-600 dark:text-slate-400 font-medium leading-snug line-clamp-2 block'
-                title={`Target: ${data.targetCareer.roleName}`}
-              >
-                Target: {data.targetCareer.roleName}
-              </span>
-            </div>
-            <div className='shrink-0' title='Indikator gap keahlian'>
-              <MiniBarSparkline values={gapsSparkline.slice(-5)} accentColor='#F59E0B' mutedColor='rgba(245, 158, 11, 0.2)' accentIndex={3} />
-            </div>
+          <div className='mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800 min-h-[44px] flex items-center justify-between'>
+            <span
+              className='text-xs text-slate-600 dark:text-slate-400 font-medium leading-snug line-clamp-2 block flex-1 mr-2'
+              title={`Target: ${data.statCards.skillGaps.targetRole}`}
+            >
+              Target: {data.statCards.skillGaps.targetRole}
+            </span>
+            <Link
+              href='/career'
+              className='text-xs font-semibold text-amber-600 dark:text-amber-400 hover:underline shrink-0 inline-flex items-center gap-0.5'
+            >
+              <span>Analisis</span>
+              <ChevronRight className='w-3 h-3' />
+            </Link>
           </div>
         </div>
 
@@ -596,7 +512,7 @@ export default function DashboardView() {
         <div className='bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 p-5 shadow-xs hover:shadow-sm transition-all flex flex-col justify-between'>
           <div>
             <div className='flex items-center justify-between'>
-              <span className='text-xs font-semibold text-slate-600 dark:text-slate-400'>Portofolio Publik</span>
+              <span className='text-xs font-semibold text-slate-600 dark:text-slate-400'>Kelengkapan Profil</span>
               <div className='w-7 h-7 rounded-xl bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center shadow-2xs'>
                 <FolderOpen className='w-4 h-4' />
               </div>
@@ -610,19 +526,17 @@ export default function DashboardView() {
             </div>
           </div>
 
-          <div className='flex items-end justify-between gap-2.5 mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800 min-h-[44px]'>
-            <div className='flex-1 min-w-0 flex flex-col justify-end'>
-              <Link
-                href={data.statCards.publicPortfolio.previewUrl}
-                className='inline-flex items-center gap-1 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline leading-snug'
-              >
-                <span>Preview Live</span>
-                <ExternalLink className='w-3 h-3' />
-              </Link>
-            </div>
-            <div className='shrink-0' title='Indikator kelengkapan portofolio'>
-              <MiniBarSparkline values={portfolioSparkline.slice(-5)} accentColor='#8B5CF6' mutedColor='rgba(139, 92, 246, 0.2)' accentIndex={3} />
-            </div>
+          <div className='mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800 min-h-[44px] flex items-center justify-between'>
+            <span className='text-xs text-slate-600 dark:text-slate-400 font-medium leading-snug line-clamp-2 block flex-1 mr-2'>
+              {data.statCards.publicPortfolio.status}
+            </span>
+            <Link
+              href={data.statCards.publicPortfolio.previewUrl}
+              className='text-xs font-semibold text-purple-600 dark:text-purple-400 hover:underline shrink-0 inline-flex items-center gap-1'
+            >
+              <span>Lihat</span>
+              <ExternalLink className='w-3 h-3' />
+            </Link>
           </div>
         </div>
       </section>
@@ -731,22 +645,22 @@ export default function DashboardView() {
         </div>
       </section>
 
-      {/* 4. PRD WIDGET #2: MINI SKILL PATTERN MAP (BAR CHART) & KATEGORI KEAHLIAN (DONUT CHART) */}
+      {/* 4. PETA KOMPETENSI (BAR CHART) & KATEGORI KEAHLIAN (DONUT CHART) */}
       <section className='grid grid-cols-1 lg:grid-cols-12 gap-6'>
-        {/* LEFT COLUMN (65%): Mini Skill Pattern Map Bar Chart */}
+        {/* LEFT COLUMN (65%): Skill Pattern Map Bar Chart */}
         <div className='lg:col-span-8 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 p-6 sm:p-7 shadow-xs flex flex-col justify-between'>
           <div>
             {/* Header with Title and Mode Toggle */}
             <div className='flex flex-col sm:flex-row sm:items-center justify-between gap-3'>
               <div>
                 <span className='text-[10px] font-bold text-slate-400 tracking-wider uppercase'>
-                  PRD WIDGET • MINI SKILL PATTERN MAP
+                  PETA KOMPETENSI
                 </span>
                 <h3 className='text-lg font-bold text-slate-900 dark:text-white tracking-tight mt-0.5'>
-                  Peta Penguasaan Keahlian Target Karier
+                  Peta Penguasaan Keahlian Sasaran Karier
                 </h3>
                 <p className='text-xs text-slate-500 dark:text-slate-400 mt-0.5'>
-                  Evaluasi skill untuk peran sasaran: <strong className='font-semibold text-slate-800 dark:text-slate-200'>{patternMap.targetRole}</strong>
+                  Evaluasi keahlian untuk: <strong className='font-semibold text-slate-800 dark:text-slate-200'>{patternMap.targetRole}</strong>
                 </p>
               </div>
 
@@ -810,91 +724,110 @@ export default function DashboardView() {
 
           {/* Bar Chart Visualization Canvas with Y-Axis and Interactive Bars */}
           <div className='mt-8 pt-4'>
-            <div className='relative h-56 sm:h-64 flex items-end'>
-              {/* Y-Axis Guidelines & Labels */}
-              <div className='absolute inset-0 flex flex-col justify-between pointer-events-none text-[10px] text-slate-400 dark:text-slate-500 font-medium pb-8'>
-                <div className='flex items-center gap-2 border-b border-slate-100 dark:border-slate-800/80 pb-0.5'>
-                  <span className='w-7 text-right'>100%</span>
-                  <div className='flex-1 h-px bg-slate-100 dark:bg-slate-800/80' />
+            {currentBars.length === 0 ? (
+              <div className='flex flex-col items-center justify-center py-16 text-center gap-3 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 p-8'>
+                <div className='w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center'>
+                  <Target className='w-6 h-6' />
                 </div>
-                <div className='flex items-center gap-2 border-b border-slate-100 dark:border-slate-800/80 pb-0.5'>
-                  <span className='w-7 text-right'>80%</span>
-                  <div className='flex-1 h-px bg-slate-100 dark:bg-slate-800/80' />
-                </div>
-                <div className='flex items-center gap-2 border-b border-slate-100 dark:border-slate-800/80 pb-0.5'>
-                  <span className='w-7 text-right'>60%</span>
-                  <div className='flex-1 h-px bg-slate-100 dark:bg-slate-800/80' />
-                </div>
-                <div className='flex items-center gap-2 border-b border-slate-100 dark:border-slate-800/80 pb-0.5'>
-                  <span className='w-7 text-right'>40%</span>
-                  <div className='flex-1 h-px bg-slate-100 dark:bg-slate-800/80' />
-                </div>
-                <div className='flex items-center gap-2 border-b border-slate-100 dark:border-slate-800/80 pb-0.5'>
-                  <span className='w-7 text-right'>20%</span>
-                  <div className='flex-1 h-px bg-slate-100 dark:bg-slate-800/80' />
-                </div>
-                <div className='flex items-center gap-2 border-b border-slate-200 dark:border-slate-700/80 pb-0.5'>
-                  <span className='w-7 text-right'>0%</span>
-                  <div className='flex-1 h-px bg-slate-200 dark:border-slate-700/80' />
-                </div>
+                <h4 className='text-sm font-bold text-slate-900 dark:text-white'>Belum Ada Keahlian Terpetakan</h4>
+                <p className='text-xs text-slate-500 dark:text-slate-400 max-w-sm'>
+                  Tambahkan pengalaman atau tentukan target kariermu untuk melihat grafik visualisasi penguasaan keahlian di sini.
+                </p>
+                <Link
+                  href='/career'
+                  className='mt-2 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 transition-colors'
+                >
+                  <span>Tentukan Sasaran Karier</span>
+                  <ChevronRight className='w-3.5 h-3.5' />
+                </Link>
               </div>
+            ) : (
+              <div className='relative h-56 sm:h-64 flex items-end'>
+                {/* Y-Axis Guidelines & Labels */}
+                <div className='absolute inset-0 flex flex-col justify-between pointer-events-none text-[10px] text-slate-400 dark:text-slate-500 font-medium pb-8'>
+                  <div className='flex items-center gap-2 border-b border-slate-100 dark:border-slate-800/80 pb-0.5'>
+                    <span className='w-7 text-right'>100%</span>
+                    <div className='flex-1 h-px bg-slate-100 dark:bg-slate-800/80' />
+                  </div>
+                  <div className='flex items-center gap-2 border-b border-slate-100 dark:border-slate-800/80 pb-0.5'>
+                    <span className='w-7 text-right'>80%</span>
+                    <div className='flex-1 h-px bg-slate-100 dark:bg-slate-800/80' />
+                  </div>
+                  <div className='flex items-center gap-2 border-b border-slate-100 dark:border-slate-800/80 pb-0.5'>
+                    <span className='w-7 text-right'>60%</span>
+                    <div className='flex-1 h-px bg-slate-100 dark:bg-slate-800/80' />
+                  </div>
+                  <div className='flex items-center gap-2 border-b border-slate-100 dark:border-slate-800/80 pb-0.5'>
+                    <span className='w-7 text-right'>40%</span>
+                    <div className='flex-1 h-px bg-slate-100 dark:bg-slate-800/80' />
+                  </div>
+                  <div className='flex items-center gap-2 border-b border-slate-100 dark:border-slate-800/80 pb-0.5'>
+                    <span className='w-7 text-right'>20%</span>
+                    <div className='flex-1 h-px bg-slate-100 dark:bg-slate-800/80' />
+                  </div>
+                  <div className='flex items-center gap-2 border-b border-slate-200 dark:border-slate-700/80 pb-0.5'>
+                    <span className='w-7 text-right'>0%</span>
+                    <div className='flex-1 h-px bg-slate-200 dark:border-slate-700/80' />
+                  </div>
+                </div>
 
-              {/* Bars Row */}
-              <div className='w-full pl-10 pr-2 flex items-end justify-between gap-2 sm:gap-4 h-full pb-8 z-1'>
-                {currentBars.map((bar, idx) => {
-                  const isBarHovered = idx === activeIndex
-                  const barHeightPercent = Math.max(12, Math.min(100, bar.score))
+                {/* Bars Row */}
+                <div className='w-full pl-10 pr-2 flex items-end justify-between gap-2 sm:gap-4 h-full pb-8 z-1'>
+                  {currentBars.map((bar, idx) => {
+                    const isBarHovered = idx === activeIndex
+                    const barHeightPercent = Math.max(12, Math.min(100, bar.score))
 
-                  return (
-                    <div
-                      key={idx}
-                      onMouseEnter={() => setHoveredBarIndex(idx)}
-                      onMouseLeave={() => setHoveredBarIndex(null)}
-                      className='flex-1 flex flex-col items-center h-full justify-end relative group cursor-pointer'
-                    >
-                      {/* Floating Tooltip above hovered/active bar */}
-                      {isBarHovered && (
-                        <div className='absolute -top-14 left-1/2 -translate-x-1/2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-3 py-1.5 rounded-xl shadow-lg flex flex-col items-center pointer-events-none z-20 whitespace-nowrap animate-in fade-in zoom-in-95 duration-150'>
-                          <span className='text-[10px] text-slate-300 dark:text-slate-500 font-medium leading-none'>
-                            {bar.fullName}
-                          </span>
-                          <span className='text-xs font-bold leading-tight mt-0.5'>
-                            {bar.score}% • {bar.badge}
-                          </span>
-                          <div className='w-2 h-2 bg-slate-900 dark:bg-white rotate-45 absolute -bottom-1 left-1/2 -translate-x-1/2' />
-                        </div>
-                      )}
-
-                      {/* Bar Column */}
+                    return (
                       <div
-                        className={`w-full max-w-[48px] rounded-t-2xl transition-all duration-300 ${
-                          bar.isGap
-                            ? isBarHovered
-                              ? 'bg-amber-500 shadow-md shadow-amber-500/25 ring-2 ring-amber-400/40'
-                              : 'bg-amber-100 dark:bg-amber-950/60 hover:bg-amber-200'
-                            : isBarHovered
-                            ? 'bg-blue-600 dark:bg-blue-500 shadow-md shadow-blue-500/25 ring-2 ring-blue-400/40'
-                            : 'bg-blue-100 dark:bg-blue-950/60 hover:bg-blue-200'
-                        }`}
-                        style={{ height: `${barHeightPercent}%` }}
-                      />
-
-                      {/* X-Axis Label */}
-                      <span
-                        className={`absolute -bottom-6 text-xs transition-colors truncate max-w-[54px] text-center ${
-                          isBarHovered
-                            ? 'font-bold text-slate-900 dark:text-white'
-                            : 'font-medium text-slate-400 dark:text-slate-500'
-                        }`}
-                        title={bar.fullName}
+                        key={idx}
+                        onMouseEnter={() => setHoveredBarIndex(idx)}
+                        onMouseLeave={() => setHoveredBarIndex(null)}
+                        className='flex-1 flex flex-col items-center h-full justify-end relative group cursor-pointer'
                       >
-                        {bar.label}
-                      </span>
-                    </div>
-                  )
-                })}
+                        {/* Floating Tooltip above hovered/active bar */}
+                        {isBarHovered && (
+                          <div className='absolute -top-14 left-1/2 -translate-x-1/2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-3 py-1.5 rounded-xl shadow-lg flex flex-col items-center pointer-events-none z-20 whitespace-nowrap animate-in fade-in zoom-in-95 duration-150'>
+                            <span className='text-[10px] text-slate-300 dark:text-slate-500 font-medium leading-none'>
+                              {bar.fullName}
+                            </span>
+                            <span className='text-xs font-bold leading-tight mt-0.5'>
+                              {bar.score}% • {bar.badge}
+                            </span>
+                            <div className='w-2 h-2 bg-slate-900 dark:bg-white rotate-45 absolute -bottom-1 left-1/2 -translate-x-1/2' />
+                          </div>
+                        )}
+
+                        {/* Bar Column */}
+                        <div
+                          className={`w-full max-w-[48px] rounded-t-2xl transition-all duration-300 ${
+                            bar.isGap
+                              ? isBarHovered
+                                ? 'bg-amber-500 shadow-md shadow-amber-500/25 ring-2 ring-amber-400/40'
+                                : 'bg-amber-100 dark:bg-amber-950/60 hover:bg-amber-200'
+                              : isBarHovered
+                              ? 'bg-blue-600 dark:bg-blue-500 shadow-md shadow-blue-500/25 ring-2 ring-blue-400/40'
+                              : 'bg-blue-100 dark:bg-blue-950/60 hover:bg-blue-200'
+                          }`}
+                          style={{ height: `${barHeightPercent}%` }}
+                        />
+
+                        {/* X-Axis Label */}
+                        <span
+                          className={`absolute -bottom-6 text-xs transition-colors truncate max-w-[54px] text-center ${
+                            isBarHovered
+                              ? 'font-bold text-slate-900 dark:text-white'
+                              : 'font-medium text-slate-400 dark:text-slate-500'
+                          }`}
+                          title={bar.fullName}
+                        >
+                          {bar.label}
+                        </span>
+                      </div>
+                    )
+                  })}
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
 
@@ -914,74 +847,80 @@ export default function DashboardView() {
               </p>
             </div>
 
-            <div className='flex items-center justify-between gap-4 mt-6'>
-              {/* SVG Circular Donut Chart */}
-              <div className='relative w-28 h-28 sm:w-32 sm:h-32 shrink-0 flex items-center justify-center'>
-                <svg className='w-full h-full -rotate-90' viewBox='0 0 100 100'>
-                  <circle
-                    cx='50'
-                    cy='50'
-                    r={donutRadius}
-                    fill='transparent'
-                    stroke='currentColor'
-                    strokeWidth='10'
-                    className='text-slate-100 dark:text-slate-800'
-                  />
-
-                  {distributionData.map((item, idx) => {
-                    const strokeDash = (item.percentage / 100) * donutCircumference
-                    const strokeOffset = -(accumulatedPercent / 100) * donutCircumference
-
-                    accumulatedPercent += item.percentage
-
-                    return (
-                      <circle
-                        key={idx}
-                        cx='50'
-                        cy='50'
-                        r={donutRadius}
-                        fill='transparent'
-                        stroke={item.color}
-                        strokeWidth='10'
-                        strokeDasharray={`${strokeDash} ${donutCircumference}`}
-                        strokeDashoffset={strokeOffset}
-                        strokeLinecap='round'
-                        className='transition-all duration-700'
-                      />
-                    )
-                  })}
-                </svg>
-
-                <div className='absolute flex flex-col items-center justify-center text-center'>
-                  <span className='text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight'>
-                    {data.statCards.totalSkills.count}
-                  </span>
-                  <span className='text-[10px] text-slate-400 font-medium'>
-                    Total Skill
-                  </span>
-                </div>
+            {distributionData.length === 0 ? (
+              <div className='py-8 text-center text-xs text-slate-400'>
+                Belum ada keahlian terdaftar untuk menghitung proporsi kategori.
               </div>
+            ) : (
+              <div className='flex items-center justify-between gap-4 mt-6'>
+                {/* SVG Circular Donut Chart */}
+                <div className='relative w-28 h-28 sm:w-32 sm:h-32 shrink-0 flex items-center justify-center'>
+                  <svg className='w-full h-full -rotate-90' viewBox='0 0 100 100'>
+                    <circle
+                      cx='50'
+                      cy='50'
+                      r={donutRadius}
+                      fill='transparent'
+                      stroke='currentColor'
+                      strokeWidth='10'
+                      className='text-slate-100 dark:text-slate-800'
+                    />
 
-              {/* Legend List */}
-              <div className='flex flex-col gap-2.5 flex-1 min-w-0'>
-                {distributionData.map((item, idx) => (
-                  <div key={idx} className='flex items-center justify-between text-xs gap-2'>
-                    <div className='flex items-center gap-2 min-w-0'>
-                      <div
-                        className='w-2.5 h-2.5 rounded-full shrink-0'
-                        style={{ backgroundColor: item.color }}
-                      />
-                      <span className='text-slate-700 dark:text-slate-300 truncate font-medium'>
-                        {item.name}
-                      </span>
-                    </div>
-                    <span className='font-bold text-slate-900 dark:text-white shrink-0'>
-                      {item.percentage}%
+                    {distributionData.map((item, idx) => {
+                      const strokeDash = (item.percentage / 100) * donutCircumference
+                      const strokeOffset = -(accumulatedPercent / 100) * donutCircumference
+
+                      accumulatedPercent += item.percentage
+
+                      return (
+                        <circle
+                          key={idx}
+                          cx='50'
+                          cy='50'
+                          r={donutRadius}
+                          fill='transparent'
+                          stroke={item.color}
+                          strokeWidth='10'
+                          strokeDasharray={`${strokeDash} ${donutCircumference}`}
+                          strokeDashoffset={strokeOffset}
+                          strokeLinecap='round'
+                          className='transition-all duration-700'
+                        />
+                      )
+                    })}
+                  </svg>
+
+                  <div className='absolute flex flex-col items-center justify-center text-center'>
+                    <span className='text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight'>
+                      {data.statCards.totalSkills.count}
+                    </span>
+                    <span className='text-[10px] text-slate-400 font-medium'>
+                      Total Skill
                     </span>
                   </div>
-                ))}
+                </div>
+
+                {/* Legend List */}
+                <div className='flex flex-col gap-2.5 flex-1 min-w-0'>
+                  {distributionData.map((item, idx) => (
+                    <div key={idx} className='flex items-center justify-between text-xs gap-2'>
+                      <div className='flex items-center gap-2 min-w-0'>
+                        <div
+                          className='w-2.5 h-2.5 rounded-full shrink-0'
+                          style={{ backgroundColor: item.color }}
+                        />
+                        <span className='text-slate-700 dark:text-slate-300 truncate font-medium'>
+                          {item.name}
+                        </span>
+                      </div>
+                      <span className='font-bold text-slate-900 dark:text-white shrink-0'>
+                        {item.percentage}%
+                      </span>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
           </div>
 
           {/* Card 2: Ringkasan Aktivitas & Capaian */}
@@ -1138,75 +1077,93 @@ export default function DashboardView() {
               </Link>
             </div>
 
-            <div className='flex flex-col gap-3.5'>
-              {data.recentExperiences.slice(0, 2).map((exp, idx) => {
-                const isFirst = idx === 0
+            {data.recentExperiences.length === 0 ? (
+              <div className='flex flex-col items-center justify-center py-8 text-center gap-2 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 p-6'>
+                <FolderOpen className='w-8 h-8 text-slate-400' />
+                <p className='text-xs text-slate-500 dark:text-slate-400'>
+                  Belum ada pengalaman yang tercatat di akunmu.
+                </p>
+                <button
+                  type='button'
+                  onClick={() => setIsQuickAddOpen(true)}
+                  className='mt-1 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer'
+                >
+                  + Tambah Pengalaman Baru
+                </button>
+              </div>
+            ) : (
+              <div className='flex flex-col gap-3.5'>
+                {data.recentExperiences.slice(0, 2).map((exp, idx) => {
+                  const isFirst = idx === 0
 
-                return (
-                  <div
-                    key={exp.id || idx}
-                    className='bg-slate-50/70 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 hover:border-blue-200 dark:hover:border-blue-900/60 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all'
-                  >
-                    <div className='flex items-start gap-3.5'>
-                      <div className='w-10 h-10 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-700/80 flex items-center justify-center text-blue-600 dark:text-blue-400 shadow-2xs shrink-0 mt-0.5'>
-                        {isFirst ? (
-                          <Laptop className='w-5 h-5' />
-                        ) : (
-                          <Users className='w-5 h-5' />
-                        )}
-                      </div>
+                  return (
+                    <div
+                      key={exp.id || idx}
+                      className='bg-slate-50/70 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 hover:border-blue-200 dark:hover:border-blue-900/60 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all'
+                    >
+                      <div className='flex items-start gap-3.5'>
+                        <div className='w-10 h-10 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-700/80 flex items-center justify-center text-blue-600 dark:text-blue-400 shadow-2xs shrink-0 mt-0.5'>
+                          {isFirst ? (
+                            <Laptop className='w-5 h-5' />
+                          ) : (
+                            <Users className='w-5 h-5' />
+                          )}
+                        </div>
 
-                      <div className='flex flex-col gap-1'>
-                        <h4 className='text-sm font-bold text-slate-900 dark:text-white leading-snug'>
-                          {exp.role || exp.title.split(' • ')[0]} •{' '}
-                          <span className='font-normal text-slate-500 dark:text-slate-400'>
-                            {exp.company || exp.title.split(' • ')[1] || ''}
-                          </span>
-                        </h4>
-
-                        <p className='text-xs text-slate-400 font-normal'>
-                          {exp.dateFormatted}
-                        </p>
-
-                        <div className='flex flex-wrap items-center gap-1.5 mt-1.5'>
-                          {exp.skills.slice(0, 3).map((skillName, sIdx) => (
-                            <span
-                              key={sIdx}
-                              className='px-2.5 py-1 rounded-md bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-700 text-xs font-medium text-blue-600 dark:text-blue-400 shadow-2xs'
-                            >
-                              {skillName}
+                        <div className='flex flex-col gap-1'>
+                          <h4 className='text-sm font-bold text-slate-900 dark:text-white leading-snug'>
+                            {exp.role || exp.title.split(' • ')[0]} •{' '}
+                            <span className='font-normal text-slate-500 dark:text-slate-400'>
+                              {exp.company || exp.title.split(' • ')[1] || ''}
                             </span>
-                          ))}
+                          </h4>
+
+                          <p className='text-xs text-slate-400 font-normal'>
+                            {exp.dateFormatted}
+                          </p>
+
+                          {exp.skills.length > 0 && (
+                            <div className='flex flex-wrap items-center gap-1.5 mt-1.5'>
+                              {exp.skills.slice(0, 3).map((skillName, sIdx) => (
+                                <span
+                                  key={sIdx}
+                                  className='px-2.5 py-1 rounded-md bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-700 text-xs font-medium text-blue-600 dark:text-blue-400 shadow-2xs'
+                                >
+                                  {skillName}
+                                </span>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       </div>
-                    </div>
 
-                    <div className='flex sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-2 shrink-0 border-t sm:border-t-0 pt-2 sm:pt-0 border-slate-200/60 dark:border-slate-700/60'>
-                      <span className='inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 text-xs font-semibold border border-emerald-200 dark:border-emerald-800'>
-                        <CheckCircle2 className='w-3.5 h-3.5' />
-                        <span>{exp.validatedSkillsCount} Skill Terverifikasi</span>
-                      </span>
+                      <div className='flex sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-2 shrink-0 border-t sm:border-t-0 pt-2 sm:pt-0 border-slate-200/60 dark:border-slate-700/60'>
+                        <span className='inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 text-xs font-semibold border border-emerald-200 dark:border-emerald-800'>
+                          <CheckCircle2 className='w-3.5 h-3.5' />
+                          <span>{exp.validatedSkillsCount} Skill Terverifikasi</span>
+                        </span>
 
-                      <Link
-                        href='/experience'
-                        className='text-xs font-semibold text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors inline-flex items-center gap-0.5'
-                      >
-                        <span>Detail Log</span>
-                        <ChevronRight className='w-3.5 h-3.5' />
-                      </Link>
+                        <Link
+                          href='/experience'
+                          className='text-xs font-semibold text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors inline-flex items-center gap-0.5'
+                        >
+                          <span>Detail Log</span>
+                          <ChevronRight className='w-3.5 h-3.5' />
+                        </Link>
+                      </div>
                     </div>
-                  </div>
-                )
-              })}
-            </div>
+                  )
+                })}
+              </div>
+            )}
           </div>
 
-          {/* PRD Widget #4: Recent Career Opportunities (Berdasarkan Skill Match) */}
+          {/* Peluang Karier Terbaru Berdasarkan Database */}
           <div className='bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 p-6 sm:p-7 shadow-xs flex flex-col gap-4'>
             <div className='flex items-center justify-between pb-1'>
               <div>
                 <span className='text-[10px] font-bold text-slate-400 tracking-wider uppercase'>
-                  PRD WIDGET #4 • RECENT OPPORTUNITIES
+                  PELUANG KARIER
                 </span>
                 <h3 className='text-lg font-bold text-slate-900 dark:text-white tracking-tight mt-0.5'>
                   Peluang Karier &amp; Magang Terbaru
@@ -1222,55 +1179,61 @@ export default function DashboardView() {
               </Link>
             </div>
 
-            <div className='grid grid-cols-1 sm:grid-cols-3 gap-3.5'>
-              {opportunities.map(opp => (
-                <div
-                  key={opp.id}
-                  className='bg-slate-50/70 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 hover:border-blue-200 dark:hover:border-blue-900/60 rounded-2xl p-4 flex flex-col justify-between gap-3 transition-all'
-                >
-                  <div className='flex flex-col gap-1'>
-                    <div className='flex items-center justify-between text-[11px] font-semibold text-emerald-600 dark:text-emerald-400'>
-                      <span className='px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800'>
-                        {opp.matchScore}% Match
-                      </span>
-                      <span className='text-slate-400'>{opp.type}</span>
-                    </div>
-
-                    <h4 className='text-xs font-bold text-slate-900 dark:text-white leading-snug mt-1'>
-                      {opp.title}
-                    </h4>
-
-                    <p className='text-xs text-slate-500 dark:text-slate-400 font-medium'>
-                      {opp.company}
-                    </p>
-
-                    <div className='flex items-center gap-1 text-[11px] text-slate-400 mt-1'>
-                      <MapPin className='w-3 h-3' />
-                      <span className='truncate'>{opp.location}</span>
-                    </div>
-                  </div>
-
-                  <Link
-                    href={opp.url}
-                    className='inline-flex items-center justify-center gap-1 w-full py-1.5 rounded-xl bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold shadow-2xs hover:shadow-xs transition-all'
+            {opportunities.length === 0 ? (
+              <div className='py-8 text-center text-xs text-slate-400 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 p-6'>
+                Belum ada lowongan karier atau magang aktif di database saat ini.
+              </div>
+            ) : (
+              <div className='grid grid-cols-1 sm:grid-cols-3 gap-3.5'>
+                {opportunities.map(opp => (
+                  <div
+                    key={opp.id}
+                    className='bg-slate-50/70 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 hover:border-blue-200 dark:hover:border-blue-900/60 rounded-2xl p-4 flex flex-col justify-between gap-3 transition-all'
                   >
-                    <span>Lamar / Detail</span>
-                    <ChevronRight className='w-3 h-3' />
-                  </Link>
-                </div>
-              ))}
-            </div>
+                    <div className='flex flex-col gap-1'>
+                      <div className='flex items-center justify-between text-[11px] font-semibold text-emerald-600 dark:text-emerald-400'>
+                        <span className='px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800'>
+                          {opp.matchScore}% Match
+                        </span>
+                        <span className='text-slate-400'>{opp.type}</span>
+                      </div>
+
+                      <h4 className='text-xs font-bold text-slate-900 dark:text-white leading-snug mt-1'>
+                        {opp.title}
+                      </h4>
+
+                      <p className='text-xs text-slate-500 dark:text-slate-400 font-medium'>
+                        {opp.company}
+                      </p>
+
+                      <div className='flex items-center gap-1 text-[11px] text-slate-400 mt-1'>
+                        <MapPin className='w-3 h-3' />
+                        <span className='truncate'>{opp.location}</span>
+                      </div>
+                    </div>
+
+                    <Link
+                      href={opp.url}
+                      className='inline-flex items-center justify-center gap-1 w-full py-1.5 rounded-xl bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold shadow-2xs hover:shadow-xs transition-all'
+                    >
+                      <span>Lamar / Detail</span>
+                      <ChevronRight className='w-3 h-3' />
+                    </Link>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
-        {/* RIGHT COLUMN (40%): Target Career Priority & PRD Widget #3 Top 3 Learning Recommendations */}
+        {/* RIGHT COLUMN (40%): Target Career Priority & Top 3 Learning Recommendations */}
         <div className='lg:col-span-4 flex flex-col gap-6'>
-          {/* PRD Widget #1: Target Karier Utama */}
+          {/* Target Karier Utama */}
           <div className='bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 p-6 shadow-xs flex flex-col justify-between'>
             <div>
               <div className='flex items-center justify-between pb-1'>
                 <span className='text-[10px] font-bold text-slate-400 tracking-wider uppercase'>
-                  PRD WIDGET #1 • SASARAN KARIER
+                  SASARAN KARIER
                 </span>
                 <Flag className='w-4 h-4 text-blue-600 dark:text-blue-400' />
               </div>
@@ -1300,7 +1263,9 @@ export default function DashboardView() {
                 </div>
 
                 <p className='text-xs text-slate-500 dark:text-slate-400 leading-snug'>
-                  Tinggal {data.targetCareer.missingSkillsCount} skill kunci untuk mencapai standar siap rekrut ({data.targetCareer.threshold}%).
+                  {data.targetCareer.missingSkillsCount > 0
+                    ? `Terdapat ${data.targetCareer.missingSkillsCount} skill kunci yang perlu ditingkatkan untuk mencapai kesiapan ideal.`
+                    : 'Kesiapan profil telah memenuhi kriteria sasaran saat ini.'}
                 </p>
               </div>
 
@@ -1310,41 +1275,48 @@ export default function DashboardView() {
                   Skill Gap Perlu Dilengkapi:
                 </h5>
 
-                <div className='flex flex-col gap-2'>
-                  {data.targetCareer.gaps.map((gap, gIdx) => {
-                    const isMissing = gap.status === 'missing'
+                {data.targetCareer.gaps.length === 0 ? (
+                  <div className='p-3 rounded-xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/40 text-xs text-emerald-700 dark:text-emerald-400 flex items-center gap-2'>
+                    <CheckCircle2 className='w-4 h-4 shrink-0' />
+                    <span>Tidak ada skill gap terdeteksi untuk target ini.</span>
+                  </div>
+                ) : (
+                  <div className='flex flex-col gap-2'>
+                    {data.targetCareer.gaps.map((gap, gIdx) => {
+                      const isMissing = gap.status === 'missing'
 
-                    return (
-                      <div
-                        key={gIdx}
-                        className={`p-2.5 rounded-xl border flex items-center justify-between ${
-                          isMissing
-                            ? 'bg-rose-50/50 dark:bg-rose-950/20 border-rose-100 dark:border-rose-900/40'
-                            : 'bg-amber-50/50 dark:bg-amber-950/20 border-amber-100 dark:border-amber-900/40'
-                        }`}
-                      >
-                        <div className='flex items-center gap-2'>
-                          <span className='text-xs'>
-                            {isMissing ? '🚫' : '⚠️'}
-                          </span>
-                          <span className='text-xs font-semibold text-slate-800 dark:text-slate-200'>
-                            {gap.name}
-                          </span>
-                        </div>
-
-                        <span
-                          className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                      return (
+                        <div
+                          key={gIdx}
+                          className={`p-2.5 rounded-xl border flex items-center justify-between ${
                             isMissing
-                              ? 'bg-rose-100 dark:bg-rose-950 text-rose-600 dark:text-rose-400'
-                              : 'bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-400'
+                              ? 'bg-rose-50/50 dark:bg-rose-950/20 border-rose-100 dark:border-rose-900/40'
+                              : 'bg-amber-50/50 dark:bg-amber-950/20 border-amber-100 dark:border-amber-900/40'
                           }`}
                         >
-                          {isMissing ? 'Missing' : 'Develop'}
-                        </span>
-                      </div>
-                    )
-                  })}
-                </div>
+                          <div className='flex items-center gap-2'>
+                            <span className='text-xs'>
+                              {isMissing ? '🚫' : '⚠️'}
+                            </span>
+                            <span className='text-xs font-semibold text-slate-800 dark:text-slate-200'>
+                              {gap.name}
+                            </span>
+                          </div>
+
+                          <span
+                            className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                              isMissing
+                                ? 'bg-rose-100 dark:bg-rose-950 text-rose-600 dark:text-rose-400'
+                                : 'bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-400'
+                            }`}
+                          >
+                            {isMissing ? 'Missing' : 'Develop'}
+                          </span>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -1357,7 +1329,7 @@ export default function DashboardView() {
             </Link>
           </div>
 
-          {/* PRD Widget #3: Top 3 Learning Recommendations (Modul Kilat AI) */}
+          {/* Top 3 Rekomendasi Belajar */}
           <div className='bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 p-6 shadow-xs flex flex-col gap-4'>
             <div>
               <div className='flex items-center gap-1.5'>
@@ -1367,69 +1339,75 @@ export default function DashboardView() {
                 </h3>
               </div>
               <p className='text-xs text-slate-500 dark:text-slate-400 mt-1 leading-snug'>
-                Modul kilat AI untuk menutup skill gap dalam &lt; 1 minggu.
+                Materi pembelajaran rekomendasi yang relevan untuk memperkuat kompetensi kariermu.
               </p>
             </div>
 
-            <div className='flex flex-col gap-3'>
-              {data.rapidModules.slice(0, 3).map((module, mIdx) => {
-                const isMiniCourse = module.type === 'Mini Course'
+            {data.rapidModules.length === 0 ? (
+              <div className='py-6 text-center text-xs text-slate-400 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 p-4'>
+                Belum ada rekomendasi modul belajar yang tersedia saat ini.
+              </div>
+            ) : (
+              <div className='flex flex-col gap-3'>
+                {data.rapidModules.slice(0, 3).map((module, mIdx) => {
+                  const isMiniCourse = module.type === 'Kursus' || module.type === 'Mini Course'
 
-                return (
-                  <div
-                    key={module.id || mIdx}
-                    className='bg-slate-50/70 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 hover:border-blue-200 dark:hover:border-blue-900/60 rounded-2xl p-3.5 flex flex-col gap-2 transition-all'
-                  >
-                    <div className='flex items-center justify-between'>
-                      <span
-                        className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${
-                          isMiniCourse
-                            ? 'bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 border border-blue-200/80 dark:border-blue-800/60'
-                            : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700'
-                        }`}
-                      >
-                        {module.type}
-                      </span>
+                  return (
+                    <div
+                      key={module.id || mIdx}
+                      className='bg-slate-50/70 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 hover:border-blue-200 dark:hover:border-blue-900/60 rounded-2xl p-3.5 flex flex-col gap-2 transition-all'
+                    >
+                      <div className='flex items-center justify-between'>
+                        <span
+                          className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${
+                            isMiniCourse
+                              ? 'bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 border border-blue-200/80 dark:border-blue-800/60'
+                              : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700'
+                          }`}
+                        >
+                          {module.type}
+                        </span>
 
-                      <div className='flex items-center gap-1 text-[11px] text-slate-400 font-medium'>
-                        {isMiniCourse ? (
-                          <Clock className='w-3 h-3' />
-                        ) : (
-                          <Download className='w-3 h-3' />
-                        )}
-                        <span>{module.duration}</span>
+                        <div className='flex items-center gap-1 text-[11px] text-slate-400 font-medium'>
+                          {isMiniCourse ? (
+                            <Clock className='w-3 h-3' />
+                          ) : (
+                            <Download className='w-3 h-3' />
+                          )}
+                          <span>{module.duration}</span>
+                        </div>
+                      </div>
+
+                      <div>
+                        <h4 className='text-xs font-bold text-slate-900 dark:text-white leading-snug hover:text-blue-600 transition-colors'>
+                          <a href={module.url} target='_blank' rel='noopener noreferrer'>
+                            {module.title}
+                          </a>
+                        </h4>
+                        <p className='text-[11px] text-slate-500 dark:text-slate-400 mt-1 leading-relaxed'>
+                          {module.description}
+                        </p>
+                      </div>
+
+                      <div className='flex items-center justify-between pt-1 border-t border-slate-100 dark:border-slate-800 text-[11px]'>
+                        <span className='font-semibold text-blue-600 dark:text-blue-400 truncate max-w-[170px]'>
+                          Tutup Gap: {module.gapTag}
+                        </span>
+
+                        <a
+                          href={module.url}
+                          target='_blank'
+                          rel='noopener noreferrer'
+                          className='font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-0.5'
+                        >
+                          <span>{module.ctaText}</span>
+                        </a>
                       </div>
                     </div>
-
-                    <div>
-                      <h4 className='text-xs font-bold text-slate-900 dark:text-white leading-snug hover:text-blue-600 transition-colors'>
-                        <a href={module.url} target='_blank' rel='noopener noreferrer'>
-                          {module.title}
-                        </a>
-                      </h4>
-                      <p className='text-[11px] text-slate-500 dark:text-slate-400 mt-1 leading-relaxed'>
-                        {module.description}
-                      </p>
-                    </div>
-
-                    <div className='flex items-center justify-between pt-1 border-t border-slate-100 dark:border-slate-800 text-[11px]'>
-                      <span className='font-semibold text-blue-600 dark:text-blue-400 truncate max-w-[170px]'>
-                        Tutup Gap: {module.gapTag}
-                      </span>
-
-                      <a
-                        href={module.url}
-                        target='_blank'
-                        rel='noopener noreferrer'
-                        className='font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-0.5'
-                      >
-                        <span>{module.ctaText}</span>
-                      </a>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
+                  )
+                })}
+              </div>
+            )}
           </div>
         </div>
       </section>

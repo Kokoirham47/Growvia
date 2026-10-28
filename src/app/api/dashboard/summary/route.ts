@@ -30,11 +30,17 @@ function formatExperienceDuration(startDate: Date, endDate?: Date | null, type?:
 
   const typeLabel =
     type === 'internship'
-      ? 'Magang Industri (5 bln)'
+      ? 'Magang Industri'
       : type === 'organisation'
-      ? 'Organisasi Kampus (1 thn)'
+      ? 'Organisasi Kampus'
+      : type === 'committee'
+      ? 'Kepanitiaan'
+      : type === 'freelance'
+      ? 'Pekerjaan Lepas'
       : type === 'project'
       ? 'Proyek Independen'
+      : type === 'competition'
+      ? 'Kompetisi'
       : 'Aktivitas Ekstra'
 
   return `${startStr} – ${endStr} • ${typeLabel}`
@@ -52,25 +58,20 @@ async function getAuthUserId(request: NextRequest): Promise<string | null> {
 
   if (session?.userId) return session.userId
 
-  // Fallback to active demo user (preferring Nabila to match design screenshot)
-  const nabilaUser = await prisma.user.findFirst({
-    where: {
-      OR: [
-        { name: { contains: 'Nabila', mode: 'insensitive' } },
-        { email: { contains: 'nabila', mode: 'insensitive' } }
-      ]
-    },
+  // In development, fallback to demo user or first user with active career targets
+  const demoUser = await prisma.user.findFirst({
+    where: { email: 'demo@growvia.id' },
     select: { id: true }
   })
 
-  if (nabilaUser) return nabilaUser.id
+  if (demoUser) return demoUser.id
 
-  const demoUser = await prisma.user.findFirst({
+  const fallbackUser = await prisma.user.findFirst({
     where: { careerTargets: { some: { isActive: true } } },
     select: { id: true }
   })
 
-  return demoUser?.id ?? null
+  return fallbackUser?.id ?? null
 }
 
 export async function GET(request: NextRequest) {
@@ -81,7 +82,7 @@ export async function GET(request: NextRequest) {
       return apiError('Pengguna tidak terautentikasi.', 401)
     }
 
-    // 1. Fetch user profile
+    // 1. Fetch user and profile
     const user = await prisma.user.findUnique({
       where: { id: userId },
       include: {
@@ -90,7 +91,7 @@ export async function GET(request: NextRequest) {
     })
 
     if (!user) {
-      return apiError('Data pengguna tidak ditemukan di Supabase.', 404)
+      return apiError('Data pengguna tidak ditemukan.', 404)
     }
 
     // 2. Fetch active career target
@@ -104,29 +105,29 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    const readinessScore = target?.readinessScore && target.readinessScore > 0 ? target.readinessScore : 78
-    const targetRoleName = target?.careerRole?.name || 'Associate Product Designer'
-    const targetIndustry = target?.careerRole?.industry || 'FinTech & SaaS EdTech'
-    const subTargetName = target?.customCareerName || 'Junior Product Designer'
+    const readinessScore = target?.readinessScore ?? 0
+    const targetRoleName = target?.careerRole?.name || target?.customCareerName || null
+    const targetIndustry = target?.careerRole?.industry || 'Belum Ditentukan'
+    const subTargetName = target?.customCareerName || target?.careerRole?.name || null
 
-    // 3. Fetch user skills from Supabase
+    // 3. Fetch user skills
     const userSkills = await prisma.userSkill.findMany({
       where: { userId },
       include: { skill: true },
       orderBy: { createdAt: 'desc' }
     })
 
-    const totalSkillsCount = userSkills.length > 0 ? userSkills.length : 14
+    const totalSkillsCount = userSkills.length
 
     const hardSkillsCount = userSkills.filter(
       us => us.skill.category === 'hard_skill' || us.skill.category === 'technical'
-    ).length || 8
+    ).length
 
     const softSkillsCount = userSkills.filter(
       us => us.skill.category === 'soft_skill' || us.skill.category === 'leadership'
-    ).length || 6
+    ).length
 
-    // 4. Fetch experiences from Supabase
+    // 4. Fetch experiences
     const experiences = await prisma.experience.findMany({
       where: { userId },
       include: {
@@ -141,149 +142,222 @@ export async function GET(request: NextRequest) {
       orderBy: [{ endDate: 'desc' }, { startDate: 'desc' }]
     })
 
-    const totalExperiencesCount = experiences.length > 0 ? experiences.length : 6
+    const totalExperiencesCount = experiences.length
 
-    // Map recent experiences for display
-    const mappedExperiences = experiences.slice(0, 3).map((exp, idx) => {
+    // Map recent experiences without fake fallback skills
+    const mappedExperiences = experiences.slice(0, 3).map(exp => {
       const skillsFromEvidence = exp.skillEvidences.map(se => se.userSkill.skill.name)
-
-      const fallbackSkills =
-        idx === 0
-          ? ['Wireframing', 'Figma Systems', 'Usability Testing']
-          : idx === 1
-          ? ['Team Leadership', 'Stakeholder Management', 'Content Strategy']
-          : ['Product Discovery', 'User Interview', 'Prototyping']
-
-      const displaySkills = skillsFromEvidence.length > 0 ? skillsFromEvidence : fallbackSkills
 
       return {
         id: exp.id,
-        role: exp.title,
+        role: exp.role || exp.title,
         company: exp.institutionName,
         title: `${exp.title} • ${exp.institutionName}`,
-        dateFormatted: formatExperienceDuration(new Date(exp.startDate), exp.endDate ? new Date(exp.endDate) : null, exp.type),
-        validatedSkillsCount: exp.skillEvidences.length > 0 ? exp.skillEvidences.length : displaySkills.length,
-        skills: displaySkills,
+        dateFormatted: formatExperienceDuration(
+          new Date(exp.startDate),
+          exp.endDate ? new Date(exp.endDate) : null,
+          exp.type
+        ),
+        validatedSkillsCount: skillsFromEvidence.length,
+        skills: skillsFromEvidence,
         type: exp.type
       }
     })
 
-    // 5. Fetch Opportunities count from Supabase
+    // 5. Fetch Opportunities count from database
     const dbOpportunitiesCount = await prisma.careerOpportunity.count({
       where: { isActive: true }
     })
 
-    const opportunitiesCount = dbOpportunitiesCount > 0 ? 12 : 12
+    // 6. Gaps list from database
+    const allGaps =
+      target?.skillGapResults?.map(sg => ({
+        name: sg.skill.name,
+        status: sg.gapCategory === 'missing' ? 'missing' : 'develop'
+      })) || []
 
-    // 6. Gaps list from Supabase
-    const allGaps = target?.skillGapResults?.map(sg => ({
-      name: sg.skill.name,
-      status: sg.gapCategory === 'missing' ? 'missing' : 'develop'
-    })) || []
+    // 7. Calculate real Profile Completeness
+    // Formula based on actual filled fields:
+    // Name: 15%, Headline: 15%, Institution & Major: 15%, Bio: 15%, Experiences: 20%, Skills: 15%, Published: 5%
+    let completeness = 0
 
-    const gapsFromDb =
-      allGaps.filter(g => g.name === 'Design System Tokens' || g.name === 'Quantitative Analytics').length > 0
-        ? allGaps.filter(g => g.name === 'Design System Tokens' || g.name === 'Quantitative Analytics')
-        : [
-            { name: 'Design System Tokens', status: 'missing' },
-            { name: 'Quantitative Analytics', status: 'develop' }
-          ]
+    if (user.name) completeness += 15
+    if (user.profile?.headline) completeness += 15
+    if (user.profile?.institution && user.profile?.major) completeness += 15
+    else if (user.profile?.institution || user.profile?.major) completeness += 8
+    if (user.profile?.bio) completeness += 15
+    if (totalExperiencesCount > 0) completeness += 20
+    if (totalSkillsCount > 0) completeness += 15
+    if (user.profile?.portfolioPublished) completeness += 5
 
-    // 7. Top 3 Modul Kilat AI (PRD Widget #3: Top 3 Learning Recommendations)
-    const dbLearningResources = await prisma.learningResource.findMany({
-      where: {
-        title: {
-          in: [
-            'Metrics for UX: Heart Framework & Product KPI',
-            'Template: Design Token Architecture in Figma',
-            'Sprint Discovery & User Research Framework'
-          ]
+    // 8. Top Learning Recommendations from database
+    let rapidModules: Array<{
+      id: string
+      type: string
+      duration: string
+      title: string
+      description: string
+      gapTag: string
+      ctaText: string
+      url: string
+    }> = []
+
+    // A. Check user's stored learning recommendations first
+    const dbUserRecommendations = await prisma.learningRecommendation.findMany({
+      where: { userId },
+      include: {
+        resource: {
+          include: {
+            skillTags: {
+              include: { skill: true }
+            }
+          }
+        },
+        skillGapResult: {
+          include: { skill: true }
         }
       },
-      take: 3
+      take: 3,
+      orderBy: { relevanceScore: 'desc' }
     })
 
-    const rapidModules = [
-      {
-        id: dbLearningResources[0]?.id || 'mod-1',
-        type: 'Mini Course',
-        duration: '45 menit',
-        title: dbLearningResources[0]?.title || 'Metrics for UX: Heart Framework & Product KPI',
-        description: 'Materi ringkas menghubungkan data kuantitatif ke desain wireframe.',
-        gapTag: 'Quantitative Analytics',
-        ctaText: 'Mulai ▶',
-        url: dbLearningResources[0]?.url || '#'
-      },
-      {
-        id: dbLearningResources[1]?.id || 'mod-2',
-        type: 'Resource Kit',
-        duration: 'Unduhan Gratis',
-        title: dbLearningResources[1]?.title || 'Template: Design Token Architecture in Figma',
-        description: 'Standar dokumentasi variabel & token untuk diserahkan ke tim engineer.',
-        gapTag: 'Design System Tokens',
-        ctaText: 'Unduh Kit',
-        url: dbLearningResources[1]?.url || '#'
-      },
-      {
-        id: dbLearningResources[2]?.id || 'mod-3',
-        type: 'Interactive Guide',
-        duration: '30 menit',
-        title: dbLearningResources[2]?.title || 'Sprint Discovery & User Research Framework',
-        description: 'Metodologi wawancara pengguna dan validasi hipotesis problem statement.',
-        gapTag: 'Product Discovery',
-        ctaText: 'Pelajari 💡',
-        url: dbLearningResources[2]?.url || '#'
-      }
-    ]
+    if (dbUserRecommendations.length > 0) {
+      rapidModules = dbUserRecommendations.map(rec => {
+        const res = rec.resource
+        const skillName = rec.skillGapResult?.skill?.name || res.skillTags[0]?.skill?.name || 'Keahlian'
 
-    // 8. Recent Career Opportunities (PRD Widget #4: Based on skill match)
+        return {
+          id: res.id,
+          type:
+            res.type === 'course'
+              ? 'Kursus'
+              : res.type === 'article'
+              ? 'Artikel'
+              : res.type === 'video'
+              ? 'Video'
+              : res.type === 'bootcamp'
+              ? 'Bootcamp'
+              : 'Panduan',
+          duration: res.durationMinutes ? `${res.durationMinutes} menit` : 'Fleksibel',
+          title: res.title,
+          description: res.description || 'Materi pembelajaran untuk menutup skill gap kariermu.',
+          gapTag: skillName,
+          ctaText: 'Pelajari Sekarang',
+          url: res.url
+        }
+      })
+    } else {
+      // B. If no stored recommendations, find active learning resources matching user gap skills or top resources
+      const gapSkillNames = allGaps.map(g => g.name)
+
+      let resources = await prisma.learningResource.findMany({
+        where: {
+          isActive: true,
+          ...(gapSkillNames.length > 0
+            ? {
+                skillTags: {
+                  some: {
+                    skill: {
+                      name: { in: gapSkillNames }
+                    }
+                  }
+                }
+              }
+            : {})
+        },
+        include: {
+          skillTags: {
+            include: { skill: true }
+          }
+        },
+        take: 3,
+        orderBy: [{ rating: 'desc' }, { createdAt: 'desc' }]
+      })
+
+      // If no matching gaps, get any active resources from database
+      if (resources.length === 0) {
+        resources = await prisma.learningResource.findMany({
+          where: { isActive: true },
+          include: {
+            skillTags: {
+              include: { skill: true }
+            }
+          },
+          take: 3,
+          orderBy: [{ rating: 'desc' }, { createdAt: 'desc' }]
+        })
+      }
+
+      rapidModules = resources.map(res => ({
+        id: res.id,
+        type:
+          res.type === 'course'
+            ? 'Kursus'
+            : res.type === 'article'
+            ? 'Artikel'
+            : res.type === 'video'
+            ? 'Video'
+            : res.type === 'bootcamp'
+            ? 'Bootcamp'
+            : 'Panduan',
+        duration: res.durationMinutes ? `${res.durationMinutes} menit` : 'Fleksibel',
+        title: res.title,
+        description: res.description || 'Materi pembelajaran untuk menutup skill gap kariermu.',
+        gapTag: res.skillTags[0]?.skill?.name || 'Kompetensi Karier',
+        ctaText: 'Pelajari Sekarang',
+        url: res.url
+      }))
+    }
+
+    // 9. Career Opportunities from database with actual calculated match scores
     const dbOpportunities = await prisma.careerOpportunity.findMany({
       where: { isActive: true },
       take: 3,
-      orderBy: { createdAt: 'desc' }
+      orderBy: { createdAt: 'desc' },
+      include: {
+        skillTags: {
+          include: { skill: true }
+        }
+      }
     })
 
-    const recentOpportunities = dbOpportunities.length > 0
-      ? dbOpportunities.map((opp, idx) => ({
-          id: opp.id,
-          title: opp.title,
-          company: opp.company,
-          location: opp.location || 'Jakarta / Hybrid',
-          matchScore: idx === 0 ? 88 : idx === 1 ? 82 : 80,
-          type: opp.type === 'internship' ? 'Magang' : 'Penuh Waktu',
-          url: opp.sourceUrl || '/career'
-        }))
-      : [
-          {
-            id: 'opp-1',
-            title: 'Junior UI/UX Designer',
-            company: 'GoTo Financial',
-            location: 'Jakarta (Hybrid)',
-            matchScore: 88,
-            type: 'Magang',
-            url: '/career'
-          },
-          {
-            id: 'opp-2',
-            title: 'Associate Product Designer',
-            company: 'Tokopedia',
-            location: 'Jakarta Selatan',
-            matchScore: 82,
-            type: 'Penuh Waktu',
-            url: '/career'
-          },
-          {
-            id: 'opp-3',
-            title: 'Product Design Intern',
-            company: 'Traveloka',
-            location: 'Tangerang / Remote',
-            matchScore: 80,
-            type: 'Magang',
-            url: '/career'
-          }
-        ]
+    const userSkillIds = new Set(userSkills.map(us => us.skillId))
 
-    // 9. Fetch Real AI Insight for user directly from Supabase
+    const recentOpportunities = dbOpportunities.map(opp => {
+      const requiredTags = opp.skillTags.filter(st => st.importance === 'required')
+      const tagsToCheck = requiredTags.length > 0 ? requiredTags : opp.skillTags
+
+      let matchScore = 0
+
+      if (tagsToCheck.length > 0 && userSkillIds.size > 0) {
+        const metCount = tagsToCheck.filter(st => userSkillIds.has(st.skillId)).length
+
+        matchScore = Math.round((metCount / tagsToCheck.length) * 100)
+      } else if (target && readinessScore > 0) {
+        matchScore = Math.max(50, Math.min(95, readinessScore))
+      }
+
+      return {
+        id: opp.id,
+        title: opp.title,
+        company: opp.company,
+        location: opp.location || 'Indonesia (Hybrid)',
+        matchScore,
+        type:
+          opp.type === 'internship'
+            ? 'Magang'
+            : opp.type === 'full_time'
+            ? 'Penuh Waktu'
+            : opp.type === 'freelance'
+            ? 'Pekerjaan Lepas'
+            : opp.type === 'part_time'
+            ? 'Paruh Waktu'
+            : 'Kompetisi',
+        url: opp.sourceUrl || '/career'
+      }
+    })
+
+    // 10. Fetch Real AI Insight for user directly from database
     const latestAiJob = await prisma.aiAnalysisJob.findFirst({
       where: {
         userId,
@@ -315,7 +389,9 @@ export async function GET(request: NextRequest) {
         jobId: latestAiJob.id,
         experienceId: latestAiJob.experienceId,
         projectName: latestAiJob.experience?.title
-          ? `${latestAiJob.experience.title}${latestAiJob.experience.institutionName ? ` • ${latestAiJob.experience.institutionName}` : ''}`
+          ? `${latestAiJob.experience.title}${
+              latestAiJob.experience.institutionName ? ` • ${latestAiJob.experience.institutionName}` : ''
+            }`
           : 'Pengalaman Terbaru',
         skills: latestAiJob.suggestions.map(s => s.suggestedName),
         suggestions: latestAiJob.suggestions.map(s => ({
@@ -326,145 +402,201 @@ export async function GET(request: NextRequest) {
         })),
         level: primarySkill?.level
           ? primarySkill.level.charAt(0).toUpperCase() + primarySkill.level.slice(1)
-          : 'Intermediate',
+          : 'Menengah',
         reasoning: primarySkill?.reasoning || null
       }
     }
 
-    // 10. PRD Widget #2: Mini Skill Pattern Map & Category Distribution
-    const baseTech = hardSkillsCount > 0 ? hardSkillsCount : 8
-    const baseSoft = softSkillsCount > 0 ? softSkillsCount : 4
-    const baseTools = 3
-    const baseMethod = 1
-    const totalDist = baseTech + baseSoft + baseTools + baseMethod
+    // 11. Category Distribution from user's actual skills
+    const hardSkillItems = userSkills.filter(us => us.skill.category === 'hard_skill').length
+    const techSkillItems = userSkills.filter(us => us.skill.category === 'technical').length
+    const softSkillItems = userSkills.filter(us => us.skill.category === 'soft_skill').length
+    const leadershipItems = userSkills.filter(us => us.skill.category === 'leadership').length
+    const totalCategorized = hardSkillItems + techSkillItems + softSkillItems + leadershipItems
 
-    const skillDistribution = [
-      { name: 'Hard Skill Teknis', count: baseTech, percentage: Math.round((baseTech / totalDist) * 100), color: '#2563EB' },
-      { name: 'Tools & Frameworks', count: baseTools, percentage: Math.round((baseTools / totalDist) * 100), color: '#F59E0B' },
-      { name: 'Soft Skill & Tim', count: baseSoft, percentage: Math.round((baseSoft / totalDist) * 100), color: '#10B981' },
-      { name: 'Metodologi & Desain', count: baseMethod, percentage: Math.max(5, 100 - (Math.round((baseTech / totalDist) * 100) + Math.round((baseTools / totalDist) * 100) + Math.round((baseSoft / totalDist) * 100))), color: '#6366F1' }
-    ]
+    const skillDistribution =
+      totalCategorized > 0
+        ? [
+            {
+              name: 'Hard Skill',
+              count: hardSkillItems,
+              percentage: Math.round((hardSkillItems / totalCategorized) * 100),
+              color: '#2563EB'
+            },
+            {
+              name: 'Teknis & Tools',
+              count: techSkillItems,
+              percentage: Math.round((techSkillItems / totalCategorized) * 100),
+              color: '#F59E0B'
+            },
+            {
+              name: 'Soft Skill',
+              count: softSkillItems,
+              percentage: Math.round((softSkillItems / totalCategorized) * 100),
+              color: '#10B981'
+            },
+            {
+              name: 'Kepemimpinan & Tim',
+              count: leadershipItems,
+              percentage: Math.max(
+                0,
+                100 -
+                  (Math.round((hardSkillItems / totalCategorized) * 100) +
+                    Math.round((techSkillItems / totalCategorized) * 100) +
+                    Math.round((softSkillItems / totalCategorized) * 100))
+              ),
+              color: '#8B5CF6'
+            }
+          ]
+        : []
 
-    // Mini Skill Pattern Map: Target Skills Breakdown (Clear and explainable data!)
-    const targetSkillsPattern = [
-      {
-        name: 'Figma Systems',
-        shortName: 'Figma',
-        score: 88,
+    // 12. Mini Skill Pattern Map: Real target skills or user's top skills
+    let targetSkillsPattern: Array<{
+      name: string
+      shortName: string
+      score: number
+      status: string
+      level: string
+      isGap: boolean
+    }> = []
+
+    if (target && target.skillGapResults && target.skillGapResults.length > 0) {
+      targetSkillsPattern = target.skillGapResults.slice(0, 7).map(sg => {
+        const isGap = sg.gapCategory !== 'strong'
+        const score = sg.userScore
+
+        return {
+          name: sg.skill.name,
+          shortName: sg.skill.name.length > 14 ? `${sg.skill.name.slice(0, 12)}...` : sg.skill.name,
+          score: Math.min(100, Math.max(0, score)),
+          status:
+            sg.gapCategory === 'strong'
+              ? 'Tervalidasi'
+              : sg.gapCategory === 'develop'
+              ? 'Perlu Ditingkatkan'
+              : 'Belum Dikuasai',
+          level:
+            sg.gapCategory === 'strong'
+              ? 'Mahir'
+              : sg.gapCategory === 'develop'
+              ? 'Menengah'
+              : 'Belum Memenuhi',
+          isGap
+        }
+      })
+    } else if (userSkills.length > 0) {
+      targetSkillsPattern = userSkills.slice(0, 7).map(us => ({
+        name: us.skill.name,
+        shortName: us.skill.name.length > 14 ? `${us.skill.name.slice(0, 12)}...` : us.skill.name,
+        score:
+          us.score > 0
+            ? us.score
+            : us.level === 'expert'
+            ? 95
+            : us.level === 'advanced'
+            ? 80
+            : us.level === 'intermediate'
+            ? 65
+            : 40,
         status: 'Tervalidasi',
-        level: 'Mahir',
+        level:
+          us.level === 'expert'
+            ? 'Ahli'
+            : us.level === 'advanced'
+            ? 'Mahir'
+            : us.level === 'intermediate'
+            ? 'Menengah'
+            : 'Pemula',
         isGap: false
+      }))
+    }
+
+    // 13. Competency Level Breakdown from real user skills
+    const beginnerCount = userSkills.filter(s => s.level === 'beginner').length
+    const intermediateCount = userSkills.filter(s => s.level === 'intermediate').length
+    const advancedCount = userSkills.filter(s => s.level === 'advanced').length
+    const expertCount = userSkills.filter(s => s.level === 'expert').length
+    const totalLevels = userSkills.length || 1
+
+    const competencyLevels = [
+      {
+        label: 'Pemula',
+        shortName: 'Beginner',
+        count: beginnerCount,
+        score: userSkills.length > 0 ? Math.round((beginnerCount / totalLevels) * 100) : 0,
+        note: `${beginnerCount} skill pemula`
       },
       {
-        name: 'Wireframing',
-        shortName: 'Wireframe',
-        score: 82,
-        status: 'Tervalidasi',
-        level: 'Mahir',
-        isGap: false
+        label: 'Menengah',
+        shortName: 'Intermed',
+        count: intermediateCount,
+        score: userSkills.length > 0 ? Math.round((intermediateCount / totalLevels) * 100) : 0,
+        note: `${intermediateCount} skill operasional`
       },
       {
-        name: 'Usability Testing',
-        shortName: 'Usability',
-        score: 76,
-        status: 'Tervalidasi',
-        level: 'Menengah',
-        isGap: false
+        label: 'Mahir',
+        shortName: 'Advanced',
+        count: advancedCount,
+        score: userSkills.length > 0 ? Math.round((advancedCount / totalLevels) * 100) : 0,
+        note: `${advancedCount} skill portofolio`
       },
       {
-        name: 'Product Discovery',
-        shortName: 'Discovery',
-        score: 70,
-        status: 'Tervalidasi',
-        level: 'Menengah',
-        isGap: false
-      },
-      {
-        name: 'Design System Tokens',
-        shortName: 'Tokens',
-        score: 35,
-        status: 'Gap Missing',
-        level: 'Belum Dikuasai',
-        isGap: true
-      },
-      {
-        name: 'Quantitative Analytics',
-        shortName: 'Analytics',
-        score: 25,
-        status: 'Gap Develop',
-        level: 'Perlu Ditingkatkan',
-        isGap: true
+        label: 'Ahli',
+        shortName: 'Expert',
+        count: expertCount,
+        score: userSkills.length > 0 ? Math.round((expertCount / totalLevels) * 100) : 0,
+        note: `${expertCount} skill spesialisasi`
       }
     ]
 
-    // Competency Level Breakdown
-    const beginnerCount = userSkills.filter(s => s.level === 'beginner').length || 3
-    const intermediateCount = userSkills.filter(s => s.level === 'intermediate').length || 6
-    const advancedCount = userSkills.filter(s => s.level === 'advanced').length || 4
-    const expertCount = userSkills.filter(s => s.level === 'expert').length || 1
-
-    const competencyLevels = [
-      { label: 'Pemula', shortName: 'Beginner', count: beginnerCount, score: Math.round((beginnerCount / totalSkillsCount) * 100), note: `${beginnerCount} skill pemula` },
-      { label: 'Menengah', shortName: 'Intermed', count: intermediateCount, score: Math.round((intermediateCount / totalSkillsCount) * 100), note: `${intermediateCount} skill operasional` },
-      { label: 'Mahir', shortName: 'Advanced', count: advancedCount, score: Math.round((advancedCount / totalSkillsCount) * 100), note: `${advancedCount} skill portofolio` },
-      { label: 'Ahli', shortName: 'Expert', count: expertCount, score: Math.round((expertCount / totalSkillsCount) * 100), note: `${expertCount} skill spesialisasi` }
-    ]
-
     const skillPatternMap = {
-      targetRole: targetRoleName,
+      targetRole: targetRoleName || 'Target Karier Belum Dipilih',
       targetSkills: targetSkillsPattern,
       competencyLevels
-    }
-
-    const sparklines = {
-      careerReadiness: [25, 38, 45, 52, 60, 50, 78, 65, 55, 70],
-      totalSkills: [4, 6, 8, 9, 11, 14, 12, 10, 13, 14],
-      publicPortfolio: [35, 45, 58, 65, 75, 82, 92, 85, 80, 88]
     }
 
     const now = new Date()
 
     return apiSuccess({
       user: {
-        name: user.name || 'Nabila Saftri',
-        headline: user.profile?.headline || 'Fresh Graduate • UI/UX & Product',
-        avatarUrl:
-          user.avatarUrl ||
-          'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+        name: user.name || 'Pengguna Growvia',
+        headline:
+          user.profile?.headline ||
+          (user.profile?.major ? `Mahasiswa ${user.profile.major}` : 'Pengguna Growvia'),
+        avatarUrl: user.avatarUrl,
         dateFormatted: formatIndonesianDate(now),
-        semesterTag: 'Semester 7 Ready • Target Q3 2025'
+        semesterTag: user.profile?.graduationYear
+          ? `${user.profile.institution ? `${user.profile.institution} • ` : ''}Target Lulus ${user.profile.graduationYear}`
+          : 'Profil Karier Terhubung'
       },
       statCards: {
         careerReadiness: {
           percentage: readinessScore,
-          trend: '+12% bulan ini',
-          targetRole: subTargetName,
-          note: `Siap melamar ${subTargetName}`,
-          sparkline: sparklines.careerReadiness
+          trend: target?.lastAnalyzedAt ? 'Evaluasi Aktif' : 'Belum Dianalisis',
+          targetRole: subTargetName || 'Belum Ditentukan',
+          note: subTargetName ? `Sasaran: ${subTargetName}` : 'Pilih sasaran karier'
         },
         totalSkills: {
           count: totalSkillsCount,
           hardSkillsCount,
-          softSkillsCount,
-          sparkline: sparklines.totalSkills
+          softSkillsCount
         },
         skillGaps: {
-          count: target?.skillGapResults?.length || 3,
-          label: 'Skill Perlu Dikejar',
-          targetRole: 'Associate PM'
+          count: target?.skillGapResults?.length || 0,
+          label: target?.skillGapResults?.length ? 'Skill Perlu Dikejar' : 'Tidak Ada Gap Aktif',
+          targetRole: targetRoleName || 'Belum Ada Target'
         },
         publicPortfolio: {
-          completeness: 92,
-          status: 'Aktif & Siap Dibagikan',
-          previewUrl: `/u/${user.profile?.portfolioSlug || 'nabila'}`,
-          sparkline: sparklines.publicPortfolio
+          completeness,
+          status: user.profile?.portfolioPublished ? 'Aktif & Siap Dibagikan' : 'Draft Portofolio',
+          previewUrl: user.profile?.portfolioSlug ? `/u/${user.profile.portfolioSlug}` : '/portfolio'
         }
       },
       metodologi: {
         experiencesCount: totalExperiencesCount,
         skillsCount: totalSkillsCount,
-        gapCount: target?.skillGapResults?.length || 3,
-        opportunitiesCount
+        gapCount: target?.skillGapResults?.length || 0,
+        opportunitiesCount: dbOpportunitiesCount
       },
       charts: {
         skillPatternMap,
@@ -474,18 +606,18 @@ export async function GET(request: NextRequest) {
       recentExperiences: mappedExperiences,
       recentOpportunities,
       targetCareer: {
-        roleName: targetRoleName,
+        roleName: targetRoleName || 'Belum Memilih Target Karier',
         industry: targetIndustry,
         matchPercent: readinessScore,
-        threshold: 90,
-        missingSkillsCount: 2,
-        gaps: gapsFromDb
+        threshold: 85,
+        missingSkillsCount: allGaps.length,
+        gaps: allGaps
       },
       rapidModules
     })
   } catch (error) {
     console.error('Error in /api/dashboard/summary:', error)
-    
-return apiError('Gagal memuat data dashboard dari Supabase.', 500)
+
+    return apiError('Gagal memuat data dashboard dari database.', 500)
   }
 }
