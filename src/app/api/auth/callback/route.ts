@@ -1,9 +1,13 @@
-import { NextResponse } from 'next/server'
 import crypto from 'node:crypto'
+
+import { NextResponse } from 'next/server'
+
 import { decodeJwt } from 'jose'
+
 import { prisma } from '@/libs/prisma'
 import { createJwtToken, AUTH_COOKIE_NAME } from '@/server/utils/auth'
 import { apiSuccess, apiError } from '@/server/utils/response'
+import { createClient as createServerSupabaseClient } from '@/libs/supabase/server'
 
 interface SupabaseJwtPayload {
   email?: string
@@ -22,36 +26,30 @@ interface SupabaseJwtPayload {
 export async function GET(req: Request) {
   const url = new URL(req.url)
   const code = url.searchParams.get('code')
+  const errorParam = url.searchParams.get('error')
+  const errorDescription = url.searchParams.get('error_description')
+
+  // Tangani jika ada error dari provider OAuth Google
+  if (errorParam) {
+    console.error('OAuth Provider Error:', errorParam, errorDescription)
+    
+return NextResponse.redirect(new URL(`/login?error=${encodeURIComponent(errorDescription || errorParam)}`, req.url))
+  }
 
   // Jika flow menggunakan PKCE query param (?code=...)
   if (code) {
     try {
-      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-      const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+      const supabase = await createServerSupabaseClient()
+      const { data, error } = await supabase.auth.exchangeCodeForSession(code)
 
-      if (supabaseUrl && anonKey) {
-        const tokenRes = await fetch(`${supabaseUrl}/auth/v1/token?grant_type=pkce`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            apikey: anonKey
-          },
-          body: JSON.stringify({
-            auth_code: code,
-            code_verifier: ''
-          })
-        })
-
-        if (tokenRes.ok) {
-          const tokenData = await tokenRes.json()
-          if (tokenData.access_token) {
-            // Proses token langsung dan redirect
-            return await handleUserSession(tokenData.access_token, req)
-          }
-        }
+      if (!error && data?.session?.access_token) {
+        // Proses token langsung dan redirect browser ke dashboard / onboarding
+        return await handleUserSession(data.session.access_token, req)
+      } else if (error) {
+        console.error('Error in exchangeCodeForSession:', error)
       }
     } catch (err) {
-      console.error('Error exchanging PKCE code:', err)
+      console.error('Error exchanging PKCE code with Supabase SSR:', err)
     }
   }
 
@@ -179,7 +177,8 @@ export async function POST(req: Request) {
     return await handleUserSession(accessToken, req)
   } catch (err) {
     console.error('Error on POST /api/auth/callback:', err)
-    return apiError('Gagal memproses sesi OAuth Google', 500, err)
+    
+return apiError('Gagal memproses sesi OAuth Google', 500, err)
   }
 }
 
@@ -187,6 +186,7 @@ export async function POST(req: Request) {
 async function handleUserSession(accessToken: string, req: Request) {
   // Decode JWT payload dari Supabase
   let payload: SupabaseJwtPayload
+
   try {
     payload = decodeJwt(accessToken) as SupabaseJwtPayload
   } catch {
@@ -194,6 +194,7 @@ async function handleUserSession(accessToken: string, req: Request) {
   }
 
   const email = payload.email?.toLowerCase().trim()
+
   if (!email) {
     return apiError('Email tidak ditemukan pada identitas Google', 400)
   }
@@ -272,21 +273,27 @@ async function handleUserSession(accessToken: string, req: Request) {
   }).catch(e => console.warn('Warning creating session in DB:', e))
 
   // 5. Response & set HTTP-only cookie
-  const response = apiSuccess(
-    {
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        avatarUrl: user.avatarUrl,
-        status: user.status
-      },
-      token: jwtToken,
-      redirectTo,
-      isProfileComplete
-    },
-    'Berhasil masuk dengan akun Google.'
-  )
+  // Jika dipanggil dari GET (browser navigation), langsung redirect ke tujuan
+  // Jika dipanggil dari POST (client fetch), kembalikan JSON
+  const isGet = req.method === 'GET'
+
+  const response = isGet
+    ? NextResponse.redirect(new URL(redirectTo, req.url))
+    : apiSuccess(
+        {
+          user: {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            avatarUrl: user.avatarUrl,
+            status: user.status
+          },
+          token: jwtToken,
+          redirectTo,
+          isProfileComplete
+        },
+        'Berhasil masuk dengan akun Google.'
+      )
 
   response.cookies.set({
     name: AUTH_COOKIE_NAME,
