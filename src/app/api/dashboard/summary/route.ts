@@ -221,7 +221,7 @@ export async function GET(request: NextRequest) {
         title: dbLearningResources[1]?.title || 'Template: Design Token Architecture in Figma',
         description: 'Standar dokumentasi variabel & token untuk diserahkan ke tim engineer.',
         gapTag: 'Design System Tokens',
-        ctaText: 'Unduh Kit 📥',
+        ctaText: 'Unduh Kit',
         url: dbLearningResources[1]?.url || '#'
       },
       {

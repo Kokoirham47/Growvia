@@ -165,7 +165,7 @@ function MiniBarSparkline({
   values,
   accentColor = '#2563EB',
   mutedColor = 'rgba(37, 99, 235, 0.18)',
-  accentIndex = 6
+  accentIndex = 3
 }: {
   values: number[]
   accentColor?: string
@@ -175,15 +175,15 @@ function MiniBarSparkline({
   const max = Math.max(...values, 1)
 
   return (
-    <div className='flex items-end gap-1 sm:gap-1.5 h-11 py-1' aria-hidden='true'>
+    <div className='flex items-end gap-1 h-7 py-0.5' aria-hidden='true'>
       {values.map((v, i) => {
         const isAccent = i === accentIndex
-        const heightPercent = Math.max(16, Math.round((v / max) * 100))
+        const heightPercent = Math.max(20, Math.round((v / max) * 100))
 
         return (
           <div
             key={i}
-            className='w-1.5 rounded-full transition-all duration-300'
+            className='w-1 rounded-full transition-all duration-300'
             style={{
               height: `${heightPercent}%`,
               backgroundColor: isAccent ? accentColor : mutedColor
@@ -512,11 +512,18 @@ export default function DashboardView() {
             </div>
           </div>
 
-          <div className='flex items-end justify-between mt-3 pt-2 border-t border-slate-100 dark:border-slate-800'>
-            <span className='text-xs text-slate-500 dark:text-slate-400 truncate max-w-[130px]' title={data.statCards.careerReadiness.note}>
-              {data.statCards.careerReadiness.targetRole}
-            </span>
-            <MiniBarSparkline values={readinessSparkline} accentColor='#2563EB' mutedColor='rgba(37, 99, 235, 0.2)' accentIndex={6} />
+          <div className='flex items-end justify-between gap-2.5 mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800 min-h-[44px]'>
+            <div className='flex-1 min-w-0 flex flex-col justify-end'>
+              <span
+                className='text-xs text-slate-600 dark:text-slate-400 font-medium leading-snug line-clamp-2 block'
+                title={data.statCards.careerReadiness.targetRole}
+              >
+                {data.statCards.careerReadiness.targetRole}
+              </span>
+            </div>
+            <div className='shrink-0' title='Indikator tren kesiapan'>
+              <MiniBarSparkline values={readinessSparkline.slice(-5)} accentColor='#2563EB' mutedColor='rgba(37, 99, 235, 0.2)' accentIndex={3} />
+            </div>
           </div>
         </div>
 
@@ -538,11 +545,15 @@ export default function DashboardView() {
             </div>
           </div>
 
-          <div className='flex items-end justify-between mt-3 pt-2 border-t border-slate-100 dark:border-slate-800'>
-            <span className='text-xs text-slate-500 dark:text-slate-400'>
-              {data.statCards.totalSkills.hardSkillsCount} Hard • {data.statCards.totalSkills.softSkillsCount} Soft
-            </span>
-            <MiniBarSparkline values={skillsSparkline} accentColor='#10B981' mutedColor='rgba(16, 185, 129, 0.2)' accentIndex={5} />
+          <div className='flex items-end justify-between gap-2.5 mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800 min-h-[44px]'>
+            <div className='flex-1 min-w-0 flex flex-col justify-end'>
+              <span className='text-xs text-slate-600 dark:text-slate-400 font-medium leading-snug line-clamp-2 block'>
+                {data.statCards.totalSkills.hardSkillsCount} Hard Skill • {data.statCards.totalSkills.softSkillsCount} Soft Skill
+              </span>
+            </div>
+            <div className='shrink-0' title='Indikator tren keahlian'>
+              <MiniBarSparkline values={skillsSparkline.slice(-5)} accentColor='#10B981' mutedColor='rgba(16, 185, 129, 0.2)' accentIndex={3} />
+            </div>
           </div>
         </div>
 
@@ -566,11 +577,18 @@ export default function DashboardView() {
             </div>
           </div>
 
-          <div className='flex items-end justify-between mt-3 pt-2 border-t border-slate-100 dark:border-slate-800'>
-            <span className='text-xs text-slate-500 dark:text-slate-400 truncate max-w-[130px]'>
-              Target: {data.targetCareer.roleName}
-            </span>
-            <MiniBarSparkline values={gapsSparkline} accentColor='#F59E0B' mutedColor='rgba(245, 158, 11, 0.2)' accentIndex={7} />
+          <div className='flex items-end justify-between gap-2.5 mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800 min-h-[44px]'>
+            <div className='flex-1 min-w-0 flex flex-col justify-end'>
+              <span
+                className='text-xs text-slate-600 dark:text-slate-400 font-medium leading-snug line-clamp-2 block'
+                title={`Target: ${data.targetCareer.roleName}`}
+              >
+                Target: {data.targetCareer.roleName}
+              </span>
+            </div>
+            <div className='shrink-0' title='Indikator gap keahlian'>
+              <MiniBarSparkline values={gapsSparkline.slice(-5)} accentColor='#F59E0B' mutedColor='rgba(245, 158, 11, 0.2)' accentIndex={3} />
+            </div>
           </div>
         </div>
 
@@ -592,15 +610,19 @@ export default function DashboardView() {
             </div>
           </div>
 
-          <div className='flex items-end justify-between mt-3 pt-2 border-t border-slate-100 dark:border-slate-800'>
-            <Link
-              href={data.statCards.publicPortfolio.previewUrl}
-              className='inline-flex items-center gap-1 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline'
-            >
-              <span>Preview Live</span>
-              <ExternalLink className='w-3 h-3' />
-            </Link>
-            <MiniBarSparkline values={portfolioSparkline} accentColor='#8B5CF6' mutedColor='rgba(139, 92, 246, 0.2)' accentIndex={6} />
+          <div className='flex items-end justify-between gap-2.5 mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800 min-h-[44px]'>
+            <div className='flex-1 min-w-0 flex flex-col justify-end'>
+              <Link
+                href={data.statCards.publicPortfolio.previewUrl}
+                className='inline-flex items-center gap-1 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline leading-snug'
+              >
+                <span>Preview Live</span>
+                <ExternalLink className='w-3 h-3' />
+              </Link>
+            </div>
+            <div className='shrink-0' title='Indikator kelengkapan portofolio'>
+              <MiniBarSparkline values={portfolioSparkline.slice(-5)} accentColor='#8B5CF6' mutedColor='rgba(139, 92, 246, 0.2)' accentIndex={3} />
+            </div>
           </div>
         </div>
       </section>
@@ -992,7 +1014,7 @@ export default function DashboardView() {
 
               <div className='flex flex-col'>
                 <span className='text-slate-500 dark:text-slate-400 text-xs font-medium'>Peluang</span>
-                <div className='text-2xl font-extrabold text-blue-600 dark:text-blue-400 mt-1'>
+                <div className='text-2xl font-extrabold text-slate-600 dark:text-white mt-1'>
                   {data.metodologi.opportunitiesCount}
                 </div>
                 <span className='text-[10px] text-slate-400 mt-0.5'>Tersedia</span>
