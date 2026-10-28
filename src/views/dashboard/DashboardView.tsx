@@ -1282,7 +1282,7 @@ export default function DashboardView() {
                   </div>
                 ) : (
                   <div className='flex flex-col gap-2'>
-                    {data.targetCareer.gaps.map((gap, gIdx) => {
+                    {data.targetCareer.gaps.slice(0, 3).map((gap, gIdx) => {
                       const isMissing = gap.status === 'missing'
 
                       return (
@@ -1315,6 +1315,21 @@ export default function DashboardView() {
                         </div>
                       )
                     })}
+
+                    {data.targetCareer.gaps.length > 3 && (
+                      <Link
+                        href='/career'
+                        className='group flex items-center justify-between p-2.5 rounded-xl bg-slate-50/70 dark:bg-slate-800/40 hover:bg-blue-50/80 dark:hover:bg-blue-950/40 border border-slate-200/80 dark:border-slate-800 hover:border-blue-200 dark:hover:border-blue-800 text-xs transition-all mt-1'
+                      >
+                        <span className='text-slate-600 dark:text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 font-medium'>
+                          +{data.targetCareer.gaps.length - 3} skill gap lainnya
+                        </span>
+                        <span className='font-semibold text-blue-600 dark:text-blue-400 inline-flex items-center gap-1 group-hover:underline'>
+                          <span>Lihat di Analisis Karier &amp; Gap</span>
+                          <ChevronRight className='w-3.5 h-3.5' />
+                        </span>
+                      </Link>
+                    )}
                   </div>
                 )}
               </div>
