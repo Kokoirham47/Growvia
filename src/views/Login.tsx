@@ -21,6 +21,7 @@ import {
 import type { SystemMode } from '@core/types'
 import { useSettings } from '@core/hooks/useSettings'
 import { useAuth } from '@/contexts/AuthContext'
+import { createClient } from '@/libs/supabase/client'
 
 interface FormErrors {
   email?: string
@@ -198,19 +199,21 @@ return
   // Google OAuth handler
   const handleGoogleSignIn = async () => {
     try {
-      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+      const supabase = createClient()
 
-      if (!supabaseUrl) {
-        alert('Supabase URL belum dikonfigurasi di environment.')
-        
-return
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/api/auth/callback`
+        }
+      })
+
+      if (error) {
+        console.error('Google Sign In Error:', error)
+        alert('Gagal memulai login Google: ' + error.message)
       }
-
-      const callbackUrl = `${window.location.origin}/api/auth/callback`
-
-      window.location.href = `${supabaseUrl}/auth/v1/authorize?provider=google&redirect_to=${encodeURIComponent(callbackUrl)}`
     } catch (e) {
-      console.error(e)
+      console.error('Google Sign In Exception:', e)
     }
   }
 
