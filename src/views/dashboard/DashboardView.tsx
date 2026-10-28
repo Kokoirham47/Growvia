@@ -24,7 +24,6 @@ import {
   Loader2,
   RefreshCw,
   BookOpen,
-  Briefcase,
   MapPin,
   Clock,
   Download,
@@ -349,15 +348,12 @@ export default function DashboardView() {
         isGap: false
       }))
 
-  const activeIndex = hoveredBarIndex !== null ? hoveredBarIndex : 0
-
   // Skill Distribution data for Donut chart from real database
   const distributionData = data.charts?.skillDistribution || []
 
   // SVG Donut calculation
   const donutRadius = 38
   const donutCircumference = 2 * Math.PI * donutRadius
-  let accumulatedPercent = 0
 
   // Opportunities list from real database
   const opportunities = data.recentOpportunities || []
@@ -541,527 +537,304 @@ export default function DashboardView() {
         </div>
       </section>
 
-      {/* 3. METODOLOGI GROWVIA: ALUR EKOSISTEM KARIER */}
-      <section className='bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 p-6 shadow-xs'>
-        <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pb-3'>
-          <div>
-            <span className='text-[10px] font-bold text-slate-400 tracking-wider uppercase'>
-              METODOLOGI GROWVIA
-            </span>
-            <h3 className='text-lg font-bold text-slate-900 dark:text-white tracking-tight mt-0.5'>
-              Alur Ekosistem Karier Kamu
-            </h3>
-          </div>
-
-          <span className='px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 text-xs font-semibold w-fit self-start sm:self-center border border-blue-200/80 dark:border-blue-800/60'>
-            Siklus Berkelanjutan
-          </span>
-        </div>
-
-        <div className='grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4'>
-          {/* Step 1: Pengalaman */}
-          <Link
-            href='/experience'
-            className='bg-slate-50/70 dark:bg-slate-800/50 rounded-2xl p-4 border border-slate-100 dark:border-slate-800 flex flex-col justify-between hover:border-blue-300 dark:hover:border-blue-700 transition-all group'
-          >
+      {/* 3. VISUALISASI KEAHLIAN & SASARAN KARIER */}
+      <section className='grid grid-cols-1 lg:grid-cols-12 gap-6 items-start'>
+        {/* LEFT COLUMN (65%): Skill Pattern Map Bar Chart + AI Insight */}
+        <div className='lg:col-span-8 flex flex-col gap-6'>
+          {/* Card 1: Skill Pattern Map Bar Chart */}
+          <div className='bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 p-6 sm:p-7 shadow-xs flex flex-col justify-between'>
             <div>
-              <div className='flex items-center justify-between'>
-                <div className='inline-flex items-center gap-1.5 text-xs font-bold text-slate-900 dark:text-white'>
-                  <FolderOpen className='w-3.5 h-3.5 text-blue-600 dark:text-blue-400' />
-                  <span>Pengalaman</span>
+              {/* Header with Title and Mode Toggle */}
+              <div className='flex flex-col sm:flex-row sm:items-center justify-between gap-3'>
+                <div>
+                  <span className='text-[10px] font-bold text-slate-400 tracking-wider uppercase'>
+                    RINGKASAN KEAHLIAN
+                  </span>
+                  <h3 className='text-lg font-bold text-slate-900 dark:text-white tracking-tight mt-0.5'>
+                    Penguasaan Keahlian Sasaran Karier
+                  </h3>
+                  <p className='text-xs text-slate-500 dark:text-slate-400 mt-0.5'>
+                    Tingkat keahlian untuk: <strong className='font-semibold text-slate-800 dark:text-slate-200'>{patternMap.targetRole}</strong>
+                  </p>
                 </div>
-                <span className='text-xs font-bold text-slate-300 dark:text-slate-600'>1</span>
-              </div>
-              <div className='text-2xl font-bold text-slate-900 dark:text-white mt-2'>
-                {data.metodologi.experiencesCount}
-              </div>
-              <div className='text-[11px] text-slate-500 dark:text-slate-400 mt-0.5'>Tercatat rapi</div>
-            </div>
-            <div className='h-1 w-full bg-blue-600 rounded-full mt-3' />
-          </Link>
 
-          {/* Step 2: Ekstraksi AI */}
-          <Link
-            href='/skills'
-            className='bg-slate-50/70 dark:bg-slate-800/50 rounded-2xl p-4 border border-slate-100 dark:border-slate-800 flex flex-col justify-between hover:border-blue-300 dark:hover:border-blue-700 transition-all group'
-          >
-            <div>
-              <div className='flex items-center justify-between'>
-                <div className='inline-flex items-center gap-1.5 text-xs font-bold text-slate-900 dark:text-white'>
-                  <Sparkles className='w-3.5 h-3.5 text-blue-600 dark:text-blue-400' />
-                  <span>Ekstraksi AI</span>
-                </div>
-                <span className='text-xs font-bold text-slate-300 dark:text-slate-600'>2</span>
-              </div>
-              <div className='text-2xl font-bold text-slate-900 dark:text-white mt-2'>
-                {data.metodologi.skillsCount}
-              </div>
-              <div className='text-[11px] text-slate-500 dark:text-slate-400 mt-0.5'>Skill aktif terpetakan</div>
-            </div>
-            <div className='h-1 w-full bg-blue-600 rounded-full mt-3' />
-          </Link>
-
-          {/* Step 3: Analisis Gap */}
-          <Link
-            href='/career'
-            className='bg-slate-50/70 dark:bg-slate-800/50 rounded-2xl p-4 border border-slate-100 dark:border-slate-800 flex flex-col justify-between hover:border-amber-300 dark:hover:border-amber-700 transition-all group'
-          >
-            <div>
-              <div className='flex items-center justify-between'>
-                <div className='inline-flex items-center gap-1.5 text-xs font-bold text-slate-900 dark:text-white'>
-                  <Target className='w-3.5 h-3.5 text-amber-500' />
-                  <span>Analisis Gap</span>
-                </div>
-                <span className='text-xs font-bold text-slate-300 dark:text-slate-600'>3</span>
-              </div>
-              <div className='text-2xl font-bold text-amber-600 dark:text-amber-400 mt-2'>
-                {data.metodologi.gapCount}
-              </div>
-              <div className='text-[11px] text-slate-500 dark:text-slate-400 mt-0.5'>Target belajar aktif</div>
-            </div>
-            <div className='h-1 w-full bg-amber-500 rounded-full mt-3' />
-          </Link>
-
-          {/* Step 4: Peluang Karier */}
-          <Link
-            href='/career'
-            className='bg-slate-50/70 dark:bg-slate-800/50 rounded-2xl p-4 border border-slate-100 dark:border-slate-800 flex flex-col justify-between hover:border-emerald-300 dark:hover:border-emerald-700 transition-all group'
-          >
-            <div>
-              <div className='flex items-center justify-between'>
-                <div className='inline-flex items-center gap-1.5 text-xs font-bold text-slate-900 dark:text-white'>
-                  <Briefcase className='w-3.5 h-3.5 text-emerald-500' />
-                  <span>Peluang Karier</span>
-                </div>
-                <span className='text-xs font-bold text-slate-300 dark:text-slate-600'>4</span>
-              </div>
-              <div className='text-2xl font-bold text-emerald-600 dark:text-emerald-400 mt-2'>
-                {data.metodologi.opportunitiesCount}
-              </div>
-              <div className='text-[11px] text-slate-500 dark:text-slate-400 mt-0.5'>Match &gt; 80%</div>
-            </div>
-            <div className='h-1 w-full bg-emerald-500 rounded-full mt-3' />
-          </Link>
-        </div>
-      </section>
-
-      {/* 4. PETA KOMPETENSI (BAR CHART) & KATEGORI KEAHLIAN (DONUT CHART) */}
-      <section className='grid grid-cols-1 lg:grid-cols-12 gap-6'>
-        {/* LEFT COLUMN (65%): Skill Pattern Map Bar Chart */}
-        <div className='lg:col-span-8 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 p-6 sm:p-7 shadow-xs flex flex-col justify-between'>
-          <div>
-            {/* Header with Title and Mode Toggle */}
-            <div className='flex flex-col sm:flex-row sm:items-center justify-between gap-3'>
-              <div>
-                <span className='text-[10px] font-bold text-slate-400 tracking-wider uppercase'>
-                  PETA KOMPETENSI
-                </span>
-                <h3 className='text-lg font-bold text-slate-900 dark:text-white tracking-tight mt-0.5'>
-                  Peta Penguasaan Keahlian Sasaran Karier
-                </h3>
-                <p className='text-xs text-slate-500 dark:text-slate-400 mt-0.5'>
-                  Evaluasi keahlian untuk: <strong className='font-semibold text-slate-800 dark:text-slate-200'>{patternMap.targetRole}</strong>
-                </p>
-              </div>
-
-              {/* View Mode Toggle (Target Skills vs Competency Levels) */}
-              <div className='inline-flex items-center p-1 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200/60 dark:border-slate-700/60 text-xs font-medium self-start sm:self-center'>
-                <button
-                  type='button'
-                  onClick={() => {
-                    setChartMode('target')
-                    setHoveredBarIndex(null)
-                  }}
-                  className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
-                    chartMode === 'target'
-                      ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-semibold shadow-xs'
-                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                  }`}
-                >
-                  Skill Sasaran
-                </button>
-                <button
-                  type='button'
-                  onClick={() => {
-                    setChartMode('levels')
-                    setHoveredBarIndex(null)
-                  }}
-                  className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
-                    chartMode === 'levels'
-                      ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-semibold shadow-xs'
-                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                  }`}
-                >
-                  Tingkat Kemahiran
-                </button>
-              </div>
-            </div>
-
-            {/* Metric & Active Bar Info */}
-            <div className='flex flex-wrap items-baseline justify-between gap-3 mt-4'>
-              <div className='flex items-baseline gap-2.5'>
-                <div className='text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight'>
-                  {data.statCards.careerReadiness.percentage}%
-                </div>
-                <span className='text-xs font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1'>
-                  <TrendingUp className='w-3.5 h-3.5' />
-                  <span>Kecocokan Total</span>
-                </span>
-              </div>
-
-              <div className='flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400'>
-                <div className='flex items-center gap-1.5'>
-                  <div className='w-2.5 h-2.5 rounded-full bg-blue-600' />
-                  <span>Skill Terverifikasi</span>
-                </div>
-                <div className='flex items-center gap-1.5'>
-                  <div className='w-2.5 h-2.5 rounded-full bg-amber-500' />
-                  <span>Skill Gap Perlu Dikejar</span>
+                {/* View Mode Toggle (Target Skills vs Competency Levels) */}
+                <div className='inline-flex items-center p-1 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200/60 dark:border-slate-700/60 text-xs font-medium self-start sm:self-center'>
+                  <button
+                    type='button'
+                    onClick={() => {
+                      setChartMode('target')
+                      setHoveredBarIndex(null)
+                    }}
+                    className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                      chartMode === 'target'
+                        ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-semibold shadow-xs'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                    }`}
+                  >
+                    Skill Sasaran
+                  </button>
+                  <button
+                    type='button'
+                    onClick={() => {
+                      setChartMode('levels')
+                      setHoveredBarIndex(null)
+                    }}
+                    className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                      chartMode === 'levels'
+                        ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-semibold shadow-xs'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                    }`}
+                  >
+                    Tingkat Kemahiran
+                  </button>
                 </div>
               </div>
-            </div>
-          </div>
 
-          {/* Bar Chart Visualization Canvas with Y-Axis and Interactive Bars */}
-          <div className='mt-8 pt-4'>
-            {currentBars.length === 0 ? (
-              <div className='flex flex-col items-center justify-center py-16 text-center gap-3 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 p-8'>
-                <div className='w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center'>
-                  <Target className='w-6 h-6' />
-                </div>
-                <h4 className='text-sm font-bold text-slate-900 dark:text-white'>Belum Ada Keahlian Terpetakan</h4>
-                <p className='text-xs text-slate-500 dark:text-slate-400 max-w-sm'>
-                  Tambahkan pengalaman atau tentukan target kariermu untuk melihat grafik visualisasi penguasaan keahlian di sini.
-                </p>
-                <Link
-                  href='/career'
-                  className='mt-2 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 transition-colors'
-                >
-                  <span>Tentukan Sasaran Karier</span>
-                  <ChevronRight className='w-3.5 h-3.5' />
-                </Link>
-              </div>
-            ) : (
-              <div className='relative h-56 sm:h-64 flex items-end'>
-                {/* Y-Axis Guidelines & Labels */}
-                <div className='absolute inset-0 flex flex-col justify-between pointer-events-none text-[10px] text-slate-400 dark:text-slate-500 font-medium pb-8'>
-                  <div className='flex items-center gap-2 border-b border-slate-100 dark:border-slate-800/80 pb-0.5'>
-                    <span className='w-7 text-right'>100%</span>
-                    <div className='flex-1 h-px bg-slate-100 dark:bg-slate-800/80' />
+              {/* Metric & Active Bar Info */}
+              <div className='flex flex-wrap items-baseline justify-between gap-3 mt-4'>
+                <div className='flex items-baseline gap-2.5'>
+                  <div className='text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight'>
+                    {data.statCards.careerReadiness.percentage}%
                   </div>
-                  <div className='flex items-center gap-2 border-b border-slate-100 dark:border-slate-800/80 pb-0.5'>
-                    <span className='w-7 text-right'>80%</span>
-                    <div className='flex-1 h-px bg-slate-100 dark:bg-slate-800/80' />
+                  <span className='text-xs font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1'>
+                    <TrendingUp className='w-3.5 h-3.5' />
+                    <span>Kecocokan Total</span>
+                  </span>
+                </div>
+
+                <div className='flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400'>
+                  <div className='flex items-center gap-1.5'>
+                    <div className='w-2.5 h-2.5 rounded-full bg-emerald-500' />
+                    <span>&ge; 80% (Tinggi)</span>
                   </div>
-                  <div className='flex items-center gap-2 border-b border-slate-100 dark:border-slate-800/80 pb-0.5'>
-                    <span className='w-7 text-right'>60%</span>
-                    <div className='flex-1 h-px bg-slate-100 dark:bg-slate-800/80' />
+                  <div className='flex items-center gap-1.5'>
+                    <div className='w-2.5 h-2.5 rounded-full bg-amber-500' />
+                    <span>40–79% (Sedang)</span>
                   </div>
-                  <div className='flex items-center gap-2 border-b border-slate-100 dark:border-slate-800/80 pb-0.5'>
-                    <span className='w-7 text-right'>40%</span>
-                    <div className='flex-1 h-px bg-slate-100 dark:bg-slate-800/80' />
-                  </div>
-                  <div className='flex items-center gap-2 border-b border-slate-100 dark:border-slate-800/80 pb-0.5'>
-                    <span className='w-7 text-right'>20%</span>
-                    <div className='flex-1 h-px bg-slate-100 dark:bg-slate-800/80' />
-                  </div>
-                  <div className='flex items-center gap-2 border-b border-slate-200 dark:border-slate-700/80 pb-0.5'>
-                    <span className='w-7 text-right'>0%</span>
-                    <div className='flex-1 h-px bg-slate-200 dark:border-slate-700/80' />
+                  <div className='flex items-center gap-1.5'>
+                    <div className='w-2.5 h-2.5 rounded-full bg-rose-500' />
+                    <span>&lt; 40% (Perlu Dikejar)</span>
                   </div>
                 </div>
-
-                {/* Bars Row */}
-                <div className='w-full pl-10 pr-2 flex items-end justify-between gap-2 sm:gap-4 h-full pb-8 z-1'>
-                  {currentBars.map((bar, idx) => {
-                    const isBarHovered = idx === activeIndex
-                    const barHeightPercent = Math.max(12, Math.min(100, bar.score))
-
-                    return (
-                      <div
-                        key={idx}
-                        onMouseEnter={() => setHoveredBarIndex(idx)}
-                        onMouseLeave={() => setHoveredBarIndex(null)}
-                        className='flex-1 flex flex-col items-center h-full justify-end relative group cursor-pointer'
-                      >
-                        {/* Floating Tooltip above hovered/active bar */}
-                        {isBarHovered && (
-                          <div className='absolute -top-14 left-1/2 -translate-x-1/2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-3 py-1.5 rounded-xl shadow-lg flex flex-col items-center pointer-events-none z-20 whitespace-nowrap animate-in fade-in zoom-in-95 duration-150'>
-                            <span className='text-[10px] text-slate-300 dark:text-slate-500 font-medium leading-none'>
-                              {bar.fullName}
-                            </span>
-                            <span className='text-xs font-bold leading-tight mt-0.5'>
-                              {bar.score}% • {bar.badge}
-                            </span>
-                            <div className='w-2 h-2 bg-slate-900 dark:bg-white rotate-45 absolute -bottom-1 left-1/2 -translate-x-1/2' />
-                          </div>
-                        )}
-
-                        {/* Bar Column */}
-                        <div
-                          className={`w-full max-w-[48px] rounded-t-2xl transition-all duration-300 ${
-                            bar.isGap
-                              ? isBarHovered
-                                ? 'bg-amber-500 shadow-md shadow-amber-500/25 ring-2 ring-amber-400/40'
-                                : 'bg-amber-100 dark:bg-amber-950/60 hover:bg-amber-200'
-                              : isBarHovered
-                              ? 'bg-blue-600 dark:bg-blue-500 shadow-md shadow-blue-500/25 ring-2 ring-blue-400/40'
-                              : 'bg-blue-100 dark:bg-blue-950/60 hover:bg-blue-200'
-                          }`}
-                          style={{ height: `${barHeightPercent}%` }}
-                        />
-
-                        {/* X-Axis Label */}
-                        <span
-                          className={`absolute -bottom-6 text-xs transition-colors truncate max-w-[54px] text-center ${
-                            isBarHovered
-                              ? 'font-bold text-slate-900 dark:text-white'
-                              : 'font-medium text-slate-400 dark:text-slate-500'
-                          }`}
-                          title={bar.fullName}
-                        >
-                          {bar.label}
-                        </span>
-                      </div>
-                    )
-                  })}
-                </div>
               </div>
-            )}
-          </div>
-        </div>
-
-        {/* RIGHT COLUMN (35%): Donut Chart Distribusi Kategori & Ringkasan Capaian */}
-        <div className='lg:col-span-4 flex flex-col gap-6'>
-          {/* Card 1: Distribusi Kategori Keahlian */}
-          <div className='bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 p-6 shadow-xs flex flex-col justify-between'>
-            <div>
-              <span className='text-[10px] font-bold text-slate-400 tracking-wider uppercase'>
-                KOMPOSISI PORTOFOLIO
-              </span>
-              <h3 className='text-base font-bold text-slate-900 dark:text-white tracking-tight mt-0.5'>
-                Distribusi Kategori Keahlian
-              </h3>
-              <p className='text-xs text-slate-500 dark:text-slate-400 mt-0.5'>
-                Rincian proporsi jenis keahlian yang tercatat di akunmu.
-              </p>
             </div>
 
-            {distributionData.length === 0 ? (
-              <div className='py-8 text-center text-xs text-slate-400'>
-                Belum ada keahlian terdaftar untuk menghitung proporsi kategori.
-              </div>
-            ) : (
-              <div className='flex items-center justify-between gap-4 mt-6'>
-                {/* SVG Circular Donut Chart */}
-                <div className='relative w-28 h-28 sm:w-32 sm:h-32 shrink-0 flex items-center justify-center'>
-                  <svg className='w-full h-full -rotate-90' viewBox='0 0 100 100'>
-                    <circle
-                      cx='50'
-                      cy='50'
-                      r={donutRadius}
-                      fill='transparent'
-                      stroke='currentColor'
-                      strokeWidth='10'
-                      className='text-slate-100 dark:text-slate-800'
-                    />
+            {/* Bar Chart Visualization Canvas with Y-Axis and Interactive Bars */}
+            <div className='mt-8 pt-4'>
+              {currentBars.length === 0 ? (
+                <div className='flex flex-col items-center justify-center py-16 text-center gap-3 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 p-8'>
+                  <div className='w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center'>
+                    <Target className='w-6 h-6' />
+                  </div>
+                  <h4 className='text-sm font-bold text-slate-900 dark:text-white'>Belum Ada Keahlian Terpetakan</h4>
+                  <p className='text-xs text-slate-500 dark:text-slate-400 max-w-sm'>
+                    Tambahkan pengalaman atau tentukan target kariermu untuk melihat grafik visualisasi penguasaan keahlian di sini.
+                  </p>
+                  <Link
+                    href='/career'
+                    className='mt-2 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 transition-colors'
+                  >
+                    <span>Tentukan Sasaran Karier</span>
+                    <ChevronRight className='w-3.5 h-3.5' />
+                  </Link>
+                </div>
+              ) : (
+                <div className='relative h-56 sm:h-64 flex items-end'>
+                  {/* Y-Axis Guidelines & Labels */}
+                  <div className='absolute inset-0 flex flex-col justify-between pointer-events-none text-[10px] text-slate-400 dark:text-slate-500 font-medium pb-8'>
+                    <div className='flex items-center gap-2 border-b border-slate-100 dark:border-slate-800/80 pb-0.5'>
+                      <span className='w-7 text-right'>100%</span>
+                      <div className='flex-1 h-px bg-slate-100 dark:bg-slate-800/80' />
+                    </div>
+                    <div className='flex items-center gap-2 border-b border-slate-100 dark:border-slate-800/80 pb-0.5'>
+                      <span className='w-7 text-right'>80%</span>
+                      <div className='flex-1 h-px bg-slate-100 dark:bg-slate-800/80' />
+                    </div>
+                    <div className='flex items-center gap-2 border-b border-slate-100 dark:border-slate-800/80 pb-0.5'>
+                      <span className='w-7 text-right'>60%</span>
+                      <div className='flex-1 h-px bg-slate-100 dark:bg-slate-800/80' />
+                    </div>
+                    <div className='flex items-center gap-2 border-b border-slate-100 dark:border-slate-800/80 pb-0.5'>
+                      <span className='w-7 text-right'>40%</span>
+                      <div className='flex-1 h-px bg-slate-100 dark:bg-slate-800/80' />
+                    </div>
+                    <div className='flex items-center gap-2 border-b border-slate-100 dark:border-slate-800/80 pb-0.5'>
+                      <span className='w-7 text-right'>20%</span>
+                      <div className='flex-1 h-px bg-slate-100 dark:bg-slate-800/80' />
+                    </div>
+                    <div className='flex items-center gap-2 border-b border-slate-200 dark:border-slate-700/80 pb-0.5'>
+                      <span className='w-7 text-right'>0%</span>
+                      <div className='flex-1 h-px bg-slate-200 dark:border-slate-700/80' />
+                    </div>
+                  </div>
 
-                    {distributionData.map((item, idx) => {
-                      const strokeDash = (item.percentage / 100) * donutCircumference
-                      const strokeOffset = -(accumulatedPercent / 100) * donutCircumference
-
-                      accumulatedPercent += item.percentage
+                  {/* Bars Row */}
+                  <div
+                    onMouseLeave={() => setHoveredBarIndex(null)}
+                    className='w-full pl-10 pr-2 flex items-end justify-between gap-2 sm:gap-4 h-full pb-8 z-1'
+                  >
+                    {currentBars.map((bar, idx) => {
+                      const isBarHovered = hoveredBarIndex === idx
+                      const barHeightPercent = Math.max(12, Math.min(100, bar.score))
 
                       return (
-                        <circle
+                        <div
                           key={idx}
-                          cx='50'
-                          cy='50'
-                          r={donutRadius}
-                          fill='transparent'
-                          stroke={item.color}
-                          strokeWidth='10'
-                          strokeDasharray={`${strokeDash} ${donutCircumference}`}
-                          strokeDashoffset={strokeOffset}
-                          strokeLinecap='round'
-                          className='transition-all duration-700'
-                        />
+                          onMouseEnter={() => setHoveredBarIndex(idx)}
+                          onMouseLeave={() => setHoveredBarIndex(null)}
+                          className='flex-1 flex flex-col items-center h-full justify-end relative group cursor-pointer'
+                        >
+                          {/* Floating Tooltip ONLY when hovered */}
+                          {isBarHovered && (
+                            <div className='absolute -top-14 left-1/2 -translate-x-1/2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-3 py-1.5 rounded-xl shadow-lg flex flex-col items-center pointer-events-none z-20 whitespace-nowrap animate-in fade-in zoom-in-95 duration-150'>
+                              <span className='text-[10px] text-slate-300 dark:text-slate-500 font-medium leading-none'>
+                                {bar.fullName}
+                              </span>
+                              <span className='text-xs font-bold leading-tight mt-0.5 flex items-center gap-1.5'>
+                                <span
+                                  className={`w-1.5 h-1.5 rounded-full ${
+                                    bar.score >= 80
+                                      ? 'bg-emerald-400'
+                                      : bar.score >= 40
+                                      ? 'bg-amber-400'
+                                      : 'bg-rose-400'
+                                  }`}
+                                />
+                                <span>
+                                  {bar.score}% • {bar.badge}
+                                </span>
+                              </span>
+                              <div className='w-2 h-2 bg-slate-900 dark:bg-white rotate-45 absolute -bottom-1 left-1/2 -translate-x-1/2' />
+                            </div>
+                          )}
+
+                          {/* Bar Column: Dynamic color based on score (>=80% green, 40-79% yellow, <40% red) */}
+                          <div
+                            className={`w-full max-w-[48px] rounded-t-2xl transition-all duration-300 ${
+                              bar.score >= 80
+                                ? isBarHovered
+                                  ? 'bg-emerald-500 dark:bg-emerald-400 shadow-lg shadow-emerald-500/40 ring-2 ring-emerald-300 scale-y-[1.03] -translate-y-0.5'
+                                  : 'bg-emerald-500 dark:bg-emerald-500 hover:bg-emerald-400'
+                                : bar.score >= 40
+                                ? isBarHovered
+                                  ? 'bg-amber-500 dark:bg-amber-400 shadow-lg shadow-amber-500/40 ring-2 ring-amber-300 scale-y-[1.03] -translate-y-0.5'
+                                  : 'bg-amber-500 dark:bg-amber-500 hover:bg-amber-400'
+                                : isBarHovered
+                                ? 'bg-rose-500 dark:bg-rose-400 shadow-lg shadow-rose-500/40 ring-2 ring-rose-300 scale-y-[1.03] -translate-y-0.5'
+                                : 'bg-rose-500 dark:bg-rose-500 hover:bg-rose-400'
+                            }`}
+                            style={{ height: `${barHeightPercent}%` }}
+                          />
+
+                          {/* X-Axis Label */}
+                          <span
+                            className={`absolute -bottom-6 text-xs transition-colors truncate max-w-[54px] text-center ${
+                              isBarHovered
+                                ? 'font-bold text-slate-900 dark:text-white'
+                                : 'font-medium text-slate-500 dark:text-slate-400'
+                            }`}
+                            title={bar.fullName}
+                          >
+                            {bar.label}
+                          </span>
+                        </div>
                       )
                     })}
-                  </svg>
-
-                  <div className='absolute flex flex-col items-center justify-center text-center'>
-                    <span className='text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight'>
-                      {data.statCards.totalSkills.count}
-                    </span>
-                    <span className='text-[10px] text-slate-400 font-medium'>
-                      Total Skill
-                    </span>
                   </div>
                 </div>
-
-                {/* Legend List */}
-                <div className='flex flex-col gap-2.5 flex-1 min-w-0'>
-                  {distributionData.map((item, idx) => (
-                    <div key={idx} className='flex items-center justify-between text-xs gap-2'>
-                      <div className='flex items-center gap-2 min-w-0'>
-                        <div
-                          className='w-2.5 h-2.5 rounded-full shrink-0'
-                          style={{ backgroundColor: item.color }}
-                        />
-                        <span className='text-slate-700 dark:text-slate-300 truncate font-medium'>
-                          {item.name}
-                        </span>
-                      </div>
-                      <span className='font-bold text-slate-900 dark:text-white shrink-0'>
-                        {item.percentage}%
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Card 2: Ringkasan Aktivitas & Capaian */}
-          <div className='bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 p-6 shadow-xs flex flex-col justify-between'>
-            <div>
-              <span className='text-[10px] font-bold text-slate-400 tracking-wider uppercase'>
-                RINGKASAN STATUS
-              </span>
-              <h3 className='text-base font-bold text-slate-900 dark:text-white tracking-tight mt-0.5'>
-                Aktivitas &amp; Pertumbuhan
-              </h3>
-            </div>
-
-            <div className='grid grid-cols-3 gap-3 mt-5 pt-3 border-t border-slate-100 dark:border-slate-800'>
-              <div className='flex flex-col'>
-                <span className='text-slate-500 dark:text-slate-400 text-xs font-medium'>Pengalaman</span>
-                <div className='text-2xl font-extrabold text-slate-900 dark:text-white mt-1'>
-                  {data.metodologi.experiencesCount}
-                </div>
-                <span className='text-[10px] text-slate-400 mt-0.5'>Tercatat</span>
-              </div>
-
-              <div className='flex flex-col'>
-                <span className='text-slate-500 dark:text-slate-400 text-xs font-medium'>Keahlian</span>
-                <div className='text-2xl font-extrabold text-slate-900 dark:text-white mt-1'>
-                  {data.metodologi.skillsCount}
-                </div>
-                <span className='text-[10px] text-slate-400 mt-0.5'>Terverifikasi</span>
-              </div>
-
-              <div className='flex flex-col'>
-                <span className='text-slate-500 dark:text-slate-400 text-xs font-medium'>Peluang</span>
-                <div className='text-2xl font-extrabold text-slate-600 dark:text-white mt-1'>
-                  {data.metodologi.opportunitiesCount}
-                </div>
-                <span className='text-[10px] text-slate-400 mt-0.5'>Tersedia</span>
-              </div>
+              )}
             </div>
           </div>
-        </div>
-      </section>
 
-      {/* 5. CONDITIONAL REAL AI INSIGHT SECTION
-          Hanya dimunculkan jika ada data AI Insight aktif di Supabase.
-          Jika tidak ada, komponen ini disembunyikan total sesuai instruksi pengguna.
-      */}
-      {data.aiInsight && data.aiInsight.skills && data.aiInsight.skills.length > 0 && insightStatus !== 'dismissed' && (
-        <section className='bg-gradient-to-r from-blue-50/90 via-indigo-50/80 to-purple-50/80 dark:from-slate-900 dark:via-blue-950/40 dark:to-slate-900 rounded-3xl border border-blue-200/80 dark:border-blue-900/60 p-6 sm:p-7 shadow-xs relative overflow-hidden transition-all'>
-          <div className='flex items-center justify-between gap-2 pb-1'>
-            <div className='inline-flex items-center gap-2'>
-              <div className='w-7 h-7 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-2xs'>
-                <Sparkles className='w-4 h-4' />
+          {/* Card 2: CONDITIONAL REAL AI INSIGHT SECTION */}
+          {data.aiInsight && data.aiInsight.skills && data.aiInsight.skills.length > 0 && insightStatus !== 'dismissed' && (
+            <div className='bg-gradient-to-r from-blue-50/90 via-indigo-50/80 to-purple-50/80 dark:from-slate-900 dark:via-blue-950/40 dark:to-slate-900 rounded-3xl border border-blue-200/80 dark:border-blue-900/60 p-6 sm:p-7 shadow-xs relative overflow-hidden transition-all'>
+              <div className='flex items-center justify-between gap-2 pb-1'>
+                <div className='inline-flex items-center gap-2'>
+                  <div className='w-7 h-7 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-2xs'>
+                    <Sparkles className='w-4 h-4' />
+                  </div>
+                  <span className='text-xs font-bold text-blue-600 dark:text-blue-400 tracking-wider uppercase'>
+                    INSIGHT AI GROWVIA
+                  </span>
+                </div>
               </div>
-              <span className='text-xs font-bold text-blue-600 dark:text-blue-400 tracking-wider uppercase'>
-                INSIGHT AI GROWVIA
-              </span>
+
+              <h4 className='text-base sm:text-lg font-bold text-slate-900 dark:text-white tracking-tight mt-3'>
+                Penemuan Skill Baru Otomatis dari Pengalamanmu
+              </h4>
+
+              <p className='text-xs sm:text-sm text-slate-600 dark:text-slate-300 mt-2 leading-relaxed'>
+                Berdasarkan riwayat pengalaman <strong className='font-semibold text-slate-900 dark:text-white'>{data.aiInsight.projectName}</strong>, Growvia AI mendeteksi bukti konkret penerapan skill:{' '}
+                {data.aiInsight.skills.map((skillName, sIdx) => (
+                  <span key={sIdx}>
+                    {sIdx > 0 && (sIdx === data.aiInsight!.skills.length - 1 ? ', dan ' : ', ')}
+                    <strong className='font-bold italic text-slate-900 dark:text-white'>
+                      {skillName}
+                    </strong>
+                  </span>
+                ))}{' '}
+                pada level kompetensi <em className='italic text-slate-800 dark:text-slate-200 font-medium'>{data.aiInsight.level}</em>. Tambahkan langsung ke matriks portofoliomu?
+              </p>
+
+              {data.aiInsight.reasoning && (
+                <p className='text-xs text-slate-500 dark:text-slate-400 mt-2 italic bg-white/60 dark:bg-slate-800/60 p-2.5 rounded-xl border border-blue-100 dark:border-slate-800'>
+                  &ldquo;{data.aiInsight.reasoning}&rdquo;
+                </p>
+              )}
+
+              <div className='flex flex-wrap items-center justify-between gap-3 mt-5 pt-1'>
+                {insightStatus === 'accepted' ? (
+                  <div className='inline-flex items-center gap-2 text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-3.5 py-2 rounded-xl border border-emerald-200 dark:border-emerald-800'>
+                    <CheckCircle2 className='w-4 h-4' />
+                    <span>Keahlian berhasil dikonfirmasi dan dimasukkan ke Skill Matrix portofolio!</span>
+                  </div>
+                ) : (
+                  <div className='flex items-center gap-3'>
+                    <button
+                      type='button'
+                      onClick={handleAcceptInsight}
+                      disabled={isInsightSaving}
+                      className='inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs hover:shadow-md transition-all active:scale-[0.98] cursor-pointer'
+                    >
+                      {isInsightSaving ? (
+                        <Loader2 className='w-4 h-4 animate-spin' />
+                      ) : (
+                        <CheckCircle2 className='w-4 h-4' />
+                      )}
+                      <span>Terima &amp; Simpan</span>
+                    </button>
+
+                    <Link
+                      href='/skills'
+                      className='inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-750 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold transition-all shadow-2xs'
+                    >
+                      <Sliders className='w-3.5 h-3.5 text-slate-500' />
+                      <span>Review di Skill Matrix</span>
+                    </Link>
+                  </div>
+                )}
+
+                {insightStatus !== 'accepted' && (
+                  <button
+                    type='button'
+                    onClick={() => setInsightStatus('dismissed')}
+                    className='text-xs font-medium text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors cursor-pointer py-1'
+                  >
+                    Abaikan Sementara
+                  </button>
+                )}
+              </div>
             </div>
-
-            <span className='px-3 py-1 rounded-full bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-700/60 text-xs font-semibold shadow-2xs'>
-              Baru Teranalisis
-            </span>
-          </div>
-
-          <h4 className='text-base sm:text-lg font-bold text-slate-900 dark:text-white tracking-tight mt-3'>
-            Penemuan Skill Baru Otomatis dari Pengalamanmu
-          </h4>
-
-          <p className='text-xs sm:text-sm text-slate-600 dark:text-slate-300 mt-2 leading-relaxed max-w-3xl'>
-            Berdasarkan riwayat pengalaman <strong className='font-semibold text-slate-900 dark:text-white'>{data.aiInsight.projectName}</strong>, Growvia AI mendeteksi bukti konkret penerapan skill:{' '}
-            {data.aiInsight.skills.map((skillName, sIdx) => (
-              <span
-                key={sIdx}
-                className='inline-flex items-center px-2.5 py-0.5 rounded-lg bg-white dark:bg-slate-800 border border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-400 font-semibold text-xs mx-1 my-0.5 shadow-2xs'
-              >
-                {skillName}
-              </span>
-            ))}{' '}
-            pada level kompetensi <em className='italic text-slate-800 dark:text-slate-200 font-medium'>{data.aiInsight.level}</em>. Tambahkan langsung ke matriks portofoliomu?
-          </p>
-
-          {data.aiInsight.reasoning && (
-            <p className='text-xs text-slate-500 dark:text-slate-400 mt-2 italic bg-white/60 dark:bg-slate-800/60 p-2.5 rounded-xl border border-blue-100 dark:border-slate-800'>
-              &ldquo;{data.aiInsight.reasoning}&rdquo;
-            </p>
           )}
 
-          <div className='flex flex-wrap items-center justify-between gap-3 mt-5 pt-1'>
-            {insightStatus === 'accepted' ? (
-              <div className='inline-flex items-center gap-2 text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-3.5 py-2 rounded-xl border border-emerald-200 dark:border-emerald-800'>
-                <CheckCircle2 className='w-4 h-4' />
-                <span>Keahlian berhasil dikonfirmasi dan dimasukkan ke Skill Matrix portofolio!</span>
-              </div>
-            ) : (
-              <div className='flex items-center gap-3'>
-                <button
-                  type='button'
-                  onClick={handleAcceptInsight}
-                  disabled={isInsightSaving}
-                  className='inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs hover:shadow-md transition-all active:scale-[0.98] cursor-pointer'
-                >
-                  {isInsightSaving ? (
-                    <Loader2 className='w-4 h-4 animate-spin' />
-                  ) : (
-                    <CheckCircle2 className='w-4 h-4' />
-                  )}
-                  <span>Terima &amp; Simpan</span>
-                </button>
-
-                <Link
-                  href='/skills'
-                  className='inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-750 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold transition-all shadow-2xs'
-                >
-                  <Sliders className='w-3.5 h-3.5 text-slate-500' />
-                  <span>Review di Skill Matrix</span>
-                </Link>
-              </div>
-            )}
-
-            {insightStatus !== 'accepted' && (
-              <button
-                type='button'
-                onClick={() => setInsightStatus('dismissed')}
-                className='text-xs font-medium text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors cursor-pointer py-1'
-              >
-                Abaikan Sementara
-              </button>
-            )}
-          </div>
-        </section>
-      )}
-
-      {/* 6. LOWER TWO-COLUMN GRID: RECENT EXPERIENCES, CAREER OPPORTUNITIES & TARGET CAREER & RAPID MODULES */}
-      <section className='grid grid-cols-1 lg:grid-cols-12 gap-6'>
-        {/* LEFT COLUMN (60%): Recent Experiences & Recent Career Opportunities */}
-        <div className='lg:col-span-8 flex flex-col gap-6'>
-          {/* Rekam Jejak Pengalaman Terakhir */}
+          {/* Card 3: Rekam Jejak Pengalaman Terakhir */}
           <div className='bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 p-6 sm:p-7 shadow-xs flex flex-col gap-4'>
             <div className='flex items-center justify-between pb-1'>
               <div>
                 <span className='text-[10px] font-bold text-slate-400 tracking-wider uppercase'>
-                  REKAM JEJAK BUKTI EMPIRIS
+                  REKAM JEJAK PENGALAMAN
                 </span>
                 <h3 className='text-lg font-bold text-slate-900 dark:text-white tracking-tight mt-0.5'>
                   Pengalaman Terakhir
@@ -1158,7 +931,7 @@ export default function DashboardView() {
             )}
           </div>
 
-          {/* Peluang Karier Terbaru Berdasarkan Database */}
+          {/* Card 4: Peluang Karier Terbaru Berdasarkan Database */}
           <div className='bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 p-6 sm:p-7 shadow-xs flex flex-col gap-4'>
             <div className='flex items-center justify-between pb-1'>
               <div>
@@ -1217,7 +990,7 @@ export default function DashboardView() {
                       className='inline-flex items-center justify-center gap-1 w-full py-1.5 rounded-xl bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold shadow-2xs hover:shadow-xs transition-all'
                     >
                       <span>Lamar / Detail</span>
-                      <ChevronRight className='w-3 h-3' />
+                      <ChevronRight className='w-3.5 h-3.5' />
                     </Link>
                   </div>
                 ))}
@@ -1226,9 +999,103 @@ export default function DashboardView() {
           </div>
         </div>
 
-        {/* RIGHT COLUMN (40%): Target Career Priority & Top 3 Learning Recommendations */}
+        {/* RIGHT COLUMN (35%): Donut Chart Pembagian Kategori Keahlian + Sasaran Karier + Rekomendasi Belajar */}
         <div className='lg:col-span-4 flex flex-col gap-6'>
-          {/* Target Karier Utama */}
+          {/* Card 1: Donut Chart Pembagian Jenis Keahlian */}
+          <div className='bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 p-6 shadow-xs flex flex-col'>
+            <div>
+              <span className='text-[10px] font-bold text-slate-400 tracking-wider uppercase'>
+                KATEGORI KEAHLIAN
+              </span>
+              <h3 className='text-base font-bold text-slate-900 dark:text-white tracking-tight mt-0.5'>
+                Pembagian Jenis Keahlian
+              </h3>
+              <p className='text-xs text-slate-500 dark:text-slate-400 mt-0.5'>
+                Rincian proporsi jenis keahlian yang tercatat di akunmu.
+              </p>
+            </div>
+
+            {distributionData.length === 0 ? (
+              <div className='py-6 text-center text-xs text-slate-400'>
+                Belum ada keahlian terdaftar untuk menghitung proporsi kategori.
+              </div>
+            ) : (
+              <div className='flex items-center justify-between gap-4 mt-5'>
+                {/* SVG Circular Donut Chart */}
+                <div className='relative w-28 h-28 sm:w-32 sm:h-32 shrink-0 flex items-center justify-center'>
+                  <svg className='w-full h-full -rotate-90' viewBox='0 0 100 100'>
+                    <circle
+                      cx='50'
+                      cy='50'
+                      r={donutRadius}
+                      fill='transparent'
+                      stroke='currentColor'
+                      strokeWidth='10'
+                      className='text-slate-100 dark:text-slate-800'
+                    />
+
+                    {(() => {
+                      let currentOffset = 0
+
+                      return distributionData.map((item, idx) => {
+                        const strokeDash = (item.percentage / 100) * donutCircumference
+                        const strokeOffset = -(currentOffset / 100) * donutCircumference
+
+                        currentOffset += item.percentage
+
+                        return (
+                          <circle
+                            key={idx}
+                            cx='50'
+                            cy='50'
+                            r={donutRadius}
+                            fill='transparent'
+                            stroke={item.color}
+                            strokeWidth='10'
+                            strokeDasharray={`${strokeDash} ${donutCircumference}`}
+                            strokeDashoffset={strokeOffset}
+                            strokeLinecap='round'
+                            className='transition-all duration-700'
+                          />
+                        )
+                      })
+                    })()}
+                  </svg>
+
+                  <div className='absolute flex flex-col items-center justify-center text-center'>
+                    <span className='text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight'>
+                      {data.statCards.totalSkills.count}
+                    </span>
+                    <span className='text-[10px] text-slate-400 font-medium'>
+                      Total Skill
+                    </span>
+                  </div>
+                </div>
+
+                {/* Legend List */}
+                <div className='flex flex-col gap-2 flex-1 min-w-0'>
+                  {distributionData.map((item, idx) => (
+                    <div key={idx} className='flex items-center justify-between text-xs gap-1.5'>
+                      <div className='flex items-center gap-1.5 min-w-0'>
+                        <div
+                          className='w-2 h-2 rounded-full shrink-0'
+                          style={{ backgroundColor: item.color }}
+                        />
+                        <span className='text-slate-700 dark:text-slate-300 truncate font-medium text-[11px]'>
+                          {item.name}
+                        </span>
+                      </div>
+                      <span className='font-bold text-slate-900 dark:text-white shrink-0 text-[11px]'>
+                        {item.percentage}%
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Card 2: Sasaran Karier */}
           <div className='bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 p-6 shadow-xs flex flex-col justify-between'>
             <div>
               <div className='flex items-center justify-between pb-1'>
@@ -1294,14 +1161,9 @@ export default function DashboardView() {
                               : 'bg-amber-50/50 dark:bg-amber-950/20 border-amber-100 dark:border-amber-900/40'
                           }`}
                         >
-                          <div className='flex items-center gap-2'>
-                            <span className='text-xs'>
-                              {isMissing ? '🚫' : '⚠️'}
-                            </span>
-                            <span className='text-xs font-semibold text-slate-800 dark:text-slate-200'>
-                              {gap.name}
-                            </span>
-                          </div>
+                          <span className='text-xs font-semibold text-slate-800 dark:text-slate-200'>
+                            {gap.name}
+                          </span>
 
                           <span
                             className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
@@ -1344,7 +1206,7 @@ export default function DashboardView() {
             </Link>
           </div>
 
-          {/* Top 3 Rekomendasi Belajar */}
+          {/* Card 3: Top 3 Rekomendasi Belajar */}
           <div className='bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 p-6 shadow-xs flex flex-col gap-4'>
             <div>
               <div className='flex items-center gap-1.5'>
