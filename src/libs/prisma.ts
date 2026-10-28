@@ -1,8 +1,19 @@
 import { PrismaClient } from '@prisma/client'
 
-// Sanitasi otomatis tanda kutip atau spasi yang tidak sengaja terbawa saat paste di Vercel
+// Sanitasi otomatis tanda kutip dan optimasi connection pooler Supabase untuk Vercel
 if (process.env.DATABASE_URL) {
-  process.env.DATABASE_URL = process.env.DATABASE_URL.replace(/^["']|["']$/g, '').trim()
+  let dbUrl = process.env.DATABASE_URL.replace(/^["']|["']$/g, '').trim()
+
+  // Di Vercel / serverless: alihkan session mode (5432 limit 15 conn) ke transaction pooler (6543)
+  if (dbUrl.includes('.pooler.supabase.com:5432') && (process.env.VERCEL || process.env.NODE_ENV === 'production')) {
+    dbUrl = dbUrl.replace(':5432', ':6543')
+  }
+
+  if (dbUrl.includes(':6543') && !dbUrl.includes('pgbouncer=true')) {
+    dbUrl += (dbUrl.includes('?') ? '&' : '?') + 'pgbouncer=true&connection_limit=1'
+  }
+
+  process.env.DATABASE_URL = dbUrl
 }
 
 if (process.env.DIRECT_URL) {
