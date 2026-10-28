@@ -94,6 +94,9 @@ export async function getDashboardSummaryData(userId: string) {
     // 5. Active opportunities count
     prisma.careerOpportunity.count({
       where: { isActive: true }
+    }).catch(e => {
+      console.warn('Warning counting opportunities:', e)
+      return 0
     }),
 
     // 6. User learning recommendations
@@ -113,6 +116,9 @@ export async function getDashboardSummaryData(userId: string) {
       },
       take: 3,
       orderBy: { relevanceScore: 'desc' }
+    }).catch(e => {
+      console.warn('Warning fetching learning recommendations:', e)
+      return []
     }),
 
     // 7. Active opportunities for matching
@@ -125,6 +131,9 @@ export async function getDashboardSummaryData(userId: string) {
           include: { skill: true }
         }
       }
+    }).catch(e => {
+      console.warn('Warning fetching opportunities:', e)
+      return []
     }),
 
     // 8. Pending AI analysis suggestions
@@ -146,6 +155,9 @@ export async function getDashboardSummaryData(userId: string) {
         }
       },
       orderBy: { completedAt: 'desc' }
+    }).catch(e => {
+      console.warn('Warning fetching AI analysis job:', e)
+      return null
     }),
 
     // 9. Fallback learning resources (prefetched in parallel)
@@ -158,6 +170,9 @@ export async function getDashboardSummaryData(userId: string) {
       },
       take: 3,
       orderBy: [{ rating: 'desc' }, { createdAt: 'desc' }]
+    }).catch(e => {
+      console.warn('Warning fetching fallback resources:', e)
+      return []
     })
   ])
 

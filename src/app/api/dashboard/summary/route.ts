@@ -45,9 +45,17 @@ export async function GET(request: NextRequest) {
     }
 
     return apiSuccess(data)
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error in /api/dashboard/summary:', error)
 
-    return apiError('Gagal memuat data dashboard dari database.', 500)
+    return apiError(
+      error?.message ? `Gagal memuat data dashboard: ${error.message}` : 'Gagal memuat data dashboard dari database.',
+      500,
+      {
+        name: error?.name,
+        code: error?.code,
+        meta: error?.meta
+      }
+    )
   }
 }
