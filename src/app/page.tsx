@@ -1,5 +1,6 @@
 // Next Imports
 import type { Metadata } from 'next'
+import { redirect } from 'next/navigation'
 
 // Component Imports
 import LandingPage from '@views/LandingPage'
@@ -15,7 +16,19 @@ export const metadata: Metadata = {
     'Tulis pengalaman organisasi, magang, atau proyekmu. Growvia mengusulkan skill, menghitung Career Readiness Score, dan menyiapkan portofolio. Gratis.'
 }
 
-const RootPage = async () => {
+interface PageProps {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+}
+
+const RootPage = async (props: PageProps) => {
+  const searchParams = await props.searchParams
+  const code = searchParams?.code
+
+  // Jika Supabase melempar auth code ke root (/)
+  if (typeof code === 'string' && code) {
+    redirect(`/api/auth/callback?code=${encodeURIComponent(code)}`)
+  }
+
   const direction = 'ltr'
   const systemMode = await getSystemMode()
   const mode = await getServerMode()
@@ -30,3 +43,4 @@ const RootPage = async () => {
 }
 
 export default RootPage
+

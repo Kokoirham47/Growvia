@@ -4,13 +4,29 @@ import { PrismaClient } from '@prisma/client'
 if (process.env.DATABASE_URL) {
   let dbUrl = process.env.DATABASE_URL.replace(/^["']|["']$/g, '').trim()
 
-  // Di Vercel / serverless: alihkan session mode (5432 limit 15 conn) ke transaction pooler (6543)
+  // Di Vercel / serverless: alihkan session mode (5432) ke transaction pooler (6543)
   if (dbUrl.includes('.pooler.supabase.com:5432') && (process.env.VERCEL || process.env.NODE_ENV === 'production')) {
     dbUrl = dbUrl.replace(':5432', ':6543')
   }
 
-  if (dbUrl.includes(':6543') && !dbUrl.includes('pgbouncer=true')) {
-    dbUrl += (dbUrl.includes('?') ? '&' : '?') + 'pgbouncer=true&connection_limit=1'
+  // Tambahkan pgbouncer=true untuk transaction mode.
+  // PENTING: connection_limit harus cukup besar agar Promise.all 9+ query tidak timeout
+  // (dulu di-set ke 1 → menyebabkan semua query parallel timeout rebutan 1 koneksi)
+  if (dbUrl.includes(':6543')) {
+    if (!dbUrl.includes('pgbouncer=true')) {
+      dbUrl += (dbUrl.includes('?') ? '&' : '?') + 'pgbouncer=true'
+    }
+
+    // Override connection_limit ke 10 agar 9 parallel dashboard queries tidak rebutan koneksi
+    if (!dbUrl.includes('connection_limit=')) {
+      dbUrl += '&connection_limit=10'
+    } else {
+      dbUrl = dbUrl.replace(/connection_limit=\d+/, 'connection_limit=10')
+    }
+
+    if (!dbUrl.includes('pool_timeout=')) {
+      dbUrl += '&pool_timeout=30'
+    }
   }
 
   process.env.DATABASE_URL = dbUrl
@@ -36,6 +52,13 @@ export const prisma =
   existingPrisma && !isStaleClient
     ? existingPrisma
     : new PrismaClient({
+        datasources: process.env.DATABASE_URL
+          ? {
+              db: {
+                url: process.env.DATABASE_URL
+              }
+            }
+          : undefined,
         log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error']
       })
 

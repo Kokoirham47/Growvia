@@ -37,6 +37,17 @@ return payload
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
+  // 0. Auto-forward Supabase OAuth code jika terlempar ke root (/) atau (/login) karena fallback Site URL
+  const code = request.nextUrl.searchParams.get('code')
+
+  if (code && (pathname === '/' || pathname === '/login' || pathname === '/register')) {
+    const callbackUrl = new URL('/api/auth/callback', request.url)
+
+    callbackUrl.search = request.nextUrl.search
+
+    return NextResponse.redirect(callbackUrl)
+  }
+
   // 1. Bypass static files, Next.js internal routes, dan public asset
   if (
     pathname.startsWith('/_next') ||
