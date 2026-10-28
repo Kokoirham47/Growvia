@@ -36,29 +36,18 @@ const menuItemStyles = (verticalNavOptions: VerticalNavState, theme: Theme): Men
         }
       },
       [`&:not(.${menuClasses.subMenuRoot}) > .${menuClasses.button}.${menuClasses.active}`]: {
-        ...(popoutCollapsed && level > 0
-          ? {
-              backgroundColor: 'var(--mui-palette-primary-lightOpacity)',
-              color: 'var(--mui-palette-primary-main)',
-              [`& .${menuClasses.icon}`]: {
-                color: 'var(--mui-palette-primary-main)'
-              }
-            }
-          : {
-              color: 'var(--mui-palette-primary-contrastText)',
-              background:
-                theme.direction === 'ltr'
-                  ? `linear-gradient(270deg,
-                    rgb(var(--mui-palette-primary-mainChannel) / 0.7) 0%,
-                    var(--mui-palette-primary-main) 100%) !important`
-                  : `linear-gradient(270deg,
-                     var(--mui-palette-primary-main) 100%,
-                     rgb(var(--mui-palette-primary-mainChannel) / 0.7) 100%) !important`,
-              boxShadow: 'var(--mui-customShadows-primary-sm)',
-              [`& .${menuClasses.icon}`]: {
-                color: 'inherit'
-              }
-            })
+        backgroundColor: '#EEF2FF !important',
+        color: '#2563EB !important',
+        borderRadius: '10px !important',
+        boxShadow: 'none !important',
+        fontWeight: '600 !important',
+        [`& .${menuClasses.icon}`]: {
+          color: '#2563EB !important'
+        },
+        [`& .${menuClasses.label}`]: {
+          color: '#2563EB !important',
+          fontWeight: 600
+        }
       }
     }),
     button: ({ level, active }) => ({

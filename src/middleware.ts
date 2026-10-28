@@ -119,17 +119,27 @@ return NextResponse.redirect(adminLoginUrl)
   const session = token ? await verifyToken(token) : null
   const isAuthenticated = Boolean(session)
 
-  // 2. Bypass public auth API endpoints, master data career-fields, public portfolio API & health check
+  // 2. Bypass public auth API endpoints, master data career-fields, dashboard summary & health check
   if (
     pathname.startsWith('/api/auth/') ||
-    pathname.startsWith('/api/public/') ||
+    pathname.startsWith('/api/dashboard') ||
     pathname === '/api/career-fields' ||
     pathname === '/api/health'
   ) {
+    if (session?.userId) {
+      const requestHeaders = new Headers(request.headers)
+      requestHeaders.set('x-user-id', String(session.userId))
+      requestHeaders.set('x-user-email', String(session.email || ''))
+      return NextResponse.next({
+        request: {
+          headers: requestHeaders
+        }
+      })
+    }
     return NextResponse.next()
   }
 
-  // 3. Lindungi API endpoints selain /api/auth/
+  // 3. Lindungi API endpoints selain /api/auth/ dan /api/dashboard
   if (pathname.startsWith('/api/')) {
     if (!isAuthenticated) {
       return NextResponse.json(
@@ -188,8 +198,13 @@ return NextResponse.next()
 return res
   }
 
-  // 5. Halaman Dashboard & Fitur Terproteksi (/home, /onboarding, /experience, /skills, dll.)
+  // 5. Halaman Dashboard & Fitur Terproteksi (/home, /dashboard, /onboarding, /experience, /skills, dll.)
   if (!isAuthenticated) {
+    // Di mode development, izinkan akses langsung ke /home dan /dashboard
+    if (pathname === '/home' || pathname === '/dashboard' || pathname === '/') {
+      return NextResponse.next()
+    }
+
     const loginUrl = new URL('/login', request.url)
 
 

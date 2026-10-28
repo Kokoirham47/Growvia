@@ -1,5 +1,10 @@
 'use client'
 
+import { useState, useEffect } from 'react'
+
+// Next Imports
+import Link from 'next/link'
+
 // MUI Imports
 import { useTheme } from '@mui/material/styles'
 
@@ -59,6 +64,19 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
   const { isBreakpointReached, transitionDuration, isCollapsed, isHovered } = verticalNavOptions
   const ScrollWrapper = isBreakpointReached ? 'div' : PerfectScrollbar
 
+  const [user, setUser] = useState<{ name: string; avatarUrl?: string | null } | null>(null)
+
+  useEffect(() => {
+    fetch('/api/auth/me')
+      .then(res => res.json())
+      .then(json => {
+        if (json?.data?.user) {
+          setUser(json.data.user)
+        }
+      })
+      .catch(() => {})
+  }, [])
+
   return (
     <div className='flex flex-col justify-between bs-full'>
       <ScrollWrapper
@@ -90,7 +108,7 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
               Skill Matrix
             </MenuItem>
             <MenuItem href='/career' icon={<TrendingUp className='w-5 h-5' />}>
-              Karier & Gap
+              Karier &amp; Gap
             </MenuItem>
             <MenuItem href='/learning' icon={<GraduationCap className='w-5 h-5' />}>
               Rekomendasi Belajar
@@ -116,8 +134,8 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
 
       {/* AI Readiness Sidebar Widget */}
       {!(isCollapsed && !isHovered) && (
-        <div className='p-4 pb-6'>
-          <div className='p-3.5 rounded-2xl bg-[#F0F5FF] dark:bg-blue-950/40 border border-[#DBEAFE] dark:border-blue-900/50 transition-all hover:shadow-sm'>
+        <div className='p-4 pb-4'>
+          <div className='p-3.5 rounded-2xl bg-[#F0F5FF] dark:bg-blue-950/40 border border-[#DBEAFE] dark:border-blue-900/50 transition-all hover:shadow-xs'>
             <div className='flex items-center gap-2'>
               <div className='w-6 h-6 rounded-lg bg-blue-100 dark:bg-blue-900/60 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0'>
                 <Sparkles className='w-3.5 h-3.5' />
@@ -133,6 +151,8 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
           </div>
         </div>
       )}
+
+
     </div>
   )
 }
