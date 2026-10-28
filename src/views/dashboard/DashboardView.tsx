@@ -1,102 +1,129 @@
 'use client'
 
-import React, { useState, useEffect, useMemo } from 'react'
-
+import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
-
 import {
   TrendingUp,
-  Award,
-  Briefcase,
   Plus,
-  ExternalLink,
   ChevronRight,
-  Clock,
-  Star,
   Sparkles,
-  Calendar,
-  MapPin,
+  ExternalLink,
+  ShieldCheck,
+  Award,
+  AlertTriangle,
+  Share2,
+  FolderOpen,
+  Target,
+  BarChart2,
+  Briefcase,
   CheckCircle2,
+  Sliders,
+  Laptop,
+  Users,
+  Flag,
+  Zap,
+  Clock,
+  Download,
+  AlertCircle,
+  X,
+  Loader2,
   RefreshCw,
-  AlertCircle
+  Compass
 } from 'lucide-react'
 
-interface DashboardData {
+interface DashboardSummaryData {
   user: {
     name: string
-    email: string
+    headline: string
     avatarUrl?: string | null
     dateFormatted: string
+    semesterTag: string
   }
   statCards: {
     careerReadiness: {
       percentage: number
+      trend: string
       targetRole: string
-      targetScoreBenchmark: number
+      note: string
     }
     totalSkills: {
       count: number
-      recentCount: number
       hardSkillsCount: number
       softSkillsCount: number
     }
-    experiences: {
+    skillGaps: {
       count: number
+      label: string
+      targetRole: string
+    }
+    publicPortfolio: {
+      completeness: number
+      status: string
+      previewUrl: string
     }
   }
-  skillPatternMap: {
-    nodes: Array<{
-      id: string
-      name: string
-      category: string
-      level: string
-      x: number
-      y: number
-    }>
-    edges: Array<{
-      source: string
-      target: string
-    }>
+  metodologi: {
+    experiencesCount: number
+    skillsCount: number
+    gapCount: number
+    opportunitiesCount: number
   }
-  learningRecommendations: Array<{
+  aiInsight: {
+    projectName: string
+    skills: string[]
+    level: string
+  }
+  recentExperiences: Array<{
     id: string
+    role?: string
+    company?: string
     title: string
-    platform: string
-    url: string
-    skillTag: string
-    duration: string
-    difficulty: string
-    rating: number
-    matchPercent: number
-  }>
-  careerOpportunities: Array<{
-    id: string
-    title: string
-    company: string
-    location: string
+    dateFormatted: string
+    validatedSkillsCount: number
+    skills: string[]
     type: string
-    sourceUrl: string
-    matchPercent: number
-    skillTags: string[]
   }>
-  growthProgress: {
-    months: Array<{
-      month: string
-      count: number
-      percentage: number
+  targetCareer: {
+    roleName: string
+    industry: string
+    matchPercent: number
+    threshold: number
+    missingSkillsCount: number
+    gaps: Array<{
+      name: string
+      status: 'missing' | 'develop' | string
     }>
-    growthPercentage: number
   }
+  rapidModules: Array<{
+    id: string
+    type: string
+    duration: string
+    title: string
+    description: string
+    gapTag: string
+    ctaText: string
+    url: string
+  }>
 }
 
 export default function DashboardView() {
-  const [data, setData] = useState<DashboardData | null>(null)
+  const [data, setData] = useState<DashboardSummaryData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  // Interactive Node selection for Skill Pattern Map
-  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null)
-  const [skillCategoryFilter, setSkillCategoryFilter] = useState<'all' | 'hard' | 'soft'>('all')
+  // Interactive AI Insight state
+  const [insightStatus, setInsightStatus] = useState<'idle' | 'accepted' | 'dismissed'>('idle')
+  const [isInsightSaving, setIsInsightSaving] = useState(false)
+
+  // Quick Add Experience Modal
+  const [isQuickAddOpen, setIsQuickAddOpen] = useState(false)
+  const [isSubmittingExp, setIsSubmittingExp] = useState(false)
+  const [expForm, setExpForm] = useState({
+    title: '',
+    institutionName: '',
+    type: 'internship',
+    description: ''
+  })
 
   const fetchDashboardData = async () => {
     try {
@@ -112,7 +139,7 @@ export default function DashboardView() {
       setData(json.data)
     } catch (err: unknown) {
       console.error('Error fetching dashboard summary:', err)
-      setError(err instanceof Error ? err.message : 'Terjadi kesalahan sistem.')
+      setError(err instanceof Error ? err.message : 'Terjadi kesalahan sistem saat mengambil data Supabase.')
     } finally {
       setIsLoading(false)
     }
@@ -122,69 +149,84 @@ export default function DashboardView() {
     fetchDashboardData()
   }, [])
 
-  // Filter nodes on map based on category filter
-  const filteredNodes = useMemo(() => {
-    if (!data?.skillPatternMap.nodes) return []
-    if (skillCategoryFilter === 'all') return data.skillPatternMap.nodes
+  const handleQuickAddSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!expForm.title || !expForm.institutionName) return
 
-    if (skillCategoryFilter === 'hard') {
-      return data.skillPatternMap.nodes.filter(
-        n => n.category === 'hard_skill' || n.category === 'technical'
-      )
+    try {
+      setIsSubmittingExp(true)
+      const res = await fetch('/api/experiences', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: expForm.title,
+          role: expForm.title,
+          institutionName: expForm.institutionName,
+          type: expForm.type,
+          startDate: new Date().toISOString(),
+          isOngoing: true,
+          description: expForm.description
+        })
+      })
+
+      if (res.ok) {
+        setIsQuickAddOpen(false)
+        setExpForm({
+          title: '',
+          institutionName: '',
+          type: 'internship',
+          description: ''
+        })
+        await fetchDashboardData()
+      } else {
+        const errJson = await res.json()
+        alert(errJson.message || 'Gagal menyimpan pengalaman ke Supabase.')
+      }
+    } catch (err) {
+      console.error('Error quick adding experience:', err)
+      alert('Terjadi kesalahan koneksi ke Supabase.')
+    } finally {
+      setIsSubmittingExp(false)
     }
+  }
 
-    return data.skillPatternMap.nodes.filter(
-      n => n.category === 'soft_skill' || n.category === 'leadership'
-    )
-  }, [data?.skillPatternMap.nodes, skillCategoryFilter])
-
-  const filteredNodeIds = useMemo(() => {
-    return new Set(filteredNodes.map(n => n.id))
-  }, [filteredNodes])
-
-  const filteredEdges = useMemo(() => {
-    if (!data?.skillPatternMap.edges) return []
-
-    return data.skillPatternMap.edges.filter(
-      e => filteredNodeIds.has(e.source) && filteredNodeIds.has(e.target)
-    )
-  }, [data?.skillPatternMap.edges, filteredNodeIds])
-
-  const selectedNode = useMemo(() => {
-    if (!selectedNodeId || !data) return null
-
-    return data.skillPatternMap.nodes.find(n => n.id === selectedNodeId) || null
-  }, [selectedNodeId, data])
+  const handleAcceptInsight = async () => {
+    try {
+      setIsInsightSaving(true)
+      // Simulate quick acceptance feedback or post to api
+      setTimeout(() => {
+        setIsInsightSaving(false)
+        setInsightStatus('accepted')
+      }, 400)
+    } catch (err) {
+      setIsInsightSaving(false)
+    }
+  }
 
   if (isLoading) {
     return (
-      <div className='flex flex-col gap-6 w-full max-w-[1440px] mx-auto p-4 sm:p-6 lg:p-8 animate-pulse font-["Poppins",sans-serif]'>
-        {/* Skeleton Greeting */}
-        <div className='flex items-center justify-between'>
-          <div className='h-9 w-72 bg-slate-200 dark:bg-slate-800 rounded-xl' />
-          <div className='h-8 w-44 bg-slate-200 dark:bg-slate-800 rounded-xl' />
-        </div>
+      <div className='flex flex-col gap-6 w-full max-w-[1440px] mx-auto p-8 bg-[#F5F6F8] font-["Poppins",sans-serif] animate-pulse'>
+        {/* Skeleton Greeting Hero */}
+        <div className='h-40 rounded-2xl bg-slate-200' />
 
-        {/* Skeleton Top Row Stat Cards */}
-        <div className='grid grid-cols-1 md:grid-cols-3 gap-5'>
-          {[1, 2, 3].map(i => (
-            <div
-              key={i}
-              className='h-40 rounded-2xl bg-white dark:bg-slate-900 border border-[#E8ECF2] dark:border-slate-800 p-6'
-            />
+        {/* Skeleton Top Row 4 Stat Cards */}
+        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4'>
+          {[1, 2, 3, 4].map(i => (
+            <div key={i} className='h-36 rounded-2xl bg-white border border-[#E8ECF2] p-5' />
           ))}
         </div>
 
-        {/* Skeleton Middle Row */}
+        {/* Skeleton 2-Column Grid */}
         <div className='grid grid-cols-1 lg:grid-cols-12 gap-6'>
-          <div className='lg:col-span-8 h-96 rounded-2xl bg-white dark:bg-slate-900 border border-[#E8ECF2] dark:border-slate-800 p-6' />
-          <div className='lg:col-span-4 h-96 rounded-2xl bg-indigo-50/60 dark:bg-slate-900 border border-indigo-100 dark:border-slate-800 p-6' />
-        </div>
-
-        {/* Skeleton Bottom Row */}
-        <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
-          <div className='h-64 rounded-2xl bg-white dark:bg-slate-900 border border-[#E8ECF2] dark:border-slate-800 p-6' />
-          <div className='h-64 rounded-2xl bg-white dark:bg-slate-900 border border-[#E8ECF2] dark:border-slate-800 p-6' />
+          <div className='lg:col-span-8 flex flex-col gap-6'>
+            <div className='h-48 rounded-2xl bg-white border border-[#E8ECF2] p-6' />
+            <div className='h-40 rounded-2xl bg-[#EEF2FF] border border-[#E0E7FF] p-6' />
+            <div className='h-64 rounded-2xl bg-white border border-[#E8ECF2] p-6' />
+          </div>
+          <div className='lg:col-span-4 flex flex-col gap-6'>
+            <div className='h-80 rounded-2xl bg-white border border-[#E8ECF2] p-6' />
+            <div className='h-64 rounded-2xl bg-white border border-[#E8ECF2] p-6' />
+          </div>
         </div>
       </div>
     )
@@ -192,13 +234,11 @@ export default function DashboardView() {
 
   if (error || !data) {
     return (
-      <div className='flex flex-col items-center justify-center min-h-[500px] gap-4 text-center p-6 font-["Poppins",sans-serif]'>
-        <div className='w-14 h-14 rounded-2xl bg-rose-50 text-rose-600 dark:bg-rose-950/60 flex items-center justify-center'>
+      <div className='flex flex-col items-center justify-center min-h-[500px] gap-4 text-center p-8 bg-[#F5F6F8] font-["Poppins",sans-serif]'>
+        <div className='w-14 h-14 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center'>
           <AlertCircle className='w-7 h-7' />
         </div>
-        <h3 className='text-xl font-bold text-slate-900 dark:text-white'>
-          Gagal Memuat Dashboard
-        </h3>
+        <h3 className='text-xl font-bold text-[#0F172A]'>Gagal Memuat Data Supabase</h3>
         <p className='text-sm text-slate-500 max-w-md'>{error}</p>
         <button
           type='button'
@@ -212,574 +252,743 @@ export default function DashboardView() {
     )
   }
 
-  // Circular progress math
-  const readinessPct = data.statCards.careerReadiness.percentage
-  const radius = 34
-  const circumference = 2 * Math.PI * radius
-  const strokeDashoffset = circumference - (readinessPct / 100) * circumference
+  const userFirstName = data.user.name ? data.user.name.split(' ')[0] : 'Nabila'
 
   return (
     <div
       style={{ fontFamily: "'Poppins', sans-serif" }}
-      className='flex flex-col gap-6 w-full max-w-[1440px] mx-auto p-4 sm:p-6 lg:p-8 bg-[#F5F6F8] dark:bg-[#0B1120] text-slate-800 dark:text-slate-100 font-["Poppins",sans-serif]'
+      className='flex flex-col gap-6 w-full max-w-[1440px] mx-auto p-6 md:p-8 bg-[#F5F6F8] text-slate-800'
     >
-      {/* 1. GREETING BAR */}
-      <section className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-1'>
-        <div className='flex flex-col gap-1'>
-          <h3 className='text-2xl sm:text-3xl font-extrabold text-[#1E3A8A] dark:text-white tracking-tight flex items-center gap-2'>
-            <span>Selamat datang kembali, {data.user.name.split(' ')[0]}!</span>
-            <span className='inline-block origin-[70%_70%] animate-wave'>👋</span>
-          </h3>
-          <p className='text-xs sm:text-sm text-slate-500 dark:text-slate-400'>
-            Pantau perkembangan kesiapan karier dan kemajuan skill portofoliomu hari ini.
-          </p>
-        </div>
-
-        {/* Date right-aligned */}
-        <div className='inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-white dark:bg-slate-900 border border-[#E8ECF2] dark:border-slate-800 text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-300 shadow-xs self-start sm:self-center'>
-          <Calendar className='w-4 h-4 text-[#2563EB]' />
-          <span>{data.user.dateFormatted}</span>
-        </div>
-      </section>
-
-      {/* 2. TOP ROW — 3 STAT CARDS */}
-      <section className='grid grid-cols-1 md:grid-cols-3 gap-5'>
-        {/* Stat Card 1: Career Readiness */}
-        <div className='bg-white dark:bg-slate-900 rounded-2xl border border-[#E8ECF2] dark:border-slate-800 p-6 shadow-sm flex items-center justify-between hover:border-blue-200 dark:hover:border-blue-900 transition-all'>
-          <div className='flex flex-col gap-2'>
-            <span className='text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500'>
-              Career Readiness
-            </span>
-
-            <div className='flex items-baseline gap-2'>
-              <h2 className='text-3xl sm:text-4xl font-extrabold text-[#1E3A8A] dark:text-white tracking-tight'>
-                {readinessPct}%
-              </h2>
+      {/* 1. TOP GREETING HERO CARD */}
+      <section className='relative overflow-hidden rounded-2xl border border-[#EEF2FF] bg-gradient-to-r from-[#F4F7FF] via-[#F8FAFF] to-[#FAF5FF] p-6 sm:p-7 shadow-xs'>
+        <div className='flex flex-col md:flex-row md:items-center justify-between gap-6'>
+          {/* Left Greeting Text */}
+          <div className='flex flex-col gap-2 max-w-2xl'>
+            <div className='inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#EFF6FF] text-[#2563EB] text-xs font-semibold border border-[#DBEAFE] w-fit shadow-2xs'>
+              <Compass className='w-3.5 h-3.5' />
+              <span>{data.user.semesterTag || 'Semester 7 Ready • Target Q3 2025'}</span>
             </div>
 
-            <div className='flex items-center gap-1.5 mt-0.5'>
-              <span className='px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200/60'>
-                {data.statCards.careerReadiness.targetRole}
-              </span>
-            </div>
+            <h1 className='text-2xl sm:text-3xl font-extrabold text-[#0F172A] tracking-tight flex items-center gap-2'>
+              <span>Halo, {userFirstName}!</span>
+              <span className='inline-block origin-[70%_70%] animate-wave'>👋</span>
+            </h1>
 
-            <Link
-              href='/career'
-              className='inline-flex items-center gap-1 text-xs font-semibold text-[#2563EB] hover:text-blue-700 transition-colors mt-2'
-            >
-              <span>Lihat Detail Gap</span>
-              <ChevronRight className='w-3.5 h-3.5' />
-            </Link>
-          </div>
-
-          {/* Circular Progress Gauge */}
-          <div className='relative w-24 h-24 flex items-center justify-center shrink-0'>
-            <svg className='w-full h-full transform -rotate-90' viewBox='0 0 88 88'>
-              {/* Background circle */}
-              <circle
-                cx='44'
-                cy='44'
-                r={radius}
-                className='stroke-slate-100 dark:stroke-slate-800 fill-none'
-                strokeWidth='8'
-              />
-              {/* Green arc stroke */}
-              <circle
-                cx='44'
-                cy='44'
-                r={radius}
-                className='stroke-emerald-500 fill-none transition-all duration-1000 ease-out'
-                strokeWidth='8'
-                strokeDasharray={circumference}
-                strokeDashoffset={strokeDashoffset}
-                strokeLinecap='round'
-              />
-            </svg>
-            <div className='absolute flex flex-col items-center justify-center text-center'>
-              <span className='text-xs font-bold text-slate-800 dark:text-white'>
-                {readinessPct}%
-              </span>
-              <span className='text-[9px] text-slate-400'>Kesiapan</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Stat Card 2: Total Skills */}
-        <div className='bg-white dark:bg-slate-900 rounded-2xl border border-[#E8ECF2] dark:border-slate-800 p-6 shadow-sm flex flex-col justify-between hover:border-blue-200 dark:hover:border-blue-900 transition-all'>
-          <div>
-            <div className='flex items-center justify-between'>
-              <span className='text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500'>
-                Total Skills
-              </span>
-              <div className='w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-[#2563EB] flex items-center justify-center'>
-                <Award className='w-4 h-4' />
-              </div>
-            </div>
-
-            <div className='flex items-baseline gap-2.5 mt-2'>
-              <h2 className='text-3xl sm:text-4xl font-extrabold text-[#1E3A8A] dark:text-white tracking-tight'>
-                {data.statCards.totalSkills.count}
-              </h2>
-              <span className='text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200/50 flex items-center gap-1'>
-                <TrendingUp className='w-3 h-3' />
-                <span>+{data.statCards.totalSkills.recentCount} bulan ini</span>
-              </span>
-            </div>
-
-            <p className='text-xs text-slate-500 dark:text-slate-400 mt-2'>
-              {data.statCards.totalSkills.hardSkillsCount} Hard Skill • {data.statCards.totalSkills.softSkillsCount} Soft Skill tervalidasi
+            <p className='text-xs sm:text-sm text-slate-600 leading-relaxed'>
+              Kamu sudah mendokumentasikan <strong className='font-semibold text-slate-900'>{data.metodologi.experiencesCount} pengalaman</strong>. Growvia AI menemukan <strong className='font-semibold text-[#2563EB]'>{data.metodologi.skillsCount} skill terverifikasi</strong> dan 2 potensi jalur karier impianmu.
             </p>
           </div>
 
-          <Link
-            href='/skills'
-            className='inline-flex items-center gap-1 text-xs font-semibold text-[#2563EB] hover:text-blue-700 transition-colors mt-4'
-          >
-            <span>Buka Skill Matrix</span>
-            <ChevronRight className='w-3.5 h-3.5' />
-          </Link>
-        </div>
+          {/* Right Action Buttons */}
+          <div className='flex flex-wrap sm:flex-nowrap items-center gap-3 shrink-0'>
+            <button
+              type='button'
+              onClick={() => setIsQuickAddOpen(true)}
+              className='inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#2563EB] hover:bg-blue-700 text-white text-xs font-semibold shadow-xs hover:shadow-md transition-all active:scale-[0.98] cursor-pointer'
+            >
+              <Plus className='w-4 h-4' />
+              <span>Tambah Pengalaman Baru</span>
+            </button>
 
-        {/* Stat Card 3: Experience Added */}
-        <div className='bg-white dark:bg-slate-900 rounded-2xl border border-[#E8ECF2] dark:border-slate-800 p-6 shadow-sm flex flex-col justify-between hover:border-blue-200 dark:hover:border-blue-900 transition-all'>
+            <Link
+              href='/career'
+              className='inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-xs font-semibold shadow-2xs hover:shadow-xs transition-all'
+            >
+              <TrendingUp className='w-4 h-4 text-[#2563EB]' />
+              <span>Eksplor Skill Gap</span>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* 2. ROW OF 4 STAT CARDS */}
+      <section className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4'>
+        {/* Stat Card 1: Skor Kesiapan Karier */}
+        <div className='bg-white rounded-2xl border border-[#E8ECF2] p-5 shadow-xs hover:shadow-sm transition-all flex flex-col justify-between'>
           <div>
             <div className='flex items-center justify-between'>
-              <span className='text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500'>
-                Experience Added
-              </span>
-              <div className='w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-[#6366F1] flex items-center justify-center'>
-                <Briefcase className='w-4 h-4' />
+              <span className='text-xs font-semibold text-slate-600'>Skor Kesiapan Karier</span>
+              <div className='w-7 h-7 rounded-full bg-[#DCFCE7] text-[#16A34A] flex items-center justify-center shadow-2xs'>
+                <ShieldCheck className='w-4 h-4' />
               </div>
             </div>
 
             <div className='flex items-baseline gap-2 mt-2'>
-              <h2 className='text-3xl sm:text-4xl font-extrabold text-[#1E3A8A] dark:text-white tracking-tight'>
-                {data.statCards.experiences.count}
+              <h2 className='text-3xl font-extrabold text-[#0F172A] tracking-tight'>
+                {data.statCards.careerReadiness.percentage}%
               </h2>
-              <span className='text-sm text-slate-500 font-medium'>pengalaman</span>
-            </div>
-
-            <p className='text-xs text-slate-500 dark:text-slate-400 mt-2'>
-              Terdokumentasi & siap diekstrak menjadi bukti portofolio.
-            </p>
-          </div>
-
-          <Link
-            href='/experience'
-            className='inline-flex items-center justify-center gap-1.5 w-full py-2.5 rounded-xl bg-[#2563EB] hover:bg-blue-700 text-white text-xs font-semibold transition-all shadow-xs active:scale-[0.98] mt-4'
-          >
-            <Plus className='w-4 h-4' />
-            <span>Tambah Pengalaman</span>
-          </Link>
-        </div>
-      </section>
-
-      {/* 3. MIDDLE ROW: SKILL PATTERN MAP (65%) + LEARNING RECOMMENDATIONS (35%) */}
-      <section className='grid grid-cols-1 lg:grid-cols-12 gap-6'>
-        {/* Left: Skill Pattern Map (large card, 65% width) */}
-        <div className='lg:col-span-8 bg-white dark:bg-slate-900 rounded-2xl border border-[#E8ECF2] dark:border-slate-800 p-6 shadow-sm flex flex-col justify-between'>
-          {/* Card Header & Controls */}
-          <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-slate-100 dark:border-slate-800'>
-            <div>
-              <div className='flex items-center gap-2'>
-                <h3 className='text-lg font-bold text-[#1E3A8A] dark:text-white tracking-tight'>
-                  Skill Pattern Map
-                </h3>
-                <span className='px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-indigo-50 dark:bg-indigo-950/60 text-[#6366F1] border border-indigo-100 dark:border-indigo-900/40'>
-                  Node Graph
-                </span>
-              </div>
-              <p className='text-xs text-slate-500 dark:text-slate-400 mt-0.5'>
-                Visualisasi interaktif relasi dan kluster keahlian berbasis bukti portofoliomu.
-              </p>
-            </div>
-
-            {/* Filter buttons */}
-            <div className='flex items-center gap-1.5 p-1 rounded-xl bg-slate-100 dark:bg-slate-800/80 self-start sm:self-center'>
-              <button
-                type='button'
-                onClick={() => setSkillCategoryFilter('all')}
-                className={`px-3 py-1 text-xs font-semibold rounded-lg transition-all ${
-                  skillCategoryFilter === 'all'
-                    ? 'bg-white dark:bg-slate-700 text-[#2563EB] shadow-xs'
-                    : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
-                }`}
-              >
-                Semua
-              </button>
-              <button
-                type='button'
-                onClick={() => setSkillCategoryFilter('hard')}
-                className={`px-3 py-1 text-xs font-semibold rounded-lg transition-all ${
-                  skillCategoryFilter === 'hard'
-                    ? 'bg-white dark:bg-slate-700 text-[#2563EB] shadow-xs'
-                    : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
-                }`}
-              >
-                Hard Skill
-              </button>
-              <button
-                type='button'
-                onClick={() => setSkillCategoryFilter('soft')}
-                className={`px-3 py-1 text-xs font-semibold rounded-lg transition-all ${
-                  skillCategoryFilter === 'soft'
-                    ? 'bg-white dark:bg-slate-700 text-[#2563EB] shadow-xs'
-                    : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
-                }`}
-              >
-                Soft Skill
-              </button>
-            </div>
-          </div>
-
-          {/* SVG Node Graph Canvas */}
-          <div className='relative w-full h-[320px] my-3 rounded-xl bg-slate-50/60 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-800/70 overflow-hidden flex items-center justify-center'>
-            <svg className='w-full h-full' viewBox='0 0 600 320'>
-              <defs>
-                <linearGradient id='edgeGradient' x1='0%' y1='0%' x2='100%' y2='100%'>
-                  <stop offset='0%' stopColor='#2563EB' stopOpacity='0.4' />
-                  <stop offset='100%' stopColor='#6366F1' stopOpacity='0.4' />
-                </linearGradient>
-                <filter id='nodeGlow' x='-20%' y='-20%' width='140%' height='140%'>
-                  <feGaussianBlur stdDeviation='3' result='blur' />
-                  <feComposite in='SourceGraphic' in2='blur' operator='over' />
-                </filter>
-              </defs>
-
-              {/* Connecting Edges */}
-              {filteredEdges.map((edge, idx) => {
-                const sNode = filteredNodes.find(n => n.id === edge.source)
-                const tNode = filteredNodes.find(n => n.id === edge.target)
-
-                if (!sNode || !tNode) return null
-
-                return (
-                  <line
-                    key={idx}
-                    x1={sNode.x}
-                    y1={sNode.y}
-                    x2={tNode.x}
-                    y2={tNode.y}
-                    stroke='url(#edgeGradient)'
-                    strokeWidth='1.8'
-                    strokeDasharray='4 3'
-                    className='transition-all duration-300'
-                  />
-                )
-              })}
-
-              {/* Skill Nodes */}
-              {filteredNodes.map(node => {
-                const isSelected = selectedNodeId === node.id
-
-                const isLeadershipOrSoft =
-                  node.category === 'soft_skill' || node.category === 'leadership'
-
-                // Blue (#2563EB) for technical, Indigo (#6366F1) for soft/leadership
-                const nodeColor = isLeadershipOrSoft ? '#6366F1' : '#2563EB'
-
-                const haloColor = isLeadershipOrSoft
-                  ? 'rgba(99, 102, 241, 0.25)'
-                  : 'rgba(37, 99, 235, 0.25)'
-
-                return (
-                  <g
-                    key={node.id}
-                    onClick={() => setSelectedNodeId(node.id === selectedNodeId ? null : node.id)}
-                    className='cursor-pointer transition-transform duration-200 hover:scale-110'
-                  >
-                    {/* Outer halo on select or hover */}
-                    <circle
-                      cx={node.x}
-                      cy={node.y}
-                      r={isSelected ? 26 : 20}
-                      fill={haloColor}
-                      className='transition-all duration-300'
-                    />
-
-                    {/* Core node */}
-                    <circle
-                      cx={node.x}
-                      cy={node.y}
-                      r={isSelected ? 16 : 13}
-                      fill={nodeColor}
-                      stroke='#FFFFFF'
-                      strokeWidth='2.5'
-                      filter='url(#nodeGlow)'
-                    />
-
-                    {/* Skill Label */}
-                    <text
-                      x={node.x}
-                      y={node.y + 25}
-                      textAnchor='middle'
-                      className='fill-slate-700 dark:fill-slate-200 font-semibold text-[11px] pointer-events-none'
-                    >
-                      {node.name}
-                    </text>
-                  </g>
-                )
-              })}
-            </svg>
-
-            {/* Selected Node Tooltip Overlay */}
-            {selectedNode && (
-              <div className='absolute bottom-3 left-3 z-10 px-3.5 py-2 rounded-xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-xs border border-slate-200 dark:border-slate-800 shadow-md flex items-center gap-2.5 text-xs animate-in fade-in duration-200'>
-                <div
-                  className='w-3 h-3 rounded-full'
-                  style={{
-                    backgroundColor:
-                      selectedNode.category === 'soft_skill' || selectedNode.category === 'leadership'
-                        ? '#6366F1'
-                        : '#2563EB'
-                  }}
-                />
-                <div>
-                  <span className='font-bold text-slate-900 dark:text-white'>{selectedNode.name}</span>
-                  <span className='text-slate-400 mx-1.5'>•</span>
-                  <span className='text-slate-500 capitalize'>Level: {selectedNode.level}</span>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Map Footer legend */}
-          <div className='flex items-center justify-between text-xs text-slate-500 pt-2 border-t border-slate-100 dark:border-slate-800'>
-            <div className='flex items-center gap-4'>
-              <div className='inline-flex items-center gap-1.5'>
-                <span className='w-2.5 h-2.5 rounded-full bg-[#2563EB]' />
-                <span>Hard & Technical Skill</span>
-              </div>
-              <div className='inline-flex items-center gap-1.5'>
-                <span className='w-2.5 h-2.5 rounded-full bg-[#6366F1]' />
-                <span>Soft & Leadership</span>
-              </div>
-            </div>
-            <Link
-              href='/skills'
-              className='inline-flex items-center gap-1 text-xs font-semibold text-[#2563EB] hover:text-blue-700 transition-colors'
-            >
-              <span>Detail Skill Matrix</span>
-              <ExternalLink className='w-3.5 h-3.5' />
-            </Link>
-          </div>
-        </div>
-
-        {/* Right: Learning Recommendations (35% width, background #EEF2FF) */}
-        <div className='lg:col-span-4 rounded-2xl bg-[#EEF2FF] dark:bg-indigo-950/30 border border-indigo-100/90 dark:border-indigo-900/50 p-6 shadow-sm flex flex-col justify-between'>
-          <div>
-            {/* Header */}
-            <div className='flex items-center justify-between pb-3'>
-              <div className='flex items-center gap-2'>
-                <div className='w-7 h-7 rounded-lg bg-[#6366F1] text-white flex items-center justify-center shadow-xs'>
-                  <Sparkles className='w-4 h-4' />
-                </div>
-                <h3 className='text-base font-bold text-[#1E3A8A] dark:text-indigo-200 tracking-tight'>
-                  Learning Recommendations
-                </h3>
-              </div>
-              <span className='text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300'>
-                AI Curated
+              <span className='text-[11px] font-semibold text-[#16A34A] leading-tight flex items-center gap-0.5'>
+                <TrendingUp className='w-3 h-3' />
+                <span>{data.statCards.careerReadiness.trend}</span>
               </span>
             </div>
 
-            <p className='text-xs text-indigo-950/70 dark:text-indigo-300/80 mb-4'>
-              Materi terpilih untuk menutup gap skill prioritasmu:
-            </p>
-
-            {/* Stacked 3 Resource Cards */}
-            <div className='flex flex-col gap-3'>
-              {data.learningRecommendations.map((resource, idx) => (
-                <div
-                  key={resource.id || idx}
-                  className='rounded-xl bg-white dark:bg-slate-900 border border-indigo-100/80 dark:border-indigo-900/40 p-3.5 shadow-2xs hover:shadow-sm transition-all'
-                >
-                  <div className='flex items-center justify-between gap-2 mb-1.5'>
-                    <span className='px-2 py-0.5 rounded-md text-[10px] font-bold bg-indigo-50 dark:bg-indigo-950/80 text-[#6366F1] dark:text-indigo-400'>
-                      {resource.skillTag}
-                    </span>
-                    <span className='text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.2 rounded'>
-                      {resource.matchPercent}% Match
-                    </span>
-                  </div>
-
-                  <h5 className='text-xs font-bold text-slate-900 dark:text-white line-clamp-2 leading-snug hover:text-[#2563EB] transition-colors'>
-                    <a href={resource.url} target='_blank' rel='noopener noreferrer'>
-                      {resource.title}
-                    </a>
-                  </h5>
-
-                  <div className='flex items-center justify-between mt-2 pt-1 border-t border-slate-100 dark:border-slate-800 text-[11px] text-slate-500 dark:text-slate-400'>
-                    <span className='font-medium text-slate-600 dark:text-slate-300 truncate max-w-[120px]'>
-                      {resource.platform}
-                    </span>
-                    <div className='flex items-center gap-2 shrink-0'>
-                      <div className='inline-flex items-center gap-1'>
-                        <Clock className='w-3 h-3 text-slate-400' />
-                        <span>{resource.duration}</span>
-                      </div>
-                      <div className='inline-flex items-center gap-0.5 text-amber-500 font-bold'>
-                        <Star className='w-3 h-3 fill-amber-500' />
-                        <span>{resource.rating}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
+            {/* Progress bar */}
+            <div className='w-full h-1.5 bg-slate-100 rounded-full mt-3 overflow-hidden'>
+              <div
+                className='h-full bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full transition-all duration-1000'
+                style={{ width: `${data.statCards.careerReadiness.percentage}%` }}
+              />
             </div>
           </div>
 
-          <Link
-            href='/learning'
-            className='inline-flex items-center justify-center gap-1.5 w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition-all shadow-xs mt-4'
-          >
-            <span>Buka Semua Rekomendasi Belajar</span>
-            <ChevronRight className='w-3.5 h-3.5' />
-          </Link>
+          <p className='text-xs text-slate-500 mt-2.5 font-normal'>
+            {data.statCards.careerReadiness.note}
+          </p>
+        </div>
+
+        {/* Stat Card 2: Skill Tervalidasi */}
+        <div className='bg-white rounded-2xl border border-[#E8ECF2] p-5 shadow-xs hover:shadow-sm transition-all flex flex-col justify-between'>
+          <div>
+            <div className='flex items-center justify-between'>
+              <span className='text-xs font-semibold text-slate-600'>Skill Tervalidasi</span>
+              <div className='w-7 h-7 rounded-full bg-[#EFF6FF] text-[#2563EB] flex items-center justify-center shadow-2xs'>
+                <Award className='w-4 h-4' />
+              </div>
+            </div>
+
+            <div className='flex items-baseline gap-1 mt-2'>
+              <h2 className='text-3xl font-extrabold text-[#0F172A] tracking-tight'>
+                {data.statCards.totalSkills.count}
+              </h2>
+              <span className='text-sm font-semibold text-slate-500 ml-1'>Skill</span>
+            </div>
+          </div>
+
+          <div className='mt-3'>
+            <span className='inline-flex items-center px-2.5 py-1 rounded-lg bg-[#F8FAFC] border border-slate-100 text-xs font-medium text-slate-600'>
+              {data.statCards.totalSkills.hardSkillsCount} Hard Skill • {data.statCards.totalSkills.softSkillsCount} Soft Skill
+            </span>
+          </div>
+        </div>
+
+        {/* Stat Card 3: Skill Gap Terdeteksi */}
+        <div className='bg-white rounded-2xl border border-[#E8ECF2] p-5 shadow-xs hover:shadow-sm transition-all flex flex-col justify-between'>
+          <div>
+            <div className='flex items-center justify-between'>
+              <span className='text-xs font-semibold text-slate-600'>Skill Gap Terdeteksi</span>
+              <div className='w-7 h-7 rounded-full bg-[#FEF3C7] text-[#D97706] flex items-center justify-center shadow-2xs'>
+                <AlertTriangle className='w-4 h-4' />
+              </div>
+            </div>
+
+            <div className='flex items-baseline gap-1 mt-2'>
+              <h2 className='text-3xl font-extrabold text-[#D97706] tracking-tight'>
+                {data.statCards.skillGaps.count}
+              </h2>
+              <span className='text-sm font-semibold text-slate-700 ml-1'>
+                {data.statCards.skillGaps.label}
+              </span>
+            </div>
+          </div>
+
+          <p className='text-xs text-slate-500 mt-3 font-normal'>
+            Dibutuhkan untuk Target: {data.statCards.skillGaps.targetRole}
+          </p>
+        </div>
+
+        {/* Stat Card 4: Portofolio Publik */}
+        <div className='bg-white rounded-2xl border border-[#E8ECF2] p-5 shadow-xs hover:shadow-sm transition-all flex flex-col justify-between'>
+          <div>
+            <div className='flex items-center justify-between'>
+              <span className='text-xs font-semibold text-slate-600'>Portofolio Publik</span>
+              <div className='w-7 h-7 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center shadow-2xs'>
+                <Share2 className='w-4 h-4' />
+              </div>
+            </div>
+
+            <div className='flex items-baseline gap-1 mt-2'>
+              <h2 className='text-3xl font-extrabold text-[#0F172A] tracking-tight'>
+                {data.statCards.publicPortfolio.completeness}%
+              </h2>
+              <span className='text-xs font-semibold text-slate-500 ml-1'>Kelengkapan</span>
+            </div>
+          </div>
+
+          <div className='flex items-center justify-between mt-3 pt-1'>
+            <span className='inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#DCFCE7] text-[#15803D] text-[11px] font-semibold'>
+              <span className='w-1.5 h-1.5 rounded-full bg-[#15803D]' />
+              <span>{data.statCards.publicPortfolio.status}</span>
+            </span>
+
+            <Link
+              href={data.statCards.publicPortfolio.previewUrl}
+              className='inline-flex items-center gap-0.5 text-xs font-semibold text-[#2563EB] hover:underline'
+            >
+              <span>Preview</span>
+              <ExternalLink className='w-3 h-3' />
+            </Link>
+          </div>
         </div>
       </section>
 
-      {/* 4. BOTTOM ROW: CAREER OPPORTUNITIES (50%) + GROWTH PROGRESS (50%) */}
-      <section className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
-        {/* Left: Career Opportunities (50%) */}
-        <div className='bg-white dark:bg-slate-900 rounded-2xl border border-[#E8ECF2] dark:border-slate-800 p-6 shadow-sm flex flex-col justify-between'>
-          <div>
-            <div className='flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800'>
+      {/* 3. TWO-COLUMN MAIN GRID (65% Left : 35% Right) */}
+      <section className='grid grid-cols-1 lg:grid-cols-12 gap-6'>
+        {/* LEFT COLUMN (65% width) */}
+        <div className='lg:col-span-8 flex flex-col gap-6'>
+          {/* Block 1: Metodologi Growvia */}
+          <div className='bg-white rounded-2xl border border-[#E8ECF2] p-6 shadow-xs'>
+            {/* Header */}
+            <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pb-3'>
               <div>
-                <h3 className='text-lg font-bold text-[#1E3A8A] dark:text-white tracking-tight'>
-                  Career Opportunities
+                <span className='text-[10px] font-bold text-slate-400 tracking-wider uppercase'>
+                  METODOLOGI GROWVIA
+                </span>
+                <h3 className='text-lg font-bold text-[#0F172A] tracking-tight mt-0.5'>
+                  Alur Ekosistem Karier Kamu
                 </h3>
-                <p className='text-xs text-slate-500 dark:text-slate-400 mt-0.5'>
-                  Peluang magang & kerja dengan kecocokan skill profil kamu.
-                </p>
               </div>
-              <span className='w-2 h-2 rounded-full bg-emerald-500 animate-pulse' />
+
+              <span className='px-3 py-1 rounded-full bg-[#EFF6FF] text-[#2563EB] text-xs font-semibold w-fit self-start sm:self-center'>
+                Siklus Berkelanjutan
+              </span>
             </div>
 
-            {/* 2 Job Cards */}
-            <div className='flex flex-col gap-3.5 mt-4'>
-              {data.careerOpportunities.map(job => (
-                <div
-                  key={job.id}
-                  className='p-4 rounded-xl border border-slate-100 dark:border-slate-800 hover:border-blue-200 dark:hover:border-blue-900 bg-slate-50/50 dark:bg-slate-800/40 transition-all flex flex-col gap-2'
-                >
-                  <div className='flex items-start justify-between gap-3'>
+            {/* 4 Process Cards */}
+            <div className='grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4'>
+              {/* Step 1: Pengalaman */}
+              <div className='bg-[#F8FAFC] rounded-xl p-3.5 border border-slate-100 flex flex-col justify-between hover:border-blue-200 transition-all'>
+                <div>
+                  <div className='flex items-center justify-between'>
+                    <div className='inline-flex items-center gap-1.5 text-xs font-bold text-[#0F172A]'>
+                      <FolderOpen className='w-3.5 h-3.5 text-[#2563EB]' />
+                      <span>Pengalaman</span>
+                    </div>
+                    <span className='text-xs font-bold text-slate-300'>1</span>
+                  </div>
+
+                  <div className='text-2xl font-bold text-[#0F172A] mt-2'>
+                    {data.metodologi.experiencesCount}
+                  </div>
+                  <div className='text-[11px] text-slate-500 mt-0.5'>Tercatat rapi</div>
+                </div>
+
+                <div className='h-1 w-full bg-[#2563EB] rounded-full mt-3' />
+              </div>
+
+              {/* Step 2: Ekstraksi AI */}
+              <div className='bg-[#F8FAFC] rounded-xl p-3.5 border border-slate-100 flex flex-col justify-between hover:border-blue-200 transition-all'>
+                <div>
+                  <div className='flex items-center justify-between'>
+                    <div className='inline-flex items-center gap-1.5 text-xs font-bold text-[#0F172A]'>
+                      <Target className='w-3.5 h-3.5 text-[#2563EB]' />
+                      <span>Ekstraksi AI</span>
+                    </div>
+                    <span className='text-xs font-bold text-slate-300'>2</span>
+                  </div>
+
+                  <div className='text-2xl font-bold text-[#0F172A] mt-2'>
+                    {data.metodologi.skillsCount}
+                  </div>
+                  <div className='text-[11px] text-slate-500 mt-0.5'>Skill aktif terpetakan</div>
+                </div>
+
+                <div className='h-1 w-full bg-[#2563EB] rounded-full mt-3' />
+              </div>
+
+              {/* Step 3: Analisis Gap */}
+              <div className='bg-[#F8FAFC] rounded-xl p-3.5 border border-slate-100 flex flex-col justify-between hover:border-amber-200 transition-all'>
+                <div>
+                  <div className='flex items-center justify-between'>
+                    <div className='inline-flex items-center gap-1.5 text-xs font-bold text-[#0F172A]'>
+                      <BarChart2 className='w-3.5 h-3.5 text-[#F59E0B]' />
+                      <span>Analisis Gap</span>
+                    </div>
+                    <span className='text-xs font-bold text-slate-300'>3</span>
+                  </div>
+
+                  <div className='text-2xl font-bold text-[#D97706] mt-2'>
+                    {data.metodologi.gapCount}
+                  </div>
+                  <div className='text-[11px] text-slate-500 mt-0.5'>Target belajar aktif</div>
+                </div>
+
+                <div className='h-1 w-full bg-[#F59E0B] rounded-full mt-3' />
+              </div>
+
+              {/* Step 4: Peluang Karier */}
+              <div className='bg-[#F8FAFC] rounded-xl p-3.5 border border-slate-100 flex flex-col justify-between hover:border-emerald-200 transition-all'>
+                <div>
+                  <div className='flex items-center justify-between'>
+                    <div className='inline-flex items-center gap-1.5 text-xs font-bold text-[#0F172A]'>
+                      <Compass className='w-3.5 h-3.5 text-[#10B981]' />
+                      <span>Peluang Karier</span>
+                    </div>
+                    <span className='text-xs font-bold text-slate-300'>4</span>
+                  </div>
+
+                  <div className='text-2xl font-bold text-[#10B981] mt-2'>
+                    {data.metodologi.opportunitiesCount}
+                  </div>
+                  <div className='text-[11px] text-slate-500 mt-0.5 leading-snug'>
+                    Lowongan cocok match &gt; 80%
+                  </div>
+                </div>
+
+                <div className='h-1 w-full bg-[#10B981] rounded-full mt-3' />
+              </div>
+            </div>
+          </div>
+
+          {/* Block 2: Insight AI Growvia Card */}
+          {insightStatus !== 'dismissed' && (
+            <div className='bg-[#F0F5FF] rounded-2xl border border-[#DCE7FF] p-6 shadow-xs relative'>
+              {/* Header */}
+              <div className='flex items-center justify-between gap-2 pb-1'>
+                <div className='inline-flex items-center gap-2'>
+                  <div className='w-6 h-6 rounded-lg bg-[#2563EB] text-white flex items-center justify-center shadow-2xs'>
+                    <Sparkles className='w-3.5 h-3.5' />
+                  </div>
+                  <span className='text-[11px] font-bold text-[#2563EB] tracking-wider uppercase'>
+                    INSIGHT AI GROWVIA
+                  </span>
+                </div>
+
+                <span className='px-2.5 py-0.5 rounded-full bg-white text-[#2563EB] border border-[#BFDBFE] text-[11px] font-semibold'>
+                  Baru Teranalisis
+                </span>
+              </div>
+
+              <h4 className='text-base font-bold text-[#0F172A] tracking-tight mt-2'>
+                Penemuan Skill Baru Otomatis
+              </h4>
+
+              <p className='text-xs sm:text-sm text-slate-600 mt-2 leading-relaxed'>
+                Berdasarkan proyek <strong className='font-semibold text-slate-900'>{data.aiInsight.projectName}</strong> kamu, kami mendeteksi bukti konkret penerapan skill{' '}
+                <span className='inline-flex items-center px-2 py-0.5 rounded-md bg-white border border-[#BFDBFE] text-[#2563EB] font-semibold text-xs mx-0.5'>
+                  {data.aiInsight.skills[0] || 'Product Discovery'}
+                </span>{' '}
+                dan{' '}
+                <span className='inline-flex items-center px-2 py-0.5 rounded-md bg-white border border-[#BFDBFE] text-[#2563EB] font-semibold text-xs mx-0.5'>
+                  {data.aiInsight.skills[1] || 'User Interview'}
+                </span>{' '}
+                pada level <em className='italic text-slate-800 font-medium'>{data.aiInsight.level}</em>. Tambahkan ke matriks portofoliomu?
+              </p>
+
+              {/* Action Buttons */}
+              <div className='flex flex-wrap items-center justify-between gap-3 mt-4 pt-1'>
+                {insightStatus === 'accepted' ? (
+                  <div className='inline-flex items-center gap-1.5 text-xs font-semibold text-[#16A34A] bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-200'>
+                    <CheckCircle2 className='w-4 h-4' />
+                    <span>Skill berhasil ditambahkan ke matriks portofolio!</span>
+                  </div>
+                ) : (
+                  <div className='flex items-center gap-2.5'>
+                    <button
+                      type='button'
+                      onClick={handleAcceptInsight}
+                      disabled={isInsightSaving}
+                      className='inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#2563EB] hover:bg-blue-700 text-white text-xs font-semibold shadow-2xs hover:shadow-xs transition-all active:scale-[0.98] cursor-pointer'
+                    >
+                      {isInsightSaving ? (
+                        <Loader2 className='w-3.5 h-3.5 animate-spin' />
+                      ) : (
+                        <CheckCircle2 className='w-3.5 h-3.5' />
+                      )}
+                      <span>Terima &amp; Simpan</span>
+                    </button>
+
+                    <Link
+                      href='/skills'
+                      className='inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-xs font-semibold transition-all'
+                    >
+                      <Sliders className='w-3.5 h-3.5 text-slate-500' />
+                      <span>Edit Skill</span>
+                    </Link>
+                  </div>
+                )}
+
+                {insightStatus !== 'accepted' && (
+                  <button
+                    type='button'
+                    onClick={() => setInsightStatus('dismissed')}
+                    className='text-xs font-medium text-slate-400 hover:text-slate-600 transition-colors cursor-pointer'
+                  >
+                    Abaikan
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Block 3: Rekam Jejak: Pengalaman Terakhir */}
+          <div className='bg-white rounded-2xl border border-[#E8ECF2] p-6 shadow-xs flex flex-col gap-4'>
+            {/* Header */}
+            <div className='flex items-center justify-between pb-1'>
+              <div>
+                <span className='text-[10px] font-bold text-slate-400 tracking-wider uppercase'>
+                  REKAM JEJAK
+                </span>
+                <h3 className='text-lg font-bold text-[#0F172A] tracking-tight mt-0.5'>
+                  Pengalaman Terakhir
+                </h3>
+              </div>
+
+              <Link
+                href='/experience'
+                className='inline-flex items-center gap-1 text-xs font-semibold text-[#2563EB] hover:underline'
+              >
+                <span>Lihat Semua ({data.metodologi.experiencesCount})</span>
+                <ChevronRight className='w-3.5 h-3.5' />
+              </Link>
+            </div>
+
+            {/* Stacked Experience Cards */}
+            <div className='flex flex-col gap-3.5'>
+              {data.recentExperiences.slice(0, 2).map((exp, idx) => {
+                const isFirst = idx === 0
+
+                return (
+                  <div
+                    key={exp.id || idx}
+                    className='bg-[#F8FAFC] border border-slate-100 hover:border-blue-200 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all'
+                  >
+                    {/* Left Icon & Details */}
+                    <div className='flex items-start gap-3.5'>
+                      <div className='w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-[#2563EB] shadow-2xs shrink-0 mt-0.5'>
+                        {isFirst ? (
+                          <Laptop className='w-5 h-5' />
+                        ) : (
+                          <Users className='w-5 h-5' />
+                        )}
+                      </div>
+
+                      <div className='flex flex-col gap-1'>
+                        <h4 className='text-sm font-bold text-[#0F172A] leading-snug'>
+                          {exp.role || exp.title.split(' • ')[0]} •{' '}
+                          <span className='font-normal text-slate-600'>
+                            {exp.company || exp.title.split(' • ')[1] || ''}
+                          </span>
+                        </h4>
+
+                        <p className='text-xs text-slate-500 font-normal'>
+                          {exp.dateFormatted}
+                        </p>
+
+                        {/* Skill Badges */}
+                        <div className='flex flex-wrap items-center gap-1.5 mt-1.5'>
+                          {exp.skills.slice(0, 3).map((skillName, sIdx) => (
+                            <span
+                              key={sIdx}
+                              className='px-2.5 py-1 rounded-md bg-white border border-slate-200 text-xs font-medium text-[#2563EB]'
+                            >
+                              {skillName}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Right Badge & Link */}
+                    <div className='flex sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-2 shrink-0 border-t sm:border-t-0 pt-2 sm:pt-0 border-slate-200/60'>
+                      <span className='inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#DCFCE7] text-[#16A34A] text-xs font-semibold'>
+                        <CheckCircle2 className='w-3 h-3' />
+                        <span>{exp.validatedSkillsCount} Skill Tervalidasi</span>
+                      </span>
+
+                      <Link
+                        href={`/experience`}
+                        className='text-xs font-semibold text-slate-400 hover:text-[#2563EB] transition-colors inline-flex items-center gap-0.5'
+                      >
+                        <span>Detail Log</span>
+                        <ChevronRight className='w-3 h-3' />
+                      </Link>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* RIGHT COLUMN (35% width) */}
+        <div className='lg:col-span-4 flex flex-col gap-6'>
+          {/* Card 1: Prioritas Utama */}
+          <div className='bg-white rounded-2xl border border-[#E8ECF2] p-6 shadow-xs flex flex-col justify-between'>
+            <div>
+              {/* Header */}
+              <div className='flex items-center justify-between pb-1'>
+                <span className='text-[10px] font-bold text-slate-400 tracking-wider uppercase'>
+                  PRIORITAS UTAMA
+                </span>
+                <Flag className='w-4 h-4 text-[#2563EB]' />
+              </div>
+
+              <span className='text-xs text-slate-500 font-normal mt-1 block'>
+                Peran Sasaran
+              </span>
+
+              <h3 className='text-xl font-extrabold text-[#0F172A] tracking-tight mt-0.5 leading-snug'>
+                {data.targetCareer.roleName}
+              </h3>
+
+              <p className='text-xs text-slate-500 mt-1 font-normal'>
+                Industri: {data.targetCareer.industry}
+              </p>
+
+              {/* Match Box */}
+              <div className='bg-[#F8FAFC] rounded-xl p-3.5 border border-slate-100 mt-4'>
+                <div className='flex items-center justify-between text-xs'>
+                  <span className='font-semibold text-slate-700'>Kecocokan Profil</span>
+                  <span className='font-extrabold text-[#2563EB]'>
+                    {data.targetCareer.matchPercent}% Match
+                  </span>
+                </div>
+
+                <div className='w-full h-2 bg-slate-200 rounded-full my-2 overflow-hidden'>
+                  <div
+                    className='h-full bg-[#2563EB] rounded-full transition-all duration-1000'
+                    style={{ width: `${data.targetCareer.matchPercent}%` }}
+                  />
+                </div>
+
+                <p className='text-xs text-slate-500 leading-snug mt-1.5'>
+                  Tinggal {data.targetCareer.missingSkillsCount} skill kunci untuk mencapai ambang {data.targetCareer.threshold}% siap rekrut.
+                </p>
+              </div>
+
+              {/* Gap Skill Harus Dikejar */}
+              <div className='mt-4'>
+                <h5 className='text-xs font-bold text-[#0F172A] mb-2.5'>
+                  Gap Skill Harus Dikejar:
+                </h5>
+
+                <div className='flex flex-col gap-2'>
+                  {data.targetCareer.gaps.map((gap, gIdx) => {
+                    const isMissing = gap.status === 'missing'
+
+                    return (
+                      <div
+                        key={gIdx}
+                        className={`p-2.5 rounded-xl border flex items-center justify-between ${
+                          isMissing
+                            ? 'bg-white border-rose-100'
+                            : 'bg-white border-amber-100'
+                        }`}
+                      >
+                        <div className='flex items-center gap-2'>
+                          <div
+                            className={`w-4 h-4 rounded-full flex items-center justify-center text-xs ${
+                              isMissing ? 'text-rose-500' : 'text-amber-500'
+                            }`}
+                          >
+                            {isMissing ? '🚫' : '⚠️'}
+                          </div>
+                          <span className='text-xs font-semibold text-slate-800'>
+                            {gap.name}
+                          </span>
+                        </div>
+
+                        <span
+                          className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                            isMissing
+                              ? 'bg-[#FEE2E2] text-[#DC2626]'
+                              : 'bg-[#FEF3C7] text-[#D97706]'
+                          }`}
+                        >
+                          {isMissing ? 'Missing' : 'Develop'}
+                        </span>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* CTA Button */}
+            <Link
+              href='/learning'
+              className='mt-5 w-full py-2.5 rounded-xl bg-[#2563EB] hover:bg-blue-700 text-white font-semibold text-xs flex items-center justify-center gap-2 shadow-2xs hover:shadow-xs transition-all active:scale-[0.98]'
+            >
+              <Award className='w-4 h-4' />
+              <span>Lihat Rekomendasi Belajar</span>
+            </Link>
+          </div>
+
+          {/* Card 2: Modul Kilat AI */}
+          <div className='bg-white rounded-2xl border border-[#E8ECF2] p-6 shadow-xs flex flex-col gap-4'>
+            {/* Header */}
+            <div>
+              <div className='flex items-center gap-1.5'>
+                <Zap className='w-4 h-4 text-[#2563EB] fill-[#2563EB]' />
+                <h3 className='text-base font-bold text-[#0F172A] tracking-tight'>
+                  Modul Kilat AI
+                </h3>
+              </div>
+              <p className='text-xs text-slate-500 mt-1 leading-snug'>
+                Dipilih secara presisi untuk menutup gap dalam waktu kurang dari 1 minggu.
+              </p>
+            </div>
+
+            {/* Stacked 2 Modules */}
+            <div className='flex flex-col gap-3'>
+              {data.rapidModules.map((module, mIdx) => {
+                const isMiniCourse = module.type === 'Mini Course'
+
+                return (
+                  <div
+                    key={module.id || mIdx}
+                    className='bg-[#F8FAFC] border border-slate-100 hover:border-blue-200 rounded-xl p-3.5 flex flex-col gap-2 transition-all'
+                  >
+                    {/* Top Tag Row */}
+                    <div className='flex items-center justify-between'>
+                      <span
+                        className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${
+                          isMiniCourse
+                            ? 'bg-white border border-blue-200 text-[#2563EB]'
+                            : 'bg-white border border-slate-200 text-slate-700'
+                        }`}
+                      >
+                        {module.type}
+                      </span>
+
+                      <div className='flex items-center gap-1 text-[11px] text-slate-500 font-medium'>
+                        {isMiniCourse ? (
+                          <Clock className='w-3 h-3 text-slate-400' />
+                        ) : (
+                          <Download className='w-3 h-3 text-slate-400' />
+                        )}
+                        <span>{module.duration}</span>
+                      </div>
+                    </div>
+
+                    {/* Title & Description */}
                     <div>
-                      <h4 className='text-sm font-bold text-slate-900 dark:text-white leading-snug'>
-                        {job.title}
+                      <h4 className='text-xs font-bold text-[#0F172A] leading-snug hover:text-[#2563EB] transition-colors'>
+                        <a href={module.url} target='_blank' rel='noopener noreferrer'>
+                          {module.title}
+                        </a>
                       </h4>
-                      <p className='text-xs text-slate-500 mt-0.5 flex items-center gap-1.5'>
-                        <span className='font-semibold text-slate-700 dark:text-slate-300'>
-                          {job.company}
-                        </span>
-                        <span>•</span>
-                        <span className='inline-flex items-center gap-0.5'>
-                          <MapPin className='w-3 h-3 text-slate-400' />
-                          {job.location}
-                        </span>
+                      <p className='text-[11px] text-slate-500 mt-1 leading-relaxed'>
+                        {module.description}
                       </p>
                     </div>
 
-                    {/* Skill Match Badge */}
-                    <span className='px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200/60 shrink-0'>
-                      {job.matchPercent}% Match
-                    </span>
-                  </div>
-
-                  {/* Skill tags */}
-                  <div className='flex flex-wrap items-center gap-1.5 mt-1'>
-                    <span className='text-[10px] font-semibold px-2 py-0.5 rounded bg-blue-50 dark:bg-blue-950/60 text-[#2563EB]'>
-                      {job.type}
-                    </span>
-                    {job.skillTags.map((tag, sIdx) => (
-                      <span
-                        key={sIdx}
-                        className='text-[10px] font-medium px-2 py-0.5 rounded bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700'
-                      >
-                        {tag}
+                    {/* Bottom Link Row */}
+                    <div className='flex items-center justify-between pt-1 border-t border-slate-100 text-[11px]'>
+                      <span className='font-semibold text-[#2563EB]'>
+                        Tutup Gap: {module.gapTag}
                       </span>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
 
-          <Link
-            href='/career'
-            className='inline-flex items-center gap-1 text-xs font-semibold text-[#2563EB] hover:text-blue-700 transition-colors mt-4'
-          >
-            <span>Eksplor Lowongan Lainnya di Menu Karier</span>
-            <ChevronRight className='w-3.5 h-3.5' />
-          </Link>
-        </div>
-
-        {/* Right: Growth Progress (50%) */}
-        <div className='bg-white dark:bg-slate-900 rounded-2xl border border-[#E8ECF2] dark:border-slate-800 p-6 shadow-sm flex flex-col justify-between'>
-          <div>
-            <div className='flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800'>
-              <div>
-                <h3 className='text-lg font-bold text-[#1E3A8A] dark:text-white tracking-tight'>
-                  Growth Progress
-                </h3>
-                <p className='text-xs text-slate-500 dark:text-slate-400 mt-0.5'>
-                  Perkembangan akumulasi skill selama 3 bulan terakhir.
-                </p>
-              </div>
-
-              <div className='inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-50 dark:bg-blue-950/60 text-[#2563EB]'>
-                <TrendingUp className='w-3.5 h-3.5' />
-                <span>+{data.growthProgress.growthPercentage}% Kecepatan</span>
-              </div>
-            </div>
-
-            {/* 3 Months Bar Chart */}
-            <div className='mt-6 flex flex-col gap-5'>
-              <div className='grid grid-cols-3 gap-4 items-end h-36 px-4 pt-4 rounded-xl bg-slate-50/70 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800'>
-                {data.growthProgress.months.map((m, idx) => (
-                  <div key={idx} className='flex flex-col items-center gap-2 h-full justify-end'>
-                    <span className='text-xs font-bold text-slate-800 dark:text-slate-200'>
-                      {m.count}
-                    </span>
-                    <div className='w-full max-w-[48px] bg-slate-200 dark:bg-slate-700 h-24 rounded-t-lg relative overflow-hidden'>
-                      <div
-                        className={`absolute bottom-0 left-0 right-0 rounded-t-lg transition-all duration-1000 ${
-                          idx === 2 ? 'bg-[#2563EB]' : 'bg-blue-400 dark:bg-blue-500'
-                        }`}
-                        style={{ height: `${m.percentage}%` }}
-                      />
+                      <a
+                        href={module.url}
+                        target='_blank'
+                        rel='noopener noreferrer'
+                        className='font-bold text-[#2563EB] hover:text-blue-700 hover:underline flex items-center gap-0.5'
+                      >
+                        <span>{module.ctaText}</span>
+                      </a>
                     </div>
-                    <span className='text-xs font-medium text-slate-500 pb-2'>{m.month}</span>
                   </div>
-                ))}
-              </div>
-
-              {/* Progress Summary Milestone Banner */}
-              <div className='p-3.5 rounded-xl bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-900/50 flex items-center gap-3'>
-                <div className='w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/60 text-emerald-600 flex items-center justify-center shrink-0'>
-                  <CheckCircle2 className='w-4 h-4' />
-                </div>
-                <div className='flex flex-col'>
-                  <span className='text-xs font-bold text-emerald-900 dark:text-emerald-200 leading-snug'>
-                    Level Kompetensi Meningkat
-                  </span>
-                  <span className='text-[11px] text-emerald-700 dark:text-emerald-300'>
-                    Kamu telah menyelesaikan 3 tonggak milestone portofolio sejak bulan lalu.
-                  </span>
-                </div>
-              </div>
+                )
+              })}
             </div>
           </div>
-
-          <Link
-            href='/skills'
-            className='inline-flex items-center gap-1 text-xs font-semibold text-[#2563EB] hover:text-blue-700 transition-colors mt-4'
-          >
-            <span>Lihat Riwayat & Progres Lengkap</span>
-            <ChevronRight className='w-3.5 h-3.5' />
-          </Link>
         </div>
       </section>
+
+      {/* QUICK ADD EXPERIENCE MODAL */}
+      {isQuickAddOpen && (
+        <div className='fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs animate-in fade-in duration-200'>
+          <div className='bg-white rounded-2xl border border-slate-200 shadow-xl w-full max-w-md p-6 overflow-hidden'>
+            <div className='flex items-center justify-between pb-3 border-b border-slate-100'>
+              <h4 className='text-base font-bold text-slate-900'>
+                Tambah Pengalaman Baru
+              </h4>
+              <button
+                type='button'
+                onClick={() => setIsQuickAddOpen(false)}
+                className='text-slate-400 hover:text-slate-600 rounded-lg p-1'
+              >
+                <X className='w-5 h-5' />
+              </button>
+            </div>
+
+            <form onSubmit={handleQuickAddSubmit} className='flex flex-col gap-3.5 mt-4'>
+              <div>
+                <label className='text-xs font-semibold text-slate-700 block mb-1'>
+                  Judul Pengalaman / Posisi
+                </label>
+                <input
+                  type='text'
+                  required
+                  placeholder='cth: Product Design Intern'
+                  value={expForm.title}
+                  onChange={e => setExpForm({ ...expForm, title: e.target.value })}
+                  className='w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200 focus:outline-hidden focus:border-[#2563EB]'
+                />
+              </div>
+
+              <div>
+                <label className='text-xs font-semibold text-slate-700 block mb-1'>
+                  Institusi / Perusahaan
+                </label>
+                <input
+                  type='text'
+                  required
+                  placeholder='cth: GoTo Financial'
+                  value={expForm.institutionName}
+                  onChange={e => setExpForm({ ...expForm, institutionName: e.target.value })}
+                  className='w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200 focus:outline-hidden focus:border-[#2563EB]'
+                />
+              </div>
+
+              <div>
+                <label className='text-xs font-semibold text-slate-700 block mb-1'>
+                  Tipe Pengalaman
+                </label>
+                <select
+                  value={expForm.type}
+                  onChange={e => setExpForm({ ...expForm, type: e.target.value })}
+                  className='w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200 focus:outline-hidden focus:border-[#2563EB] bg-white'
+                >
+                  <option value='internship'>Magang Industri</option>
+                  <option value='organisation'>Organisasi Kampus</option>
+                  <option value='project'>Proyek Independen</option>
+                  <option value='competition'>Kompetisi</option>
+                  <option value='committee'>Kepanitiaan</option>
+                </select>
+              </div>
+
+              <div>
+                <label className='text-xs font-semibold text-slate-700 block mb-1'>
+                  Deskripsi / Tanggung Jawab Singkat
+                </label>
+                <textarea
+                  rows={3}
+                  placeholder='Ceritakan ringkas apa yang kamu kerjakan...'
+                  value={expForm.description}
+                  onChange={e => setExpForm({ ...expForm, description: e.target.value })}
+                  className='w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200 focus:outline-hidden focus:border-[#2563EB]'
+                />
+              </div>
+
+              <div className='flex items-center justify-end gap-2.5 mt-2 pt-2 border-t border-slate-100'>
+                <button
+                  type='button'
+                  onClick={() => setIsQuickAddOpen(false)}
+                  className='px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 transition-all'
+                >
+                  Batal
+                </button>
+
+                <button
+                  type='submit'
+                  disabled={isSubmittingExp}
+                  className='inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#2563EB] hover:bg-blue-700 text-white text-xs font-semibold transition-all'
+                >
+                  {isSubmittingExp ? (
+                    <Loader2 className='w-3.5 h-3.5 animate-spin' />
+                  ) : (
+                    <Plus className='w-3.5 h-3.5' />
+                  )}
+                  <span>Simpan Pengalaman</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -36,14 +36,16 @@ const navigationCustomStyles = (verticalNavOptions: VerticalNavState, theme: The
         duration: transitionDuration,
         easing: 'ease-in-out'
       }),
-      borderColor: 'transparent',
-      boxShadow: 'var(--mui-customShadows-sm)',
+      backgroundColor: '#FFFFFF !important',
+      borderRight: '1px solid #E8ECF2 !important',
+      borderColor: '#E8ECF2',
+      boxShadow: 'none',
       '[data-skin="bordered"] &': {
         boxShadow: 'none',
         ...(collapsedHovered && {
           boxShadow: 'var(--mui-customShadows-sm)'
         }),
-        borderColor: 'var(--mui-palette-divider)'
+        borderRight: '1px solid #E8ECF2 !important'
       }
     },
     [`& .${menuClasses.root}`]: {

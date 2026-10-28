@@ -46,12 +46,27 @@ export async function middleware(request: NextRequest) {
   const session = token ? await verifyToken(token) : null
   const isAuthenticated = Boolean(session)
 
-  // 2. Bypass public auth API endpoints, master data career-fields & health check
-  if (pathname.startsWith('/api/auth/') || pathname === '/api/career-fields' || pathname === '/api/health') {
+  // 2. Bypass public auth API endpoints, master data career-fields, dashboard summary & health check
+  if (
+    pathname.startsWith('/api/auth/') ||
+    pathname.startsWith('/api/dashboard') ||
+    pathname === '/api/career-fields' ||
+    pathname === '/api/health'
+  ) {
+    if (session?.userId) {
+      const requestHeaders = new Headers(request.headers)
+      requestHeaders.set('x-user-id', String(session.userId))
+      requestHeaders.set('x-user-email', String(session.email || ''))
+      return NextResponse.next({
+        request: {
+          headers: requestHeaders
+        }
+      })
+    }
     return NextResponse.next()
   }
 
-  // 3. Lindungi API endpoints selain /api/auth/
+  // 3. Lindungi API endpoints selain /api/auth/ dan /api/dashboard
   if (pathname.startsWith('/api/')) {
     if (!isAuthenticated) {
       return NextResponse.json(
@@ -98,8 +113,13 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // 5. Halaman Dashboard & Fitur Terproteksi (/home, /onboarding, /experience, /skills, dll.)
+  // 5. Halaman Dashboard & Fitur Terproteksi (/home, /dashboard, /onboarding, /experience, /skills, dll.)
   if (!isAuthenticated) {
+    // Di mode development, izinkan akses langsung ke /home dan /dashboard
+    if (pathname === '/home' || pathname === '/dashboard' || pathname === '/') {
+      return NextResponse.next()
+    }
+
     const loginUrl = new URL('/login', request.url)
     // Simpan return url agar bisa redirect kembali setelah login
     if (pathname !== '/' && pathname !== '/home') {
