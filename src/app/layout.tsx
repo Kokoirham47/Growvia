@@ -1,3 +1,5 @@
+import { Poppins } from 'next/font/google'
+
 // MUI Imports
 import InitColorSchemeScript from '@mui/material/InitColorSchemeScript'
 
@@ -12,6 +14,13 @@ import { getSystemMode } from '@core/utils/serverHelpers'
 
 // Style Imports
 import '@/app/globals.css'
+
+const poppins = Poppins({
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600', '700'],
+  variable: '--font-poppins',
+  display: 'swap'
+})
 
 export const metadata = {
   title: 'Growvia - AI Career Portfolio & Development',
@@ -30,8 +39,8 @@ const RootLayout = async (props: ChildrenType) => {
   const direction = 'ltr'
 
   return (
-    <html id='__next' lang='en' dir={direction} suppressHydrationWarning>
-      <body className='flex is-full min-bs-full flex-auto flex-col'>
+    <html id='__next' lang='en' dir={direction} suppressHydrationWarning className={poppins.variable}>
+      <body className={`flex is-full min-bs-full flex-auto flex-col ${poppins.className}`}>
         <InitColorSchemeScript attribute='data' defaultMode={systemMode} />
         {children}
       </body>

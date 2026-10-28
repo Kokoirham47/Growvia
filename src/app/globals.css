@@ -1,4 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 @layer theme, base, components, utilities;
 @import 'tailwindcss/theme.css' layer(theme) important;
 @import 'tailwindcss/utilities.css' layer(utilities) important;
@@ -139,10 +138,14 @@ html {
   inline-size: 100%;
   min-block-size: 100%;
   font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
   font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
+  -webkit-overflow-scrolling: touch;
+  text-rendering: optimizeLegibility;
 }
 
 /* Universal Poppins enforcement for Experience Page, modals, and components */
@@ -151,7 +154,11 @@ body {
 .experience-page input,
 .experience-page textarea,
 .experience-page button,
-.experience-page select {
+.experience-page select,
+.ts-vertical-nav-root,
+.ts-vertical-nav-root *,
+.ts-vertical-menu-root,
+.ts-vertical-menu-root * {
   font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
 }
 

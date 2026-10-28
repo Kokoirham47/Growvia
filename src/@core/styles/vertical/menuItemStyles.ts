@@ -41,12 +41,24 @@ const menuItemStyles = (verticalNavOptions: VerticalNavState, theme: Theme): Men
         borderRadius: '10px !important',
         boxShadow: 'none !important',
         fontWeight: '600 !important',
+        fontFamily: "'Poppins', sans-serif !important",
         [`& .${menuClasses.icon}`]: {
           color: '#2563EB !important'
         },
         [`& .${menuClasses.label}`]: {
           color: '#2563EB !important',
-          fontWeight: 600
+          fontWeight: '600 !important'
+        },
+        '[data-mui-color-scheme="dark"] &, [data-theme="dark"] &, .dark &': {
+          backgroundColor: 'rgba(37, 99, 235, 0.22) !important',
+          color: '#60A5FA !important',
+          [`& .${menuClasses.icon}`]: {
+            color: '#60A5FA !important'
+          },
+          [`& .${menuClasses.label}`]: {
+            color: '#60A5FA !important',
+            fontWeight: '600 !important'
+          }
         }
       }
     }),
@@ -54,6 +66,11 @@ const menuItemStyles = (verticalNavOptions: VerticalNavState, theme: Theme): Men
       paddingBlock: '8px',
       paddingInline: '12px',
       borderRadius: 'var(--border-radius)',
+      fontFamily: "'Poppins', sans-serif !important",
+      color: '#64748B',
+      '[data-mui-color-scheme="dark"] &, [data-theme="dark"] &, .dark &': {
+        color: '#94A3B8'
+      },
       ...(!(isCollapsed && !isHovered) && {
         '&:has(.MuiChip-root)': {
           paddingBlock: theme.spacing(1.75)
@@ -66,7 +83,12 @@ const menuItemStyles = (verticalNavOptions: VerticalNavState, theme: Theme): Men
       }),
       ...(!active && {
         '&:hover, &:focus-visible': {
-          backgroundColor: 'var(--mui-palette-action-hover)'
+          backgroundColor: '#F1F5F9',
+          color: '#0F172A',
+          '[data-mui-color-scheme="dark"] &, [data-theme="dark"] &, .dark &': {
+            backgroundColor: 'rgba(255, 255, 255, 0.06)',
+            color: '#F8FAFC'
+          }
         },
         '&[aria-expanded="true"]': {
           backgroundColor: 'var(--mui-palette-action-selected)'

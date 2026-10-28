@@ -47,7 +47,7 @@ interface CompetencyLevelItem {
   note: string
 }
 
-interface DashboardSummaryData {
+export interface DashboardSummaryData {
   user: {
     name: string
     headline: string
@@ -153,10 +153,13 @@ interface DashboardSummaryData {
   }>
 }
 
+interface DashboardViewProps {
+  initialData?: DashboardSummaryData | null
+}
 
-export default function DashboardView() {
-  const [data, setData] = useState<DashboardSummaryData | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+export default function DashboardView({ initialData = null }: DashboardViewProps) {
+  const [data, setData] = useState<DashboardSummaryData | null>(initialData)
+  const [isLoading, setIsLoading] = useState(!initialData)
   const [error, setError] = useState<string | null>(null)
 
   // Chart state for Skill Pattern Map toggle: 'target' | 'levels'
@@ -199,8 +202,13 @@ export default function DashboardView() {
   }
 
   useEffect(() => {
-    fetchDashboardData()
-  }, [])
+    if (initialData) {
+      setData(initialData)
+      setIsLoading(false)
+    } else {
+      fetchDashboardData()
+    }
+  }, [initialData])
 
   const handleQuickAddSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -283,7 +291,7 @@ export default function DashboardView() {
 
   if (isLoading) {
     return (
-      <div className='flex flex-col gap-6 w-full max-w-[1440px] mx-auto p-6 md:p-8 font-["Poppins",sans-serif] animate-pulse'>
+      <div className='flex flex-col gap-6 w-full pb-12 font-["Poppins",sans-serif] animate-pulse'>
         <div className='h-20 rounded-3xl bg-slate-200 dark:bg-slate-800' />
 
         <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4'>
@@ -361,7 +369,7 @@ export default function DashboardView() {
   return (
     <div
       style={{ fontFamily: "'Poppins', sans-serif" }}
-      className='flex flex-col gap-6 w-full max-w-[1440px] mx-auto p-4 sm:p-6 md:p-8 text-slate-800 dark:text-slate-200 transition-colors'
+      className='flex flex-col gap-6 w-full pb-12 text-slate-800 dark:text-slate-200 transition-colors'
     >
       {/* 1. TOP GREETING & OVERVIEW HEADER */}
       <section className='flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-1'>

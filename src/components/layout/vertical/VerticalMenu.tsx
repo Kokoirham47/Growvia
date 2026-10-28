@@ -1,10 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-
-// Next Imports
-import Link from 'next/link'
-
 // MUI Imports
 import { useTheme } from '@mui/material/styles'
 
@@ -61,24 +56,11 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
   const verticalNavOptions = useVerticalNav()
 
   // Vars
-  const { isBreakpointReached, transitionDuration, isCollapsed, isHovered } = verticalNavOptions
+  const { isBreakpointReached, transitionDuration } = verticalNavOptions
   const ScrollWrapper = isBreakpointReached ? 'div' : PerfectScrollbar
 
-  const [user, setUser] = useState<{ name: string; avatarUrl?: string | null } | null>(null)
-
-  useEffect(() => {
-    fetch('/api/auth/me')
-      .then(res => res.json())
-      .then(json => {
-        if (json?.data?.user) {
-          setUser(json.data.user)
-        }
-      })
-      .catch(() => {})
-  }, [])
-
   return (
-    <div className='flex flex-col justify-between bs-full'>
+    <div className='flex flex-col justify-between bs-full font-poppins'>
       <ScrollWrapper
         {...(isBreakpointReached
           ? {
@@ -131,28 +113,6 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
           </MenuSection>
         </Menu>
       </ScrollWrapper>
-
-      {/* AI Readiness Sidebar Widget */}
-      {!(isCollapsed && !isHovered) && (
-        <div className='p-4 pb-4'>
-          <div className='p-3.5 rounded-2xl bg-[#F0F5FF] dark:bg-blue-950/40 border border-[#DBEAFE] dark:border-blue-900/50 transition-all hover:shadow-xs'>
-            <div className='flex items-center gap-2'>
-              <div className='w-6 h-6 rounded-lg bg-blue-100 dark:bg-blue-900/60 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0'>
-                <Sparkles className='w-3.5 h-3.5' />
-              </div>
-              <span className='font-bold text-xs text-[#1E3A8A] dark:text-blue-300'>AI Readiness</span>
-            </div>
-            <p className='text-[11px] text-[#64748B] dark:text-slate-400 mt-1.5 leading-snug font-normal'>
-              Profil siap kerja mencapai 78% berdasarkan target UI/UX.
-            </p>
-            <div className='mt-2.5 w-full bg-slate-200 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden'>
-              <div className='bg-[#2563EB] h-full rounded-full' style={{ width: '78%' }} />
-            </div>
-          </div>
-        </div>
-      )}
-
-
     </div>
   )
 }

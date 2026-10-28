@@ -38,9 +38,15 @@ const menuSectionStyles = (verticalNavOptions: VerticalNavState, theme: Theme): 
         [`& .${menuClasses.menuSectionLabel}`]: {
           flexGrow: 0,
           textTransform: 'uppercase',
-          fontSize: '13px',
+          fontSize: '11px',
+          fontWeight: 700,
           lineHeight: 1.38462,
-          letterSpacing: '0.4px',
+          letterSpacing: '0.05em',
+          fontFamily: "'Poppins', sans-serif !important",
+          color: '#94A3B8',
+          '[data-mui-color-scheme="dark"] &, [data-theme="dark"] &, .dark &': {
+            color: '#64748B'
+          },
           ...(collapsedNotHovered && {
             display: 'none'
           })

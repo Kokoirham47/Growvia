@@ -9,6 +9,9 @@ import Link from 'next/link'
 // MUI Imports
 import { styled, useColorScheme, useTheme } from '@mui/material/styles'
 
+// Third-party Imports
+import { CircleDot, Circle, X } from 'lucide-react'
+
 // Type Imports
 import type { Mode } from '@core/types'
 
@@ -20,7 +23,6 @@ import Logo from '@components/layout/shared/Logo'
 // Hook Imports
 import useVerticalNav from '@menu/hooks/useVerticalNav'
 import { useSettings } from '@core/hooks/useSettings'
-import { CircleDot, Circle, X } from 'lucide-react'
 
 // Style Imports
 import navigationCustomStyles from '@core/styles/vertical/navigationCustomStyles'
@@ -44,6 +46,11 @@ const StyledBoxForShadow = styled('div')(({ theme }) => ({
   }, rgb(var(--mui-palette-background-paperChannel) / 0.85) 30%, rgb(var(--mui-palette-background-paperChannel) / 0.5) 65%, rgb(var(--mui-palette-background-paperChannel) / 0.3) 75%, transparent)`,
   '&.scrolled': {
     opacity: 1
+  },
+  '[data-mui-color-scheme="dark"] &, [data-theme="dark"] &, .dark &': {
+    background: `linear-gradient(#0F172A ${
+      theme.direction === 'rtl' ? '95%' : '5%'
+    }, rgba(15, 23, 42, 0.85) 30%, rgba(15, 23, 42, 0.5) 65%, rgba(15, 23, 42, 0.3) 75%, transparent)`
   }
 }))
 
@@ -99,7 +106,7 @@ const Navigation = (props: Props) => {
       customStyles={navigationCustomStyles(verticalNavOptions, theme)}
       width={240}
       collapsedWidth={71}
-      backgroundColor='#FFFFFF'
+      backgroundColor={isDark ? '#0F172A' : '#FFFFFF'}
       // eslint-disable-next-line lines-around-comment
       // The following condition adds the data-dark attribute to the VerticalNav component
       // when semiDark is enabled and the mode or systemMode is light
@@ -115,9 +122,9 @@ const Navigation = (props: Props) => {
         </Link>
         {!(isCollapsed && !isHovered) && (
           <NavCollapseIcons
-            lockedIcon={<CircleDot className='w-5 h-5' />}
-            unlockedIcon={<Circle className='w-5 h-5' />}
-            closeIcon={<X className='w-5 h-5' />}
+            lockedIcon={<CircleDot className='w-5 h-5 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300' />}
+            unlockedIcon={<Circle className='w-5 h-5 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300' />}
+            closeIcon={<X className='w-5 h-5 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300' />}
             onClick={() => updateSettings({ layout: !isCollapsed ? 'collapsed' : 'vertical' })}
           />
         )}

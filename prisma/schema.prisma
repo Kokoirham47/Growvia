@@ -254,6 +254,7 @@ model Experience {
   skillEvidences SkillEvidence[]
   aiAnalysisJobs AiAnalysisJob[]
 
+  @@index([userId])
   @@map("experiences")
 }
 
@@ -292,6 +293,8 @@ model UserSkill {
   skillEvidences SkillEvidence[]
 
   @@unique([userId, skillId])
+  @@index([userId])
+  @@index([skillId])
   @@map("user_skills")
 }
 
@@ -305,6 +308,8 @@ model SkillEvidence {
   userSkill  UserSkill  @relation(fields: [userSkillId], references: [id], onDelete: Cascade)
   experience Experience @relation(fields: [experienceId], references: [id], onDelete: Cascade)
 
+  @@index([experienceId])
+  @@index([userSkillId])
   @@map("skill_evidences")
 }
 
@@ -325,6 +330,7 @@ model AiAnalysisJob {
   experience  Experience            @relation(fields: [experienceId], references: [id], onDelete: Cascade)
   suggestions AiSkillSuggestion[]
 
+  @@index([userId, status])
   @@map("ai_analysis_jobs")
 }
 
@@ -343,6 +349,7 @@ model AiSkillSuggestion {
   analysisJob AiAnalysisJob @relation(fields: [aiAnalysisJobId], references: [id], onDelete: Cascade)
   mappedSkill Skill?        @relation(fields: [mappedSkillId], references: [id], onDelete: SetNull)
 
+  @@index([aiAnalysisJobId, reviewStatus])
   @@map("ai_skill_suggestions")
 }
 
@@ -393,6 +400,7 @@ model UserCareerTarget {
   careerRole      CareerRole?      @relation(fields: [careerRoleId], references: [id], onDelete: SetNull)
   skillGapResults SkillGapResult[]
 
+  @@index([userId, isActive])
   @@map("user_career_targets")
 }
 
@@ -412,6 +420,7 @@ model SkillGapResult {
   skill                   Skill                    @relation(fields: [skillId], references: [id], onDelete: Cascade)
   learningRecommendations LearningRecommendation[]
 
+  @@index([userCareerTargetId])
   @@map("skill_gap_results")
 }
 
@@ -444,6 +453,7 @@ model LearningResource {
   recommendations LearningRecommendation[]
   savedByUsers    UserSavedResource[]
 
+  @@index([isActive])
   @@map("learning_resources")
 }
 
@@ -474,6 +484,7 @@ model LearningRecommendation {
   resource       LearningResource @relation(fields: [learningResourceId], references: [id], onDelete: Cascade)
   skillGapResult SkillGapResult? @relation(fields: [skillGapResultId], references: [id], onDelete: SetNull)
 
+  @@index([userId])
   @@map("learning_recommendations")
 }
 
@@ -514,6 +525,7 @@ model CareerOpportunity {
   skillTags    OpportunitySkillTag[]
   savedByUsers UserSavedOpportunity[]
 
+  @@index([isActive])
   @@map("career_opportunities")
 }
 
@@ -560,5 +572,6 @@ model Notification {
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId, isRead])
   @@map("notifications")
 }

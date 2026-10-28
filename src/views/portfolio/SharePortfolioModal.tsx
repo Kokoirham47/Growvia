@@ -125,7 +125,7 @@ export default function SharePortfolioModal({
 
           {/* Recruiter Note */}
           <div className='p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-700/80 text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed'>
-            💡 Tautan ini dapat disalin ke dalam surat lamaran (cover letter), resume PDF, maupun bio LinkedIn kamu. Recruiter dapat melihat seluruh bukti pengalaman tanpa perlu registrasi akun.
+            Tautan ini dapat disalin ke dalam surat lamaran (cover letter), resume PDF, maupun bio LinkedIn kamu. Recruiter dapat melihat seluruh bukti pengalaman tanpa perlu registrasi akun.
           </div>
         </div>
 
