@@ -1,5 +1,14 @@
 import { PrismaClient } from '@prisma/client'
 
+// Sanitasi otomatis tanda kutip atau spasi yang tidak sengaja terbawa saat paste di Vercel
+if (process.env.DATABASE_URL) {
+  process.env.DATABASE_URL = process.env.DATABASE_URL.replace(/^["']|["']$/g, '').trim()
+}
+
+if (process.env.DIRECT_URL) {
+  process.env.DIRECT_URL = process.env.DIRECT_URL.replace(/^["']|["']$/g, '').trim()
+}
+
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined
 }
