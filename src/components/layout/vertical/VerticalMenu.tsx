@@ -19,7 +19,7 @@ import {
   TrendingUp,
   GraduationCap,
   Sparkles,
-  Settings
+  Compass
 } from 'lucide-react'
 
 // Type Imports
@@ -110,6 +110,9 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
             </MenuItem>
             <MenuItem href='/learning' icon={<GraduationCap className='w-5 h-5' />}>
               Rekomendasi Belajar
+            </MenuItem>
+            <MenuItem href='/opportunities' icon={<Compass className='w-5 h-5' />}>
+              Peluang Karier
             </MenuItem>
             <MenuItem href='/portfolio' icon={<Sparkles className='w-5 h-5' />}>
               Portofolio AI
