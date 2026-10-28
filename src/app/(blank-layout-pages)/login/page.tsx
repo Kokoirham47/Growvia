@@ -1,5 +1,6 @@
 // Next Imports
 import type { Metadata } from 'next'
+import { redirect } from 'next/navigation'
 
 // Component Imports
 import Login from '@views/Login'
@@ -12,7 +13,19 @@ export const metadata: Metadata = {
   description: 'Masuk ke akun Growvia Anda dan lanjutkan eksplorasi karier berbasis kecerdasan buatan.'
 }
 
-const LoginPage = async () => {
+interface PageProps {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+}
+
+const LoginPage = async (props: PageProps) => {
+  const searchParams = await props.searchParams
+  const code = searchParams?.code
+
+  // Jika Supabase melempar auth code ke /login
+  if (typeof code === 'string' && code) {
+    redirect(`/api/auth/callback?code=${encodeURIComponent(code)}`)
+  }
+
   // Vars
   const mode = await getServerMode()
 

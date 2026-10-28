@@ -364,6 +364,18 @@ export default function LandingPage({ mode }: LandingPageProps = {}) {
   const faqId = useId()
   const isDark = theme === 'dark'
 
+  // ---- OAuth Callback Safety Net (jika mendarat di root dengan ?code=...) ----
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search)
+      const code = urlParams.get('code')
+
+      if (code) {
+        window.location.replace(`/api/auth/callback?code=${encodeURIComponent(code)}`)
+      }
+    }
+  }, [])
+
   // ---- tema: simpan di localStorage, default ikut sistem --------------------
   useEffect(() => {
     try {
