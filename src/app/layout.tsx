@@ -25,7 +25,15 @@ const poppins = Poppins({
 export const metadata = {
   title: 'Growvia - AI Career Portfolio & Development',
   description:
-    'Growvia - Platform Pengembangan Karier, Portofolio AI, dan Analisis Skill Gap untuk Mahasiswa & Profesional Muda.'
+    'Growvia - Platform Pengembangan Karier, Portofolio AI, dan Analisis Skill Gap untuk Mahasiswa & Profesional Muda.',
+  icons: {
+    icon: [
+      { url: '/images/growvia-logo.png' },
+      { url: '/favicon.ico' }
+    ],
+    shortcut: '/images/growvia-logo.png',
+    apple: '/images/growvia-logo.png'
+  }
 }
 
 const RootLayout = async (props: ChildrenType) => {
