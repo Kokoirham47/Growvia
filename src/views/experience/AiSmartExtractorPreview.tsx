@@ -12,15 +12,10 @@ import {
   HelpCircle,
   Mic,
   MicOff,
-  AlertCircle,
+  AlertCircle
 } from 'lucide-react'
 
-import {
-  HiCodeBracket,
-  HiPaintBrush,
-  HiChartBar,
-  HiPresentationChartLine
-} from 'react-icons/hi2'
+import { HiCodeBracket, HiPaintBrush, HiChartBar, HiPresentationChartLine } from 'react-icons/hi2'
 
 interface ExtractedSkill {
   id: string
@@ -72,9 +67,7 @@ const QUICK_PROMPTS: QuickPrompt[] = [
   }
 ]
 
-export default function AiSmartExtractorPreview({
-  onConfirmSkills
-}: AiSmartExtractorPreviewProps) {
+export default function AiSmartExtractorPreview({ onConfirmSkills }: AiSmartExtractorPreviewProps) {
   // Input state - STARTS EMPTY as requested by user
   const [inputText, setInputText] = useState('')
   const [skills, setSkills] = useState<ExtractedSkill[]>([])
@@ -94,9 +87,7 @@ export default function AiSmartExtractorPreview({
   // Check SpeechRecognition support on mount
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const SpeechRecognition =
-        (window as any).SpeechRecognition ||
-        (window as any).webkitSpeechRecognition
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
 
       if (!SpeechRecognition) {
         setSpeechSupported(false)
@@ -107,9 +98,11 @@ export default function AiSmartExtractorPreview({
   // Start or Stop Speech Recognition
   const toggleListening = () => {
     if (!speechSupported) {
-      setErrorMsg('Browser Anda belum mendukung Speech-to-Text. Silakan gunakan Google Chrome, Edge, atau ketik secara manual.')
-      
-return
+      setErrorMsg(
+        'Browser Anda belum mendukung Speech-to-Text. Silakan gunakan Google Chrome, Edge, atau ketik secara manual.'
+      )
+
+      return
     }
 
     if (isListening) {
@@ -119,14 +112,12 @@ return
 
       setIsListening(false)
       setSpeechInterim('')
-      
-return
+
+      return
     }
 
     try {
-      const SpeechRecognition =
-        (window as any).SpeechRecognition ||
-        (window as any).webkitSpeechRecognition
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
 
       const recognition = new SpeechRecognition()
 
@@ -155,8 +146,7 @@ return
           setInputText(prev => {
             const trimmed = prev.trim()
 
-            
-return trimmed ? `${trimmed} ${finalText.trim()}` : finalText.trim()
+            return trimmed ? `${trimmed} ${finalText.trim()}` : finalText.trim()
           })
           setConfirmed(false)
         }
@@ -208,8 +198,8 @@ return trimmed ? `${trimmed} ${finalText.trim()}` : finalText.trim()
 
     if (!textToAnalyze || textToAnalyze.length < 15) {
       setErrorMsg('Tulis atau rekam narasi minimal 15 karakter agar AI dapat mengekstrak skill secara akurat.')
-      
-return
+
+      return
     }
 
     setIsAnalyzing(true)
@@ -252,7 +242,12 @@ return
           id: s.id,
           name: s.suggestedName,
           category: s.suggestedCategory,
-          metricBadge: s.suggestedCategory === 'leadership' ? 'Kepemimpinan' : s.suggestedCategory === 'technical' ? 'Teknis Praktis' : 'Kompetensi Relevan',
+          metricBadge:
+            s.suggestedCategory === 'leadership'
+              ? 'Kepemimpinan'
+              : s.suggestedCategory === 'technical'
+                ? 'Teknis Praktis'
+                : 'Kompetensi Relevan',
           metricColor: color,
           level: 'Pemula (+35% Skor)',
           confidence: Math.round(s.confidenceScore),
@@ -282,8 +277,8 @@ return
       // Fallback if no jobId (e.g. manual entry without API response)
       setConfirmed(true)
       if (onConfirmSkills) onConfirmSkills(skills.length)
-      
-return
+
+      return
     }
 
     setIsSaving(true)
@@ -294,7 +289,7 @@ return
         suggestionId: skill.id,
         action: 'accept',
         finalName: skill.name,
-        level: skill.level.toLowerCase()
+        level: 'beginner'
       }))
 
       const res = await fetch(`/api/ai/suggestions/${jobId}/review`, {
@@ -345,7 +340,6 @@ return
       className='relative rounded-3xl font-poppins bg-gradient-to-br from-[#F5F8FF] via-[#EEF4FE] to-[#F8FAFF] dark:from-[#0B1528] dark:via-[#0F1C36] dark:to-[#0A101D] border-2 border-blue-300/80 dark:border-blue-600/50 p-5 sm:p-7 shadow-lg shadow-blue-500/[0.08] dark:shadow-blue-500/[0.04] overflow-hidden transition-all ring-1 ring-blue-500/20'
       style={{ fontFamily: "'Poppins', sans-serif" }}
     >
-
       {/* Decorative Glow Orbs */}
       <div className='absolute -right-16 -top-16 w-72 h-72 bg-gradient-to-br from-blue-400/20 via-indigo-500/20 to-transparent rounded-full blur-3xl pointer-events-none' />
       <div className='absolute -left-16 -bottom-16 w-72 h-72 bg-gradient-to-tr from-indigo-500/15 via-blue-500/15 to-transparent rounded-full blur-3xl pointer-events-none' />
@@ -363,7 +357,8 @@ return
               </h2>
             </div>
             <p className='text-xs sm:text-sm text-slate-600 dark:text-slate-300 mt-1 max-w-2xl leading-relaxed'>
-              Baru selesai coding, latihan, atau projek harian? Ceritakan lewat tulisan atau suara langsung di sini. AI akan mengekstrak kompetensi terukur dan menambah persentase di Skill Matrix kamu!
+              Baru selesai coding, latihan, atau projek harian? Ceritakan lewat tulisan atau suara langsung di sini. AI
+              akan mengekstrak kompetensi terukur dan menambah persentase di Skill Matrix kamu!
             </p>
           </div>
         </div>
@@ -408,7 +403,9 @@ return
             </button>
           </div>
           <p className='text-[11px] text-slate-500 dark:text-slate-400'>
-            Fitur ini dirancang untuk aktivitas informal, coding harian, atau projek mandiri cepat tanpa perlu mengisi form kepanitiaan/sertifikat yang rumit. Skill yang dikonfirmasi langsung menaikkan skor dan persentase di Skill Matrix Anda.
+            Fitur ini dirancang untuk aktivitas informal, coding harian, atau projek mandiri cepat tanpa perlu mengisi
+            form kepanitiaan/sertifikat yang rumit. Skill yang dikonfirmasi langsung menaikkan skor dan persentase di
+            Skill Matrix Anda.
           </p>
         </div>
       )}
@@ -438,15 +435,21 @@ return
                 <FileText className='w-4 h-4 text-blue-600 dark:text-blue-400' />
                 <span>Narasi Aktivitas Harian</span>
               </span>
-              <span className={`text-xs font-semibold ${inputText.length >= 20 ? 'text-emerald-600 dark:text-emerald-400 font-bold' : 'text-slate-400 dark:text-slate-500'}`}>
+              <span
+                className={`text-xs font-semibold ${inputText.length >= 20 ? 'text-emerald-600 dark:text-emerald-400 font-bold' : 'text-slate-400 dark:text-slate-500'}`}
+              >
                 {inputText.trim().length} Karakter
               </span>
             </div>
 
             {/* Editable narrative text + speech live indicator */}
-            <div className={`relative rounded-xl bg-[#F8FAFC] dark:bg-slate-900/60 border p-4 transition-all focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20 ${
-              isListening ? 'border-red-400 dark:border-red-600 ring-2 ring-red-400/20' : 'border-slate-200/80 dark:border-slate-800'
-            }`}>
+            <div
+              className={`relative rounded-xl bg-[#F8FAFC] dark:bg-slate-900/60 border p-4 transition-all focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20 ${
+                isListening
+                  ? 'border-red-400 dark:border-red-600 ring-2 ring-red-400/20'
+                  : 'border-slate-200/80 dark:border-slate-800'
+              }`}
+            >
               <textarea
                 rows={5}
                 value={inputText}
@@ -556,9 +559,7 @@ return
             <div className='flex items-center justify-between pb-3'>
               <span className='inline-flex items-center gap-1.5 text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider'>
                 <Sparkles className='w-4 h-4 text-purple-500' />
-                <span>
-                  Hasil Ekstraksi AI ({skills.length} Ditemukan)
-                </span>
+                <span>Hasil Ekstraksi AI ({skills.length} Ditemukan)</span>
               </span>
               <span className='text-xs font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1'>
                 <CheckCircle2 className='w-3.5 h-3.5' />
@@ -591,7 +592,7 @@ return
                   <div className='w-1/2 h-3 bg-slate-100 dark:bg-slate-850 rounded' />
                 </div>
                 <p className='text-center text-xs text-slate-500 animate-pulse pt-2'>
-                  ⚡ AI sedang menganalisis narasi aktivitas harianmu...
+                  AI sedang menganalisis narasi aktivitas harianmu...
                 </p>
               </div>
             ) : skills.length === 0 ? (
@@ -600,11 +601,13 @@ return
                   <Sparkles className='w-7 h-7 text-blue-600 dark:text-blue-400 animate-pulse' />
                 </div>
                 <div>
-                  <h4 className='text-sm font-bold text-slate-900 dark:text-white'>
-                    Siap Mengekstrak Skill Otomatis
-                  </h4>
+                  <h4 className='text-sm font-bold text-slate-900 dark:text-white'>Siap Mengekstrak Skill Otomatis</h4>
                   <p className='text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto mt-1 leading-relaxed'>
-                    Ketik atau rekam suara aktivitas harianmu di sisi kiri, lalu klik <span className='font-semibold text-blue-600 dark:text-blue-400'>&ldquo;Ekstrak Skill dengan AI&rdquo;</span> untuk melihat rekomendasi skill dan bukti relevannya di sini.
+                    Ketik atau rekam suara aktivitas harianmu di sisi kiri, lalu klik{' '}
+                    <span className='font-semibold text-blue-600 dark:text-blue-400'>
+                      &ldquo;Ekstrak Skill dengan AI&rdquo;
+                    </span>{' '}
+                    untuk melihat rekomendasi skill dan bukti relevannya di sini.
                   </p>
                 </div>
               </div>
@@ -617,12 +620,10 @@ return
                   const badgeClass = isGreen
                     ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-400 dark:border-emerald-900/60'
                     : isIndigo
-                    ? 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950/60 dark:text-indigo-400 dark:border-indigo-900/60'
-                    : 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/60 dark:text-blue-400 dark:border-blue-900/60'
+                      ? 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950/60 dark:text-indigo-400 dark:border-indigo-900/60'
+                      : 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/60 dark:text-blue-400 dark:border-blue-900/60'
 
-                  const barColor = isGreen
-                    ? 'bg-emerald-500'
-                    : 'bg-blue-600'
+                  const barColor = isGreen ? 'bg-emerald-500' : 'bg-blue-600'
 
                   return (
                     <div
@@ -648,7 +649,10 @@ return
                         )}
 
                         <p className='text-[11px] text-slate-500 dark:text-slate-400 mt-0.5'>
-                          Tingkat Awal: <span className='font-semibold text-slate-700 dark:text-slate-300'>{skill.level}</span> · Validitas Bukti AI: <span className='font-bold text-emerald-600 dark:text-emerald-400'>{skill.confidence}%</span>
+                          Tingkat Awal:{' '}
+                          <span className='font-semibold text-slate-700 dark:text-slate-300'>{skill.level}</span> ·
+                          Validitas Bukti AI:{' '}
+                          <span className='font-bold text-emerald-600 dark:text-emerald-400'>{skill.confidence}%</span>
                         </p>
                       </div>
 

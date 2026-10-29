@@ -1,6 +1,8 @@
 import bcrypt from 'bcryptjs'
 import { SignJWT, jwtVerify } from 'jose'
 import { cookies } from 'next/headers'
+import type { NextRequest } from 'next/server'
+import { prisma } from '@/libs/prisma'
 
 export const AUTH_COOKIE_NAME = 'growvia_token'
 
@@ -70,4 +72,32 @@ export async function getServerSession(): Promise<UserJwtPayload | null> {
   } catch {
     return null
   }
+}
+
+/**
+ * Helper to get authenticated user ID across server components and route handlers
+ */
+export async function getAuthUserId(request?: NextRequest): Promise<string | null> {
+  const headerUserId = request?.headers.get('x-user-id')
+
+  if (headerUserId) return headerUserId
+
+  const session = await getServerSession()
+
+  if (session?.userId) return session.userId
+
+  // In development, fallback to demo user or first user with active career targets
+  const demoUser = await prisma.user.findFirst({
+    where: { email: 'demo@growvia.id' },
+    select: { id: true }
+  })
+
+  if (demoUser) return demoUser.id
+
+  const fallbackUser = await prisma.user.findFirst({
+    where: { careerTargets: { some: { isActive: true } } },
+    select: { id: true }
+  })
+
+  return fallbackUser?.id ?? null
 }

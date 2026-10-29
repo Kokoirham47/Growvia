@@ -701,7 +701,10 @@ return dominantKey ? EXPERIENCE_TYPE_CONFIG[dominantKey]?.label : '-'
       {/* AI Skill Review Modal */}
       <AISkillReviewModal
         isOpen={isAiReviewOpen}
-        onClose={() => setIsAiReviewOpen(false)}
+        onClose={() => {
+          setIsAiReviewOpen(false)
+          fetchExperiences()
+        }}
         onSuccess={handleAiReviewSuccess}
         experienceId={aiReviewExperience?.id || null}
         experienceData={aiReviewExperience}

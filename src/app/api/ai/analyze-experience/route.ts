@@ -87,12 +87,6 @@ export async function POST(req: NextRequest) {
         })
 
         if (!targetExp) {
-          targetExp = await prisma.experience.findFirst({
-            where: { userId }
-          })
-        }
-
-        if (!targetExp) {
           targetExp = await prisma.experience.create({
             data: {
               userId,
@@ -140,53 +134,59 @@ export async function POST(req: NextRequest) {
     const executionDuration = Date.now() - startTime
 
     // 3. Simpan saran ke tabel AiSkillSuggestion dalam transaksi
-    const suggestions = await prisma.$transaction(async tx => {
-      // Bersihkan saran pending lama jika job ini dianalisis ulang
-      await tx.aiSkillSuggestion.deleteMany({
-        where: {
-          aiAnalysisJobId: job.id,
-          reviewStatus: 'pending'
-        }
-      })
-
-      // Simpan saran baru
-      const createdSuggestions = []
-      for (const item of skills) {
-        const suggestion = await tx.aiSkillSuggestion.create({
-          data: {
+    const suggestions = await prisma.$transaction(
+      async tx => {
+        // Bersihkan saran pending lama jika job ini dianalisis ulang
+        await tx.aiSkillSuggestion.deleteMany({
+          where: {
             aiAnalysisJobId: job.id,
-            suggestedName: item.name,
-            suggestedCategory: item.category,
-            confidenceScore: item.confidence,
-            reviewStatus: 'pending',
-            finalName: item.name
+            reviewStatus: 'pending'
           }
         })
-        createdSuggestions.push({
-          ...suggestion,
-          level: item.level,
-          reasoning: item.reasoning,
-          metricTag: item.metricTag
-        })
-      }
 
-      // Tandai job selesai
-      await tx.aiAnalysisJob.update({
-        where: { id: job.id },
-        data: {
-          status: 'completed',
-          completedAt: new Date(),
-          rawOutput: {
-            source,
-            executionDurationMs: executionDuration,
-            extractedCount: skills.length,
-            skills
-          } as any
+        // Simpan saran baru
+        const createdSuggestions = []
+        for (const item of skills) {
+          const suggestion = await tx.aiSkillSuggestion.create({
+            data: {
+              aiAnalysisJobId: job.id,
+              suggestedName: item.name,
+              suggestedCategory: item.category,
+              confidenceScore: item.confidence,
+              reviewStatus: 'pending',
+              finalName: item.name
+            }
+          })
+          createdSuggestions.push({
+            ...suggestion,
+            level: item.level,
+            reasoning: item.reasoning,
+            metricTag: item.metricTag
+          })
         }
-      })
 
-      return createdSuggestions
-    })
+        // Tandai job selesai
+        await tx.aiAnalysisJob.update({
+          where: { id: job.id },
+          data: {
+            status: 'completed',
+            completedAt: new Date(),
+            rawOutput: {
+              source,
+              executionDurationMs: executionDuration,
+              extractedCount: skills.length,
+              skills
+            } as any
+          }
+        })
+
+        return createdSuggestions
+      },
+      {
+        maxWait: 10000,
+        timeout: 25000
+      }
+    )
 
     return apiSuccess({
       jobId: job.id,

@@ -26,6 +26,7 @@ import SkillMapGraph from './SkillMapGraph'
 import EvidenceView from './EvidenceView'
 import AddSkillModal from './AddSkillModal'
 import EditSkillModal from './EditSkillModal'
+import DeleteSkillModal from './DeleteSkillModal'
 import BenchmarkModal from './BenchmarkModal'
 import type { SkillItem, SkillCategoryType, SkillCategorySummary, SkillMapNode, SkillMapEdge, EvidenceDetail } from '@/types/skills'
 
@@ -139,6 +140,8 @@ export default function SkillProfileView() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [selectedSkillForEdit, setSelectedSkillForEdit] = useState<SkillItem | null>(null)
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [selectedSkillForDelete, setSelectedSkillForDelete] = useState<SkillItem | null>(null)
   const [isBenchmarkModalOpen, setIsBenchmarkModalOpen] = useState(false)
 
   // Highlight state for navigating from SkillCard to EvidenceView
@@ -469,6 +472,20 @@ export default function SkillProfileView() {
     }
   }
 
+  // Handler: Open Delete Confirmation Modal
+  const handleOpenDelete = (skill: SkillItem) => {
+    setIsEditModalOpen(false)
+    setSelectedSkillForDelete(skill)
+    setIsDeleteModalOpen(true)
+  }
+
+  // Handler: Successfully deleted from modal
+  const handleDeleteSuccess = (deletedId: string, skillName: string) => {
+    setSkills(prev => prev.filter(s => s.id !== deletedId))
+    setEvidences(prev => prev.filter(e => e.skillId !== deletedId))
+    showToast(`🗑️ Skill "${skillName}" berhasil dihapus dari profil.`)
+  }
+
   // Handler: Delete Skill (Deletes from Supabase)
   const handleDeleteSkill = async (skillId: string) => {
     try {
@@ -748,6 +765,7 @@ export default function SkillProfileView() {
                     key={skill.id}
                     skill={skill}
                     onEdit={handleOpenEdit}
+                    onDelete={handleOpenDelete}
                     onViewEvidence={handleViewEvidenceForSkill}
                   />
                 ))}
@@ -959,7 +977,17 @@ export default function SkillProfileView() {
           setSelectedSkillForEdit(null)
         }}
         onUpdateSkill={handleUpdateSkill}
-        onDeleteSkill={handleDeleteSkill}
+        onRequestDelete={handleOpenDelete}
+      />
+
+      <DeleteSkillModal
+        isOpen={isDeleteModalOpen}
+        skill={selectedSkillForDelete}
+        onClose={() => {
+          setIsDeleteModalOpen(false)
+          setSelectedSkillForDelete(null)
+        }}
+        onSuccess={handleDeleteSuccess}
       />
 
       <BenchmarkModal

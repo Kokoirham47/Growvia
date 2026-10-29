@@ -5,7 +5,7 @@ if (process.env.DATABASE_URL) {
   let dbUrl = process.env.DATABASE_URL.replace(/^["']|["']$/g, '').trim()
 
   // Di Vercel / serverless: alihkan session mode (5432) ke transaction pooler (6543)
-  if (dbUrl.includes('.pooler.supabase.com:5432') && (process.env.VERCEL || process.env.NODE_ENV === 'production')) {
+  if (dbUrl.includes('.pooler.supabase.com:5432')) {
     dbUrl = dbUrl.replace(':5432', ':6543')
   }
 

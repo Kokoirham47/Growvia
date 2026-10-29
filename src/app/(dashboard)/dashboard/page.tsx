@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 
 import DashboardView from '@/views/dashboard/DashboardView'
-import { getAuthUserId } from '@/app/api/dashboard/summary/route'
+import { getAuthUserId } from '@/server/utils/auth'
 import { getDashboardSummaryData } from '@/server/services/dashboardService'
 
 export const metadata: Metadata = {

@@ -156,25 +156,25 @@ export async function POST(req: NextRequest) {
     // Default nama institusi jika kosong
     const institutionName = validated.institutionName?.trim() || '-'
 
-    // Simpan entitas pengalaman dalam transaksi bersama AiAnalysisJob
-    const result = await prisma.$transaction(async tx => {
-      const experience = await tx.experience.create({
-        data: {
-          userId,
-          title: validated.title,
-          type: validated.type,
-          role: validated.role,
-          institutionName,
-          startDate,
-          endDate,
-          isOngoing: validated.isOngoing,
-          description: validated.description,
-          proofUrl: validated.proofUrl || null
-        }
-      })
+    // Simpan entitas pengalaman ke database
+    const experience = await prisma.experience.create({
+      data: {
+        userId,
+        title: validated.title,
+        type: validated.type,
+        role: validated.role,
+        institutionName,
+        startDate,
+        endDate,
+        isOngoing: validated.isOngoing,
+        description: validated.description,
+        proofUrl: validated.proofUrl || null
+      }
+    })
 
-      // Otomatis antrekan AI Skill Analysis Job (sesuai Acceptance Criteria F03 & F04)
-      const aiJob = await tx.aiAnalysisJob.create({
+    // Otomatis antrekan AI Skill Analysis Job (non-blocking fallback)
+    try {
+      await prisma.aiAnalysisJob.create({
         data: {
           userId,
           experienceId: experience.id,
@@ -182,13 +182,13 @@ export async function POST(req: NextRequest) {
           rawInput: validated.description
         }
       })
-
-      return { experience, aiJob }
-    })
+    } catch (aiErr) {
+      console.warn('AiAnalysisJob awal dilewati, akan dibuat saat modal review dibuka:', aiErr)
+    }
 
     return apiSuccess(
-      result.experience,
-      'Pengalaman berhasil ditambahkan dan masuk dalam antrean analisis AI',
+      experience,
+      'Pengalaman berhasil ditambahkan dan siap dianalisis oleh AI',
       201
     )
   } catch (error) {

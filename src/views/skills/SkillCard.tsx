@@ -1,18 +1,17 @@
 'use client'
 
 import React from 'react'
-
-import { Pencil, Link2, Sparkles } from 'lucide-react'
-
+import { Pencil, Link2, Sparkles, Trash2 } from 'lucide-react'
 import type { SkillItem } from '@/types/skills'
 
 interface SkillCardProps {
   skill: SkillItem
   onEdit: (skill: SkillItem) => void
   onViewEvidence?: (skill: SkillItem) => void
+  onDelete?: (skill: SkillItem) => void
 }
 
-export default function SkillCard({ skill, onEdit, onViewEvidence }: SkillCardProps) {
+export default function SkillCard({ skill, onEdit, onViewEvidence, onDelete }: SkillCardProps) {
   // Level badge styling as per design system
   const getLevelBadge = (level: SkillItem['level']) => {
     switch (level) {
@@ -55,7 +54,7 @@ export default function SkillCard({ skill, onEdit, onViewEvidence }: SkillCardPr
             )}
           </div>
 
-          {/* Top Right: AI badge and Edit icon */}
+          {/* Top Right: AI badge and Actions (Edit & Delete) */}
           <div className='flex items-center gap-1.5 shrink-0'>
             {skill.source === 'ai_extracted' && (
               <span
@@ -67,16 +66,30 @@ export default function SkillCard({ skill, onEdit, onViewEvidence }: SkillCardPr
               </span>
             )}
 
-            {/* Edit Icon on Hover */}
-            <button
-              type='button'
-              onClick={() => onEdit(skill)}
-              title='Edit skill'
-              aria-label={`Edit ${skill.name}`}
-              className='opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer'
-            >
-              <Pencil className='w-3.5 h-3.5' />
-            </button>
+            {/* Actions on Hover */}
+            <div className='flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity'>
+              <button
+                type='button'
+                onClick={() => onEdit(skill)}
+                title='Edit skill'
+                aria-label={`Edit ${skill.name}`}
+                className='p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer transition-colors'
+              >
+                <Pencil className='w-3.5 h-3.5' />
+              </button>
+
+              {onDelete && (
+                <button
+                  type='button'
+                  onClick={() => onDelete(skill)}
+                  title='Hapus skill'
+                  aria-label={`Hapus ${skill.name}`}
+                  className='p-1.5 rounded-lg text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer transition-colors'
+                >
+                  <Trash2 className='w-3.5 h-3.5' />
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
