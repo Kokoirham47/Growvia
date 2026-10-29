@@ -452,15 +452,92 @@ html {
   animation: lp-shimmer 1.1s linear infinite;
 }
 
-/* ---------- reveal (hanya blok fitur kiri-kanan) ---------- */
-.landing-page .lp-reveal {
+/* ---------- AOS-STYLE SCROLL & CARD ANIMATIONS ---------- */
+.landing-page .aos-init {
   opacity: 0;
-  transform: translateY(8px);
-  transition: opacity 0.4s ease-out, transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  transition-property: opacity, transform, box-shadow, border-color;
+  transition-duration: 0.65s;
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
 }
-.landing-page .lp-reveal.is-visible {
-  opacity: 1;
-  transform: none;
+
+.landing-page .aos-fade-up {
+  transform: translateY(28px);
+}
+.landing-page .aos-fade-down {
+  transform: translateY(-24px);
+}
+.landing-page .aos-zoom-in {
+  transform: scale(0.92);
+}
+.landing-page .aos-fade-right {
+  transform: translateX(-32px);
+}
+.landing-page .aos-fade-left {
+  transform: translateX(32px);
+}
+
+.landing-page .aos-animate {
+  opacity: 1 !important;
+  transform: translate(0, 0) scale(1) !important;
+}
+
+/* Stagger delay classes */
+.landing-page .aos-delay-100 { transition-delay: 100ms; }
+.landing-page .aos-delay-150 { transition-delay: 150ms; }
+.landing-page .aos-delay-200 { transition-delay: 200ms; }
+.landing-page .aos-delay-250 { transition-delay: 250ms; }
+.landing-page .aos-delay-300 { transition-delay: 300ms; }
+.landing-page .aos-delay-400 { transition-delay: 400ms; }
+.landing-page .aos-delay-500 { transition-delay: 500ms; }
+
+/* Interactive Card Hover & Lift */
+.landing-page .lp-card-hover {
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.25s ease;
+}
+.landing-page .lp-card-hover:hover {
+  transform: translateY(-6px);
+  border-color: rgba(37, 99, 235, 0.35);
+  box-shadow: 0 20px 35px -10px rgba(15, 23, 42, 0.08), 0 6px 14px -3px rgba(15, 23, 42, 0.04);
+}
+.landing-page.dark .lp-card-hover:hover {
+  border-color: rgba(99, 102, 241, 0.45);
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.6), 0 0 20px -2px rgba(99, 102, 241, 0.18);
+}
+
+/* Card inner subtle interactive glow */
+.landing-page .lp-card-interactive {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+              background-color 0.25s ease,
+              border-color 0.25s ease;
+}
+.landing-page .lp-card-interactive:hover {
+  transform: translateY(-3px) scale(1.01);
+  border-color: rgba(37, 99, 235, 0.3);
+}
+
+/* Float badge animation */
+@keyframes lp-float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+.landing-page .lp-float {
+  animation: lp-float 4.5s ease-in-out infinite;
+}
+
+/* Icon box animation on card hover */
+.landing-page .lp-icon-box {
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              background-color 0.3s ease;
+}
+.landing-page .lp-card-hover:hover .lp-icon-box {
+  transform: scale(1.1) rotate(3deg);
 }
 
 /* ---------- menu mobile ---------- */
@@ -487,11 +564,15 @@ html {
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
   }
-  .landing-page .lp-reveal {
-    opacity: 1;
-    transform: none;
+  .landing-page .aos-init {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .landing-page .lp-float {
+    animation: none !important;
   }
   html {
     scroll-behavior: auto;
   }
 }
+

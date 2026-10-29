@@ -164,13 +164,23 @@ const h2Class =
   'text-3xl font-medium leading-[1.15] tracking-[-0.025em] text-[var(--lp-heading)] sm:text-4xl lg:text-[2.75rem]'
 
 const container = 'mx-auto w-full max-w-[1120px] px-5 sm:px-8'
-const panel = 'rounded-[2rem] bg-[var(--lp-panel)] border border-[var(--lp-border)]/60'
-const innerCard = 'rounded-3xl bg-[var(--lp-card)] shadow-[var(--lp-shadow-card)] border border-[var(--lp-border)]/60'
+const panel = 'rounded-[2rem] bg-[var(--lp-panel)] border border-[var(--lp-border)]/60 lp-card-hover'
+const innerCard = 'rounded-3xl bg-[var(--lp-card)] shadow-[var(--lp-shadow-card)] border border-[var(--lp-border)]/60 lp-card-interactive'
 
 // =============================================================================
 // KOMPONEN KECIL
 // =============================================================================
-function Reveal({ children, className = '' }: { children: React.ReactNode; className?: string }) {
+function Reveal({
+  children,
+  className = '',
+  animation = 'fade-up',
+  delay = 0
+}: {
+  children: React.ReactNode
+  className?: string
+  animation?: 'fade-up' | 'fade-down' | 'zoom-in' | 'fade-right' | 'fade-left'
+  delay?: number
+}) {
   const ref = useRef<HTMLDivElement>(null)
   const [shown, setShown] = useState(false)
 
@@ -192,7 +202,7 @@ function Reveal({ children, className = '' }: { children: React.ReactNode; class
           io.disconnect()
         }
       },
-      { threshold: 0.12 }
+      { threshold: 0.1, rootMargin: '0px 0px -40px 0px' }
     )
 
     io.observe(el)
@@ -201,11 +211,16 @@ function Reveal({ children, className = '' }: { children: React.ReactNode; class
   }, [])
 
   return (
-    <div ref={ref} className={`lp-reveal ${shown ? 'is-visible' : ''} ${className}`}>
+    <div
+      ref={ref}
+      style={delay ? { transitionDelay: `${delay}ms` } : undefined}
+      className={`aos-init aos-${animation} ${shown ? 'aos-animate' : ''} ${className}`}
+    >
       {children}
     </div>
   )
 }
+
 
 
 function CategoryIcon({ category }: { category: Category }) {
@@ -330,12 +345,14 @@ function Split({
   reverse?: boolean
 }) {
   return (
-    <Reveal>
-      <div className='grid grid-cols-1 items-center gap-10 lg:grid-cols-2 lg:gap-16'>
-        <div className={reverse ? 'lg:order-2' : ''}>{panelContent}</div>
-        <div className={reverse ? 'lg:order-1' : ''}>{text}</div>
-      </div>
-    </Reveal>
+    <div className='grid grid-cols-1 items-center gap-10 lg:grid-cols-2 lg:gap-16'>
+      <Reveal animation={reverse ? 'fade-left' : 'fade-right'} className={reverse ? 'lg:order-2' : ''}>
+        {panelContent}
+      </Reveal>
+      <Reveal animation={reverse ? 'fade-right' : 'fade-left'} delay={150} className={reverse ? 'lg:order-1' : ''}>
+        {text}
+      </Reveal>
+    </div>
   )
 }
 
@@ -608,162 +625,172 @@ export default function LandingPage({ mode }: LandingPageProps = {}) {
         <section className='pb-6'>
           <div className={`${container} grid grid-cols-1 gap-5 md:grid-cols-3`}>
             {/* Pengalaman */}
-            <div className={`${panel} p-5`}>
-              <p className='text-sm font-medium text-[var(--lp-heading)]'>Pengalaman</p>
-              <div className='mt-3 flex gap-4 border-b border-[var(--lp-border)] text-xs'>
-                <button
-                  type='button'
-                  onClick={() => setExperienceTab('organisasi')}
-                  className={`pb-2 font-medium transition-colors cursor-pointer ${
-                    experienceTab === 'organisasi'
-                      ? 'border-b-2 border-[var(--lp-accent)] text-[var(--lp-heading)]'
-                      : 'text-[var(--lp-text-sec)] hover:text-[var(--lp-text)]'
-                  }`}
-                >
-                  Organisasi
-                </button>
-                <button
-                  type='button'
-                  onClick={() => setExperienceTab('kompetisi')}
-                  className={`pb-2 font-medium transition-colors cursor-pointer ${
-                    experienceTab === 'kompetisi'
-                      ? 'border-b-2 border-[var(--lp-accent)] text-[var(--lp-heading)]'
-                      : 'text-[var(--lp-text-sec)] hover:text-[var(--lp-text)]'
-                  }`}
-                >
-                  Kompetisi
-                </button>
-              </div>
-              <div className='mt-4 flex flex-col gap-2.5'>
-                {(experienceTab === 'organisasi'
-                  ? [
-                      ['KD', 'Ketua Divisi Acara', 'Bincang Karir 2026', 4],
-                      ['SM', 'Staf Magang Marketing', 'Startup edukasi', 3],
-                      ['TP', 'Anggota Tim Proyek', 'Aplikasi donasi', 5]
-                    ]
-                  : [
-                      ['JK', 'Juara 1 UI/UX Design', 'National Hackathon 2025', 5],
-                      ['FB', 'Finalis Business Case', 'Management Challenge', 4],
-                      ['TD', 'Top 5 Data Science', 'Tech Olympiad 2026', 4]
-                    ]
-                ).map(([ini, t, s, n]) => (
-                  <div key={t as string} className={`${innerCard} flex items-center gap-3 p-3 transition-all animate-in fade-in duration-150`}>
-                    <span className='flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--lp-ai-bg)] text-xs font-medium text-[var(--lp-ai-text)]'>
-                      {ini}
-                    </span>
-                    <div className='min-w-0 flex-1'>
-                      <p className='truncate text-xs font-medium text-[var(--lp-heading)]'>{t}</p>
-                      <p className='truncate text-[11px] text-[var(--lp-text-sec)]'>{s}</p>
+            <Reveal animation='fade-up' delay={0}>
+              <div className={`${panel} p-5 h-full`}>
+                <p className='text-sm font-medium text-[var(--lp-heading)]'>Pengalaman</p>
+                <div className='mt-3 flex gap-4 border-b border-[var(--lp-border)] text-xs'>
+                  <button
+                    type='button'
+                    onClick={() => setExperienceTab('organisasi')}
+                    className={`pb-2 font-medium transition-colors cursor-pointer ${
+                      experienceTab === 'organisasi'
+                        ? 'border-b-2 border-[var(--lp-accent)] text-[var(--lp-heading)]'
+                        : 'text-[var(--lp-text-sec)] hover:text-[var(--lp-text)]'
+                    }`}
+                  >
+                    Organisasi
+                  </button>
+                  <button
+                    type='button'
+                    onClick={() => setExperienceTab('kompetisi')}
+                    className={`pb-2 font-medium transition-colors cursor-pointer ${
+                      experienceTab === 'kompetisi'
+                        ? 'border-b-2 border-[var(--lp-accent)] text-[var(--lp-heading)]'
+                        : 'text-[var(--lp-text-sec)] hover:text-[var(--lp-text)]'
+                    }`}
+                  >
+                    Kompetisi
+                  </button>
+                </div>
+                <div className='mt-4 flex flex-col gap-2.5'>
+                  {(experienceTab === 'organisasi'
+                    ? [
+                        ['KD', 'Ketua Divisi Acara', 'Bincang Karir 2026', 4],
+                        ['SM', 'Staf Magang Marketing', 'Startup edukasi', 3],
+                        ['TP', 'Anggota Tim Proyek', 'Aplikasi donasi', 5]
+                      ]
+                    : [
+                        ['JK', 'Juara 1 UI/UX Design', 'National Hackathon 2025', 5],
+                        ['FB', 'Finalis Business Case', 'Management Challenge', 4],
+                        ['TD', 'Top 5 Data Science', 'Tech Olympiad 2026', 4]
+                      ]
+                  ).map(([ini, t, s, n]) => (
+                    <div key={t as string} className={`${innerCard} flex items-center gap-3 p-3 transition-all animate-in fade-in duration-150`}>
+                      <span className='flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--lp-ai-bg)] text-xs font-medium text-[var(--lp-ai-text)]'>
+                        {ini}
+                      </span>
+                      <div className='min-w-0 flex-1'>
+                        <p className='truncate text-xs font-medium text-[var(--lp-heading)]'>{t}</p>
+                        <p className='truncate text-[11px] text-[var(--lp-text-sec)]'>{s}</p>
+                      </div>
+                      <span className='shrink-0 rounded-full bg-[var(--lp-accent-soft)] px-2 py-0.5 text-[11px] font-medium text-[var(--lp-link)]'>
+                        +{n} skill
+                      </span>
                     </div>
-                    <span className='shrink-0 rounded-full bg-[var(--lp-accent-soft)] px-2 py-0.5 text-[11px] font-medium text-[var(--lp-link)]'>
-                      +{n} skill
-                    </span>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
+            </Reveal>
 
             {/* Laporan skill */}
-            <div className={`${panel} flex flex-col p-5`}>
-              <p className='text-sm font-medium text-[var(--lp-heading)]'>Skill Report</p>
-              <div className='mt-5 flex flex-1 items-end justify-between gap-2'>
-                {[
-                  ['Sen', 10, 45],
-                  ['Sel', 30, 55],
-                  ['Rab', 5, 35],
-                  ['Kam', 40, 60],
-                  ['Jum', 15, 50],
-                  ['Sab', 25, 40],
-                  ['Min', 20, 65]
-                ].map(([d, bottom, h], i) => (
-                  <div key={d as string} className='flex flex-col items-center gap-2'>
-                    <div className='relative h-28 w-3.5 rounded-full bg-[var(--lp-card)]'>
-                      <div
-                        className={`absolute inset-x-0 rounded-full ${
-                          i % 2 === 0 ? 'bg-[var(--lp-accent)]' : 'bg-[var(--lp-ai)]'
-                        }`}
-                        style={{ bottom: `${bottom}%`, height: `${h}%` }}
-                      />
+            <Reveal animation='fade-up' delay={150}>
+              <div className={`${panel} flex flex-col p-5 h-full`}>
+                <p className='text-sm font-medium text-[var(--lp-heading)]'>Skill Report</p>
+                <div className='mt-5 flex flex-1 items-end justify-between gap-2'>
+                  {[
+                    ['Sen', 10, 45],
+                    ['Sel', 30, 55],
+                    ['Rab', 5, 35],
+                    ['Kam', 40, 60],
+                    ['Jum', 15, 50],
+                    ['Sab', 25, 40],
+                    ['Min', 20, 65]
+                  ].map(([d, bottom, h], i) => (
+                    <div key={d as string} className='flex flex-col items-center gap-2'>
+                      <div className='relative h-28 w-3.5 rounded-full bg-[var(--lp-card)]'>
+                        <div
+                          className={`absolute inset-x-0 rounded-full ${
+                            i % 2 === 0 ? 'bg-[var(--lp-accent)]' : 'bg-[var(--lp-ai)]'
+                          }`}
+                          style={{ bottom: `${bottom}%`, height: `${h}%` }}
+                        />
+                      </div>
+                      <span className='text-[10px] text-[var(--lp-text-sec)]'>{d}</span>
                     </div>
-                    <span className='text-[10px] text-[var(--lp-text-sec)]'>{d}</span>
+                  ))}
+                </div>
+                <div className='mt-5 flex items-end justify-between'>
+                  <div>
+                    <p className='text-[11px] text-[var(--lp-text-sec)]'>Total skill</p>
+                    <p className='text-xl font-medium text-[var(--lp-heading)]'>8</p>
+                  </div>
+                  <div className='text-right'>
+                    <p className='text-[11px] text-[var(--lp-text-sec)]'>Relevansi rata-rata</p>
+                    <p className='text-xl font-medium text-[var(--lp-heading)]'>74%</p>
+                  </div>
+                </div>
+              </div>
+            </Reveal>
+
+            {/* Readiness */}
+            <Reveal animation='fade-up' delay={300}>
+              <div className={`${panel} flex flex-col gap-3 p-5 h-full`}>
+                {[
+                  ['Product Manager', 'Target karier', 79, 'bg-[var(--lp-success)]', 'Ready'],
+                  ['UI/UX Designer', 'Target karier', 50, 'bg-[var(--lp-accent)]', 'Developing']
+                ].map(([t, s, v, bar, lab]) => (
+                  <div key={t as string} className={`${innerCard} flex-1 p-4`}>
+                    <div className='flex items-center gap-3'>
+                      <span className='flex h-10 w-10 items-center justify-center rounded-full bg-[var(--lp-accent-soft)] text-[var(--lp-link)]'>
+                        <Target className='h-[18px] w-[18px]' />
+                      </span>
+                      <div>
+                        <p className='text-sm font-medium text-[var(--lp-heading)]'>{t}</p>
+                        <p className='text-[11px] text-[var(--lp-text-sec)]'>{s}</p>
+                      </div>
+                    </div>
+                    <div className='mt-4 flex items-center justify-between text-xs'>
+                      <span className='text-[var(--lp-text-sec)]'>Career Readiness · {lab}</span>
+                      <span className='font-medium tabular-nums text-[var(--lp-heading)]'>{v}%</span>
+                    </div>
+                    <div className='mt-2 h-1.5 overflow-hidden rounded-full bg-[var(--lp-panel)]'>
+                      <div className={`h-full rounded-full ${bar}`} style={{ width: `${v}%` }} />
+                    </div>
                   </div>
                 ))}
               </div>
-              <div className='mt-5 flex items-end justify-between'>
-                <div>
-                  <p className='text-[11px] text-[var(--lp-text-sec)]'>Total skill</p>
-                  <p className='text-xl font-medium text-[var(--lp-heading)]'>8</p>
-                </div>
-                <div className='text-right'>
-                  <p className='text-[11px] text-[var(--lp-text-sec)]'>Relevansi rata-rata</p>
-                  <p className='text-xl font-medium text-[var(--lp-heading)]'>74%</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Readiness */}
-            <div className={`${panel} flex flex-col gap-3 p-5`}>
-              {[
-                ['Product Manager', 'Target karier', 79, 'bg-[var(--lp-success)]', 'Ready'],
-                ['UI/UX Designer', 'Target karier', 50, 'bg-[var(--lp-accent)]', 'Developing']
-              ].map(([t, s, v, bar, lab]) => (
-                <div key={t as string} className={`${innerCard} flex-1 p-4`}>
-                  <div className='flex items-center gap-3'>
-                    <span className='flex h-10 w-10 items-center justify-center rounded-full bg-[var(--lp-accent-soft)] text-[var(--lp-link)]'>
-                      <Target className='h-[18px] w-[18px]' />
-                    </span>
-                    <div>
-                      <p className='text-sm font-medium text-[var(--lp-heading)]'>{t}</p>
-                      <p className='text-[11px] text-[var(--lp-text-sec)]'>{s}</p>
-                    </div>
-                  </div>
-                  <div className='mt-4 flex items-center justify-between text-xs'>
-                    <span className='text-[var(--lp-text-sec)]'>Career Readiness · {lab}</span>
-                    <span className='font-medium tabular-nums text-[var(--lp-heading)]'>{v}%</span>
-                  </div>
-                  <div className='mt-2 h-1.5 overflow-hidden rounded-full bg-[var(--lp-panel)]'>
-                    <div className={`h-full rounded-full ${bar}`} style={{ width: `${v}%` }} />
-                  </div>
-                </div>
-              ))}
-            </div>
+            </Reveal>
           </div>
         </section>
 
         {/* ---------- strip jenis pengalaman ---------- */}
         <section className='pb-24 pt-5 md:pb-28'>
           <div className={container}>
-            <div className={`${panel} px-6 py-10 text-center sm:px-10`}>
-              <p className='text-lg font-medium text-[var(--lp-heading)] sm:text-xl'>
-                Semua jenis pengalaman bisa jadi skill
-              </p>
-              <div className='mt-8 flex flex-wrap items-center justify-center gap-x-10 gap-y-5'>
-                {[
-                  [<Users key='a' className='h-5 w-5' />, 'Organisasi'],
-                  [<CalendarDays key='b' className='h-5 w-5' />, 'Kepanitiaan'],
-                  [<Briefcase key='c' className='h-5 w-5' />, 'Magang'],
-                  [<Layers key='d' className='h-5 w-5' />, 'Proyek'],
-                  [<Trophy key='e' className='h-5 w-5' />, 'Kompetisi']
-                ].map(([icon, label]) => (
-                  <span
-                    key={label as string}
-                    className='flex items-center gap-2.5 text-base font-medium text-[var(--lp-text-sec)]'
-                  >
-                    {icon}
-                    {label}
-                  </span>
-                ))}
+            <Reveal animation='zoom-in'>
+              <div className={`${panel} px-6 py-10 text-center sm:px-10`}>
+                <p className='text-lg font-medium text-[var(--lp-heading)] sm:text-xl'>
+                  Semua jenis pengalaman bisa jadi skill
+                </p>
+                <div className='mt-8 flex flex-wrap items-center justify-center gap-x-10 gap-y-5'>
+                  {[
+                    [<Users key='a' className='h-5 w-5' />, 'Organisasi'],
+                    [<CalendarDays key='b' className='h-5 w-5' />, 'Kepanitiaan'],
+                    [<Briefcase key='c' className='h-5 w-5' />, 'Magang'],
+                    [<Layers key='d' className='h-5 w-5' />, 'Proyek'],
+                    [<Trophy key='e' className='h-5 w-5' />, 'Kompetisi']
+                  ].map(([icon, label]) => (
+                    <span
+                      key={label as string}
+                      className='flex items-center gap-2.5 text-base font-medium text-[var(--lp-text-sec)] transition-transform hover:scale-105'
+                    >
+                      {icon}
+                      {label}
+                    </span>
+                  ))}
+                </div>
               </div>
-            </div>
+            </Reveal>
           </div>
         </section>
 
         {/* ============================ FITUR (grid 3x2) ============================ */}
         <section id='features' className='scroll-mt-20 pb-24 md:pb-32'>
           <div className={container}>
-            <h2 className={`${h2Class} mx-auto max-w-[20ch] text-center`}>
-              Dari pengalaman ke karier, dalam satu alur
-            </h2>
+            <Reveal animation='fade-up'>
+              <h2 className={`${h2Class} mx-auto max-w-[20ch] text-center`}>
+                Dari pengalaman ke karier, dalam satu alur
+              </h2>
+            </Reveal>
 
             <div className='mt-14 grid grid-cols-1 gap-5 md:grid-cols-3'>
               {[
@@ -803,21 +830,23 @@ export default function LandingPage({ mode }: LandingPageProps = {}) {
                   d: 'Terisi otomatis dari profil, skill, dan pengalamanmu. Siap dibagikan lewat link.',
                   soon: true
                 }
-              ].map(f => (
-                <div key={f.t} className={`${panel} p-6 transition-transform hover:-translate-y-0.5 sm:p-7`}>
-                  <div className='flex items-start justify-between'>
-                    <span className='flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--lp-card)] text-[var(--lp-link)] shadow-[var(--lp-shadow-card)]'>
-                      {f.i}
-                    </span>
-                    {f.soon && (
-                      <span className='rounded-full bg-[var(--lp-card)] px-2.5 py-1 text-xs font-medium text-[var(--lp-text-sec)]'>
-                        Segera hadir
+              ].map((f, idx) => (
+                <Reveal key={f.t} animation='fade-up' delay={idx * 80}>
+                  <div className={`${panel} p-6 h-full sm:p-7`}>
+                    <div className='flex items-start justify-between'>
+                      <span className='lp-icon-box flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--lp-card)] text-[var(--lp-link)] shadow-[var(--lp-shadow-card)]'>
+                        {f.i}
                       </span>
-                    )}
+                      {f.soon && (
+                        <span className='rounded-full bg-[var(--lp-card)] px-2.5 py-1 text-xs font-medium text-[var(--lp-text-sec)]'>
+                          Segera hadir
+                        </span>
+                      )}
+                    </div>
+                    <h3 className='mt-8 text-lg font-medium text-[var(--lp-heading)]'>{f.t}</h3>
+                    <p className='mt-2 text-sm leading-[1.7] text-[var(--lp-text-sec)]'>{f.d}</p>
                   </div>
-                  <h3 className='mt-8 text-lg font-medium text-[var(--lp-heading)]'>{f.t}</h3>
-                  <p className='mt-2 text-sm leading-[1.7] text-[var(--lp-text-sec)]'>{f.d}</p>
-                </div>
+                </Reveal>
               ))}
             </div>
           </div>
@@ -826,12 +855,15 @@ export default function LandingPage({ mode }: LandingPageProps = {}) {
         {/* ============================ DEMO ============================ */}
         <section id='demo' className='scroll-mt-20 pb-24 md:pb-32'>
           <div className={container}>
-            <h2 className={`${h2Class} mx-auto max-w-[20ch] text-center`}>Coba ekstrak skill dari pengalamanmu</h2>
-            <p className='mx-auto mt-5 max-w-[52ch] text-center text-sm leading-[1.75] text-[var(--lp-text-sec)] sm:text-base'>
-              Tulis pengalaman, tinjau skill yang diusulkan AI, lalu lihat skormu bergerak. Tanpa daftar.
-            </p>
+            <Reveal animation='fade-up'>
+              <h2 className={`${h2Class} mx-auto max-w-[20ch] text-center`}>Coba ekstrak skill dari pengalamanmu</h2>
+              <p className='mx-auto mt-5 max-w-[52ch] text-center text-sm leading-[1.75] text-[var(--lp-text-sec)] sm:text-base'>
+                Tulis pengalaman, tinjau skill yang diusulkan AI, lalu lihat skormu bergerak. Tanpa daftar.
+              </p>
+            </Reveal>
 
-            <div className={`${panel} mt-12 p-3 sm:p-5`}>
+            <Reveal animation='zoom-in' delay={120}>
+              <div className={`${panel} mt-12 p-3 sm:p-5`}>
               <div className={`${innerCard} overflow-hidden`}>
                 <div className='grid grid-cols-1 lg:grid-cols-5'>
                   {/* kiri: input + skill */}
@@ -988,6 +1020,7 @@ export default function LandingPage({ mode }: LandingPageProps = {}) {
                 Ini simulasi dengan contoh data. Di Growvia, kamu memasukkan pengalamanmu sendiri.
               </p>
             </div>
+            </Reveal>
           </div>
         </section>
 
@@ -1179,19 +1212,23 @@ export default function LandingPage({ mode }: LandingPageProps = {}) {
         {/* ============================ UNTUK SIAPA ============================ */}
         <section id='untuk-siapa' className='scroll-mt-20 pb-24 md:pb-32'>
           <div className={container}>
-            <h2 className={`${h2Class} mx-auto max-w-[22ch] text-center`}>
-              Dibuat untuk yang sedang menyiapkan langkah pertama
-            </h2>
+            <Reveal animation='fade-up'>
+              <h2 className={`${h2Class} mx-auto max-w-[22ch] text-center`}>
+                Dibuat untuk yang sedang menyiapkan langkah pertama
+              </h2>
+            </Reveal>
             <div className='mt-14 grid grid-cols-1 gap-5 md:grid-cols-3'>
               {[
                 ['Mahasiswa aktif (semester 4–8)', 'Kamu aktif di organisasi atau kepanitiaan, tapi bingung menuliskannya di CV.'],
                 ['Fresh graduate', 'Pengalamanmu masih 0–2 tahun dan kamu ingin tahu skill apa yang perlu ditambah.'],
                 ['Career switcher', 'Kamu ingin memetakan ulang skill yang sudah ada untuk bidang baru.']
-              ].map(([t, d]) => (
-                <div key={t} className={`${panel} p-6 sm:p-7`}>
-                  <h3 className='text-lg font-medium text-[var(--lp-heading)]'>{t}</h3>
-                  <p className='mt-2 text-sm leading-[1.7] text-[var(--lp-text-sec)]'>{d}</p>
-                </div>
+              ].map(([t, d], idx) => (
+                <Reveal key={t} animation='fade-up' delay={idx * 120}>
+                  <div className={`${panel} p-6 sm:p-7 h-full`}>
+                    <h3 className='text-lg font-medium text-[var(--lp-heading)]'>{t}</h3>
+                    <p className='mt-2 text-sm leading-[1.7] text-[var(--lp-text-sec)]'>{d}</p>
+                  </div>
+                </Reveal>
               ))}
             </div>
           </div>
@@ -1200,42 +1237,46 @@ export default function LandingPage({ mode }: LandingPageProps = {}) {
         {/* ============================ FAQ ============================ */}
         <section id='faq' className='scroll-mt-20 pb-24 md:pb-32'>
           <div className={`${container} grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-16`}>
-            <h2 className={`${h2Class} max-w-[12ch] lg:col-span-4`}>Pertanyaan yang sering muncul</h2>
+            <Reveal animation='fade-right' className='lg:col-span-4'>
+              <h2 className={`${h2Class} max-w-[12ch]`}>Pertanyaan yang sering muncul</h2>
+            </Reveal>
 
             <div className='flex flex-col gap-3 lg:col-span-8'>
               {FAQ_ITEMS.map((item, idx) => {
                 const open = openFaq === idx
 
                 return (
-                  <div key={item.q} className={`${panel} px-6`}>
-                    <h3>
-                      <button
-                        type='button'
-                        onClick={() => setOpenFaq(open ? null : idx)}
-                        aria-expanded={open}
-                        aria-controls={`${faqId}-${idx}`}
-                        className={`flex w-full items-center justify-between gap-4 py-5 text-left text-base font-medium text-[var(--lp-heading)] ${focusRing}`}
+                  <Reveal key={item.q} animation='fade-up' delay={idx * 60}>
+                    <div className={`${panel} px-6`}>
+                      <h3>
+                        <button
+                          type='button'
+                          onClick={() => setOpenFaq(open ? null : idx)}
+                          aria-expanded={open}
+                          aria-controls={`${faqId}-${idx}`}
+                          className={`flex w-full items-center justify-between gap-4 py-5 text-left text-base font-medium text-[var(--lp-heading)] ${focusRing}`}
+                        >
+                          {item.q}
+                          <ChevronDown
+                            className={`h-5 w-5 shrink-0 text-[var(--lp-text-sec)] transition-transform duration-200 ${
+                              open ? 'rotate-180' : ''
+                            }`}
+                          />
+                        </button>
+                      </h3>
+                      <div
+                        id={`${faqId}-${idx}`}
+                        role='region'
+                        className={`grid transition-[grid-template-rows] duration-200 ease-out ${
+                          open ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
+                        }`}
                       >
-                        {item.q}
-                        <ChevronDown
-                          className={`h-5 w-5 shrink-0 text-[var(--lp-text-sec)] transition-transform duration-200 ${
-                            open ? 'rotate-180' : ''
-                          }`}
-                        />
-                      </button>
-                    </h3>
-                    <div
-                      id={`${faqId}-${idx}`}
-                      role='region'
-                      className={`grid transition-[grid-template-rows] duration-200 ease-out ${
-                        open ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
-                      }`}
-                    >
-                      <div className='overflow-hidden'>
-                        <p className='max-w-[62ch] pb-5 text-sm leading-[1.7] text-[var(--lp-text-sec)]'>{item.a}</p>
+                        <div className='overflow-hidden'>
+                          <p className='max-w-[62ch] pb-5 text-sm leading-[1.7] text-[var(--lp-text-sec)]'>{item.a}</p>
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  </Reveal>
                 )
               })}
             </div>
@@ -1245,48 +1286,50 @@ export default function LandingPage({ mode }: LandingPageProps = {}) {
         {/* ============================ CTA AKHIR ============================ */}
         <section className='pb-20 md:pb-28'>
           <div className={container}>
-            <div className='relative overflow-hidden rounded-[2rem] bg-[var(--lp-navy)] px-6 py-12 sm:px-12 md:py-16'>
-              <div className='grid grid-cols-1 items-center gap-10 md:grid-cols-2'>
-                <div>
-                  <h2 className='max-w-[14ch] text-3xl font-medium leading-[1.15] tracking-[-0.025em] text-white sm:text-4xl lg:text-[2.75rem]'>
-                    Mulai dari satu pengalaman.
-                  </h2>
-                  <p className='mt-5 max-w-[42ch] text-sm leading-[1.75] text-[var(--lp-on-navy)] sm:text-base'>
-                    Kamu bisa melihat skill pertamamu dalam waktu kurang dari 5 menit.
-                  </p>
-                  <div className='mt-8 flex flex-wrap items-center gap-4'>
-                    <Link
-                      href='/register'
-                      className='inline-flex items-center justify-center gap-2 rounded-full bg-white px-7 py-3 text-sm font-medium text-[var(--lp-navy)] transition hover:bg-slate-100 active:translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--lp-navy)]'
-                    >
-                      Daftar gratis
-                      <ArrowRight className='h-4 w-4' />
-                    </Link>
+            <Reveal animation='zoom-in'>
+              <div className='relative overflow-hidden rounded-[2rem] bg-[var(--lp-navy)] px-6 py-12 sm:px-12 md:py-16 shadow-xl'>
+                <div className='grid grid-cols-1 items-center gap-10 md:grid-cols-2'>
+                  <div>
+                    <h2 className='max-w-[14ch] text-3xl font-medium leading-[1.15] tracking-[-0.025em] text-white sm:text-4xl lg:text-[2.75rem]'>
+                      Mulai dari satu pengalaman.
+                    </h2>
+                    <p className='mt-5 max-w-[42ch] text-sm leading-[1.75] text-[var(--lp-on-navy)] sm:text-base'>
+                      Kamu bisa melihat skill pertamamu dalam waktu kurang dari 5 menit.
+                    </p>
+                    <div className='mt-8 flex flex-wrap items-center gap-4'>
+                      <Link
+                        href='/register'
+                        className='inline-flex items-center justify-center gap-2 rounded-full bg-white px-7 py-3 text-sm font-medium text-[var(--lp-navy)] transition hover:bg-slate-100 active:translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--lp-navy)]'
+                      >
+                        Daftar gratis
+                        <ArrowRight className='h-4 w-4' />
+                      </Link>
+                    </div>
                   </div>
-                </div>
 
-                <div className='relative mx-auto w-full max-w-[320px] md:ml-auto'>
-                  {/* PLACEHOLDER: ganti IMG.ctaPerson */}
-                  <img
-                    src={IMG.ctaPerson}
-                    alt='Contoh foto pengguna Growvia'
-                    width={640}
-                    height={640}
-                    loading='lazy'
-                    className='aspect-square w-full rounded-3xl object-cover'
-                  />
-                  <div className='absolute -bottom-4 -left-4 flex items-center gap-3 rounded-2xl bg-[var(--lp-card)] p-3 pr-5 shadow-[var(--lp-shadow-float)] sm:-left-8'>
-                    <span className='flex h-10 w-10 items-center justify-center rounded-full bg-[var(--lp-success-soft)] text-[var(--lp-success-text)]'>
-                      <CheckCircle2 className='h-5 w-5' />
-                    </span>
-                    <div>
-                      <p className='text-xs font-medium text-[var(--lp-heading)]'>Skill pertama siap</p>
-                      <p className='text-[11px] text-[var(--lp-text-sec)]'>Dari satu pengalaman</p>
+                  <div className='relative mx-auto w-full max-w-[320px] md:ml-auto'>
+                    {/* PLACEHOLDER: ganti IMG.ctaPerson */}
+                    <img
+                      src={IMG.ctaPerson}
+                      alt='Contoh foto pengguna Growvia'
+                      width={640}
+                      height={640}
+                      loading='lazy'
+                      className='aspect-square w-full rounded-3xl object-cover'
+                    />
+                    <div className='lp-float absolute -bottom-4 -left-4 flex items-center gap-3 rounded-2xl bg-[var(--lp-card)] p-3 pr-5 shadow-[var(--lp-shadow-float)] sm:-left-8'>
+                      <span className='flex h-10 w-10 items-center justify-center rounded-full bg-[var(--lp-success-soft)] text-[var(--lp-success-text)]'>
+                        <CheckCircle2 className='h-5 w-5' />
+                      </span>
+                      <div>
+                        <p className='text-xs font-medium text-[var(--lp-heading)]'>Skill pertama siap</p>
+                        <p className='text-[11px] text-[var(--lp-text-sec)]'>Dari satu pengalaman</p>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
+            </Reveal>
           </div>
         </section>
       </main>
