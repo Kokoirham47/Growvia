@@ -47,3 +47,10 @@ src/assets/iconify-icons/generated-icons.css
 /public/uploads/*
 !/public/uploads/.gitkeep
 
+# documentation, internal planning, proposal & skill files
+/docs/
+/plan-md/
+/skills/
+DESIGN.md
+PRODUCT.md
+TESTCASE_GROWVIA.md

@@ -1,136 +1,223 @@
-# ⚙️ Feature: F12 — Profile & Account Settings
+<p align="center">
+  <img src="public/images/growvia-logo.png" alt="Growvia Logo" width="96" height="96" />
+</p>
 
-> **Branch:** `feature/f12-profile-settings`  
-> **PIC / Assignee:** Anggota C (Beban: 20% — *Discovery & Identity*)  
-> **Prioritas:** P0 (Must Have)  
-> **Dependency:** F01 (Authentication) selesai (dapat dikerjakan secara independen)  
-> **Target Merge:** `develop` (Merge Paralel)  
-> **Dokumen Terkait:** [PRD (F12)](./plan-md/prd.md#f12--profile--settings) · [Task Management](./plan-md/task-management.md#f12--profile--settings) · [ERD](./plan-md/erd_growvia.md)
+<h1 align="center">Growvia</h1>
 
----
+<p align="center">
+  <strong>Turn Experience Into Opportunity.</strong><br>
+  AI-Powered Interconnected Skill Ecosystem & Career Readiness Platform untuk Mengoptimalkan Kapabilitas Talenta Digital Indonesia Menuju SDGs 2030.
+</p>
 
-## 📌 Deskripsi Fitur
+<p align="center">
+  <a href="https://growvia-hub.vercel.app" target="_blank"><strong>🌐 Coba Live Demo &raquo;</strong></a>
+  &nbsp;|&nbsp;
+  <a href="https://github.com/Kokoirham47/Growvia"><strong>💻 GitHub Repository &raquo;</strong></a>
+</p>
 
-Fitur Profile & Settings memfasilitasi pengguna untuk mengelola identitas pribadi, foto profil, preferensi akun, keamanan kredensial, kontrol privasi publik, hingga penghapusan akun secara aman (*Soft Delete*). Fitur ini berdiri secara independen dan dapat mulai dikembangkan segera setelah modul autentikasi dasar (F01) tersedia.
-
----
-
-## 🎯 Spesifikasi Kebutuhan & Sub-Fitur (PRD)
-
-### F12.1 Pengelolaan Profil (Edit Profile)
-- Pengguna dapat memperbarui informasi diri:
-  - **Nama Lengkap**
-  - **Institusi Pendidikan & Jurusan**
-  - **Tahun Kelulusan / Angkatan**
-  - **Headline Profesional** (contoh: *"Informatics Student | Aspiring AI Engineer"*).
-  - **Biografi Singkat** (ringkasan ketertarikan karier).
-- **Unggah Foto Avatar**:
-  - Dukungan format: JPEG, PNG, WebP (maksimal 2MB).
-  - Integrasi penyimpanan awan (*Cloud Storage*: S3 / Supabase Storage / GCS).
-  - Pratinjau gambar instan sebelum disimpan.
-
-### F12.2 Keamanan Akun (Account Settings)
-- **Ganti Password**:
-  - Input: Password saat ini, Password baru, Konfirmasi password baru.
-  - Validasi ketat sama seperti pendaftaran (min. 8 karakter, 1 huruf besar, 1 angka).
-  - Pesan error informatif jika password lama salah.
-- **Ubah Alamat Email**:
-  - Input alamat email baru.
-  - Sistem mengirimkan email konfirmasi ke alamat baru; status email berganti setelah link verifikasi di alamat baru diakses.
-
-### F12.3 Pengaturan Privasi (Privacy Settings)
-- **Visibilitas Portofolio Publik**:
-  - *Toggle switch*: `Publik` (portofolio dapat dilihat via link `/u/:slug`) vs `Privat` (halaman publik dinonaktifkan sementara dan mengembalikan 404).
-
-### F12.4 Penghapusan Akun (Delete Account / Danger Zone)
-- Mekanisme **Soft Delete** demi keamanan data:
-  - Pengguna harus melewati konfirmasi 2 langkah: mengetik kata konfirmasi (e.g. *"HAPUS AKUN SAYA"*) dan memasukkan password akun.
-  - Status user diubah menjadi `deleted` dan kolom `deleted_at` diisi timestamp saat ini.
-  - Data dipertahankan selama masa tenggang retensi 30 hari sebelum dihapus permanen.
-  - Session user langsung dihanguskan dan diarahkan ke halaman login.
+<p align="center">
+  <img src="https://img.shields.io/badge/Next.js-16-black?style=flat-square&logo=next.js" alt="Next.js" />
+  <img src="https://img.shields.io/badge/React-19-blue?style=flat-square&logo=react" alt="React" />
+  <img src="https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square&logo=typescript" alt="TypeScript" />
+  <img src="https://img.shields.io/badge/TailwindCSS-3.4-38B2AC?style=flat-square&logo=tailwind-css" alt="Tailwind CSS" />
+  <img src="https://img.shields.io/badge/Prisma-ORM-2D3748?style=flat-square&logo=prisma" alt="Prisma" />
+  <img src="https://img.shields.io/badge/PostgreSQL-Supabase-3ECF8E?style=flat-square&logo=supabase" alt="Supabase PostgreSQL" />
+  <img src="https://img.shields.io/badge/Google_Gemini-AI-4285F4?style=flat-square&logo=google" alt="Google Gemini AI" />
+  <img src="https://img.shields.io/badge/UINIC_8.0-2026-1E3A8A?style=flat-square" alt="UINIC 8.0" />
+</p>
 
 ---
 
-## 🗄️ Lingkup Backend & Skema Basis Data
+## 📌 Tentang Growvia
 
-### Endpoint API
+Indonesia menghadapi puncak bonus demografi (2030–2045) dengan lebih dari 64% populasi usia produktif. Namun, data BPS menunjukkan tingkat pengangguran terbuka lulusan universitas dan diploma masih tinggi, dipicu oleh **skill mismatch kronis** dan ketidakmampuan mahasiswa menerjemahkan pengalaman riil (organisasi, kepanitiaan, capstone, magang) menjadi bahasa kompetensi industri yang terukur.
 
-| Method | Endpoint | Deskripsi | Proteksi Auth |
-|---|---|---|---|
-| `GET` | `/api/profile` | Mengambil data profil lengkap pengguna yang sedang login | User Auth |
-| `PUT` | `/api/profile` | Memperbarui data profil (nama, bio, headline, institusi, jurusan) | User Auth |
-| `POST` | `/api/profile/avatar` | Upload file gambar avatar ke Cloud Storage & simpan URL | User Auth |
-| `PUT` | `/api/account/password` | Mengubah password akun dengan validasi password lama | User Auth |
-| `PUT` | `/api/account/email` | Mengajukan perubahan email akun | User Auth |
-| `PUT` | `/api/account/privacy` | Mengubah pengaturan privasi portofolio | User Auth |
-| `DELETE` | `/api/account` | Melakukan soft delete terhadap akun pengguna | User Auth |
+**Growvia** hadir sebagai solusi berbasis *evidence-based AI extraction*:
+1. **Mengubah narasi pengalaman bebas** menjadi taksonomi skill tervalidasi.
+2. **Mendiagnosis kesenjangan (*skill gap*)** terhadap target karier impian secara transparan.
+3. **Mengakselerasi kesiapan kerja** melalui rekomendasi materi belajar terkurasi, pencocokan lowongan berbobot persentase, dan portofolio publik instan.
 
-### Entitas Basis Data (Ownership: Anggota C & Anggota A)
+Platform ini diajukan dalam ajang **Web Development Competition UINIC 8.0 (UIN Sunan Kalijaga Yogyakarta 2026)** di bawah tema cabang *"Engineering Interconnected Web Solutions to Empower Digital Ecosystems"*, secara aktif mendukung pencapaian:
+- **SDG No. 4: Quality Education** (Peningkatan keterampilan relevan untuk pekerjaan layak dan kewirausahaan).
+- **SDG No. 8: Decent Work and Economic Growth** (Akselerasi kesiapan kerja generasi muda produktif).
 
-```mermaid
-erDiagram
-    USER {
-        uuid id PK
-        string name
-        string email UK
-        string password_hash
-        string avatar_url
-        enum status "active | unverified | suspended | deleted"
-        timestamp deleted_at
-    }
+---
 
-    PROFILE {
-        uuid id PK
-        uuid user_id FK "1-to-1"
-        string institution
-        string major
-        int graduation_year
-        text bio
-        string headline
-        string portfolio_slug UK
-    }
+## ✨ Fitur Utama (Core Features)
 
-    USER ||--|| PROFILE : "maintains"
+```
+[Pengalaman Nyata] ➔ [AI Smart Extractor] ➔ [Skill Profile & Evidence]
+                                                    │
+        ┌───────────────────────────────────────────┴───────────────────────────────────────────┐
+        ▼                                           ▼                                           ▼
+[Career Target & Gap]                    [Rekomendasi Belajar]                         [Peluang Karier]
+(Strong, Develop, Missing)               (Kursus, Artikel, Video)                      (Match % Transparan)
+        │
+        └───────────────────────────────────────────┬───────────────────────────────────────────┘
+                                                    ▼
+                                    [Public Shareable Portfolio]
+                                        (/u/:portfolioSlug)
+```
+
+### 1. 🧠 AI Smart Skill Extractor (Evidence-Based)
+- Pengguna menuliskan pengalaman (organisasi, kepanitiaan, magang, proyek riset/capstone).
+- Mesin AI (Google Gemini) mengekstraksi keterampilan spesifik lengkap dengan kategori (*Technical, Soft, Tools, Methodologies*), tingkat penguasaan, dan skor relevansi.
+- Pengguna memiliki kendali penuh (*human-in-the-loop*): menerima, menolak, atau mengoreksi usulan AI.
+
+### 2. 📊 Visual Skill Map & Evidence Ledger
+- Visualisasi profil kompetensi interaktif dengan radar chart dan pengelompokan taksonomi.
+- Setiap skill memiliki tautan bukti (*evidence ledger*) langsung ke pengalaman yang melatarbelakanginya, mengeliminasi fenomena *resume inflation*.
+
+### 3. 🎯 Career Readiness Engine & Gap Analysis
+- Pemilihan target profesi (misal: *Frontend Engineer, Product Manager, Data Scientist*).
+- Sistem menghitung **Career Readiness Score (0–100%)** dan memetakan gap menjadi 3 status jelas:
+  - 🟢 **Sudah Kuat (*Strong*)**
+  - 🟡 **Perlu Dikembangkan (*Need Development*)**
+  - 🔴 **Belum Ada (*Missing*)**
+
+### 4. 📚 Kurasi Rekomendasi Belajar Personal
+- Modul pembelajaran (kursus, video, dokumentasi resmi, artikel) direkomendasikan secara tepat sasaran untuk menutup celah skill yang hilang (*missing skills*).
+- Simulasi dampak: melihat langsung kenaikan skor kesiapan karier sebelum dan sesudah modul diselesaikan.
+
+### 5. 💼 AI-Matched Career & Opportunity Hub
+- Lowongan magang, kerja penuh waktu, freelance, dan kompetisi disajikan dengan persentase kecocokan (*match score*) transparan yang dihitung dari profil skill pengguna.
+
+### 6. 🌐 Instant Public Portfolio Builder (`/u/:slug`)
+- Pembuatan laman portofolio profesional satu klik yang terhubung langsung ke profil skill dan pengalaman pengguna.
+- Dilengkapi pengaturan privasi publik/privat serta tombol salin link instan.
+
+### 7. 🛡️ Role-Based Admin & Governance Dashboard
+- Panel administrasi untuk mengelola pengguna, kurasi peluang karier, moderasi katalog pembelajaran, audit sistem, dan fitur keamanan *soft-delete*.
+
+---
+
+## 🛠️ Tech Stack & Arsitektur
+
+| Lapisan | Teknologi | Deskripsi |
+|---|---|---|
+| **Frontend Framework** | Next.js 16 (App Router) | Server & Client Components, Fast Refresh, Streaming SSR |
+| **Bahasa Pemrograman** | TypeScript 5 | Static type safety end-to-end |
+| **Styling & Theme** | Tailwind CSS 3.4 & MUI 6 | Design System terstruktur dengan Dark/Light Mode otomatis |
+| **Animasi & Interaksi** | Vanilla CSS + IntersectionObserver | Zero-dependency scroll animations (AOS-style) & micro-interactions |
+| **Basis Data** | PostgreSQL (Supabase) | Relational database dengan connection pooling (Prisma Accelerate / Supabase Pooler) |
+| **ORM** | Prisma ORM | Type-safe schema, migrations, and seeding |
+| **Kecerdasan Buatan (AI)** | Google Gemini API (`@google/genai`) | Ekstraksi kompetensi cerdas, pemetaan taksonomi, dan analisis relevansi |
+| **Autentikasi** | NextAuth.js / JWT Session | Enkripsi password bcryptjs, sesi aman berbasis cookie HTTP-only |
+| **Validasi & Keamanan** | Zod, DOMPurify, Rate Limiter | Validasi skema input ketat, sanitasi anti-XSS & anti-CSRF |
+| **Deployment** | Vercel Platform | Edge-ready serverless environment dengan CDN global |
+
+---
+
+## 📂 Struktur Direktori Proyek
+
+```
+Growvia/
+├── public/                 # Static assets, logos, avatars, illustrations
+├── prisma/
+│   ├── schema.prisma       # Skema basis data relasional
+│   ├── seed.ts             # Main database seeder
+│   └── seed_*.ts           # Seeder katalog (karier, peluang, pembelajaran)
+├── src/
+│   ├── app/                # Next.js App Router (Halaman & Endpoint API)
+│   │   ├── (blank-layout-pages)/  # Auth & Onboarding pages
+│   │   ├── (dashboard)/           # Dashboard, Skill, Career, Portfolio, Admin
+│   │   ├── api/                   # RESTful API route handlers
+│   │   ├── u/[slug]/              # Public shareable portfolio
+│   │   └── globals.css            # Desain token, tema, & sistem animasi
+│   ├── components/         # Komponen UI modular (Admin, Layout, UI kit)
+│   ├── contexts/           # React Context (Auth, Theme Settings)
+│   ├── libs/
+│   │   ├── ai/             # Gemini API client & Skill Extractor logic
+│   │   ├── prisma.ts       # Singleton Prisma Client
+│   │   └── supabase/       # Supabase client helpers
+│   ├── server/             # Server validations (Zod), services, auth utils
+│   ├── types/              # Deklarasi TypeScript interfaces & types
+│   └── views/              # Page view components (Landing, Career, Learning, dll.)
+├── .env.example            # Template variabel lingkungan
+├── package.json
+└── tsconfig.json
 ```
 
 ---
 
-## 💻 Lingkup Frontend
+## 🚀 Panduan Instalasi Lokal (Getting Started)
 
-### Rute Halaman
-- `src/app/(dashboard)/profile/page.tsx` ➔ Halaman tampilan & edit profil.
-- `src/app/(dashboard)/settings/page.tsx` ➔ Halaman pengaturan akun, privasi, dan danger zone.
+### Prasyarat
+- **Node.js**: Versi `18.18.0` atau yang lebih baru
+- **npm** atau **pnpm**
+- Akun basis data **PostgreSQL** (disarankan menggunakan [Supabase](https://supabase.com))
+- **Google Gemini API Key** (dapat diperoleh gratis melalui [Google AI Studio](https://aistudio.google.com))
 
-### Komponen UI
-- `ProfileEditForm.tsx` ➔ Formulir data identitas diri dan pendidikan.
-- `AvatarUploader.tsx` ➔ Komponen upload foto dengan drag & drop dan pratinjau.
-- `SecuritySettings.tsx` ➔ Form ubah password dan email.
-- `PrivacySettings.tsx` ➔ Saklar pengaturan visibilitas portofolio publik.
-- `DeleteAccountModal.tsx` ➔ Dialog peringatan konfirmasi hapus akun dua langkah.
-
----
-
-## ✅ Kriteria Penerimaan (Acceptance Criteria)
-
-- [ ] Pengguna dapat mengedit profil biodata dan foto avatar terunggah dengan benar.
-- [ ] Validasi penggantian password mewajibkan verifikasi password lama yang sesuai.
-- [ ] Pengaturan privasi portofolio efektif mengatur akses publik URL `/u/:slug`.
-- [ ] Penghapusan akun menerapkan sistem soft delete dengan konfirmasi pengamanan ganda.
-- [ ] Feedback notifikasi sukses atau error ditampilkan secara interaktif.
-
----
-
-## 🛠️ Panduan Pengembangan
-
+### 1. Kloning Repositori
 ```bash
-# 1. Jalankan development server
-# 1. Jalankan development server
-npm run dev
-
-# 2. Buka pengaturan akun & profil:
-# http://localhost:3000/profile
-# http://localhost:3000/settings
-
-# 3. Lakukan validasi linting
-npm run lint
+git clone https://github.com/Kokoirham47/Growvia.git
+cd Growvia
 ```
+
+### 2. Instal Dependensi
+```bash
+npm install
+```
+
+### 3. Konfigurasi Environment Variables
+Salin file `.env.example` menjadi `.env`:
+```bash
+cp .env.example .env
+```
+Isi konfigurasi berikut pada `.env`:
+```env
+# Database (PostgreSQL / Supabase)
+DATABASE_URL="postgresql://postgres:[PASSWORD]@[HOST]:[PORT]/postgres?pgbouncer=true"
+DIRECT_URL="postgresql://postgres:[PASSWORD]@[HOST]:[PORT]/postgres"
+
+# NextAuth Secret & URL
+NEXTAUTH_SECRET="your-super-secret-jwt-key"
+NEXTAUTH_URL="http://localhost:3000"
+
+# Google Gemini AI API
+GEMINI_API_KEY="AIzaSy..."
+
+# App Configuration
+NEXT_PUBLIC_APP_URL="http://localhost:3000"
+```
+
+### 4. Sinkronisasi Skema Basis Data & Seeding
+```bash
+# Sinkronkan skema Prisma ke database
+npx prisma db push
+
+# Jalankan seeder data awal (katalog karier, course, peluang, admin akun)
+npm run seed
+```
+
+### 5. Jalankan Development Server
+```bash
+npm run dev
+```
+Buka [http://localhost:3000](http://localhost:3000) pada browser Anda.
+
+---
+
+## 🔒 Keamanan & Praktik Rekayasa Perangkat Lunak
+
+- **Validasi Data Berlapis**: Seluruh request body divalidasi ketat pada level server menggunakan **Zod Schema**.
+- **Pencegahan Injeksi & XSS**: Prisma ORM menggunakan parameterization queries bawaan untuk mencegah SQL Injection; input teks disanitasi sebelum ditampilkan.
+- **Enkripsi Kredensial**: Password akun di-hash menggunakan algoritma **bcryptjs** dengan salt factor yang aman.
+- **Proteksi Akses Role-Based (RBAC)**: Rute administratif (`/admin/*`) diproteksi melalui verifikasi session token level middleware dan server utility.
+- **Aksesibilitas (a11y) & Performa**: Mengikuti standar kontras WCAG 2.1 AA, dukungan `prefers-reduced-motion`, navigasi keyboard yang ramah, dan optimasi gambar bawaan Next.js.
+
+---
+
+## 👥 Tim Pengembang (Growvia Team)
+
+Karya ini dikembangkan oleh **Tim Growvia** untuk ajang **Web Development Competition UINIC 8.0 (2026)**:
+- **Ketua Tim / Lead Developer & Architect**: [Kokoirham47](https://github.com/Kokoirham47)
+- **Anggota Tim / UI/UX & Frontend Engineer**
+- **Anggota Tim / Backend & AI Engineer**
+
+---
+
+<p align="center">
+  Dibuat dengan ❤️ untuk Masa Depan Talenta Digital Indonesia.<br>
+  <strong>&copy; 2026 Growvia. All Rights Reserved.</strong>
+</p>
