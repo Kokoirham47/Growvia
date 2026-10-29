@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 
 import Link from 'next/link'
+import DashboardSkeleton from './DashboardSkeleton'
 
 import {
   TrendingUp,
@@ -290,24 +291,7 @@ export default function DashboardView({ initialData = null }: DashboardViewProps
   }
 
   if (isLoading) {
-    return (
-      <div className='flex flex-col gap-6 w-full pb-12 font-["Poppins",sans-serif] animate-pulse'>
-        <div className='h-20 rounded-3xl bg-slate-200 dark:bg-slate-800' />
-
-        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4'>
-          {[1, 2, 3, 4].map(i => (
-            <div key={i} className='h-36 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-6' />
-          ))}
-        </div>
-
-        <div className='h-40 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800' />
-
-        <div className='grid grid-cols-1 lg:grid-cols-12 gap-6'>
-          <div className='lg:col-span-8 h-96 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-6' />
-          <div className='lg:col-span-4 h-96 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-6' />
-        </div>
-      </div>
-    )
+    return <DashboardSkeleton />
   }
 
   if (error || !data) {
