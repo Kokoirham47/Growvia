@@ -28,8 +28,10 @@ const LoginPage = async (props: PageProps) => {
 
   // Vars
   const mode = await getServerMode()
+  const reason = typeof searchParams?.reason === 'string' ? searchParams.reason : undefined
+  const message = typeof searchParams?.message === 'string' ? searchParams.message : undefined
 
-  return <Login mode={mode} />
+  return <Login mode={mode} initialReason={reason} initialMessage={message} />
 }
 
 export default LoginPage

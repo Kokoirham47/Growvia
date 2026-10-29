@@ -31,12 +31,40 @@ interface FormErrors {
 
 interface LoginProps {
   mode?: SystemMode
+  initialReason?: string
+  initialMessage?: string
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export default function Login({ mode: _mode }: LoginProps) {
+export default function Login({ mode: _mode, initialReason, initialMessage }: LoginProps) {
   const router = useRouter()
   const { settings, updateSettings } = useSettings()
+  const [authNotice, setAuthNotice] = useState<string | null>(() => {
+    if (initialMessage) return initialMessage
+    if (initialReason === 'unauthorized') {
+      return 'Akses ditolak: Anda belum memiliki kredensial aktif atau sesi telah berakhir. Silakan masuk ke akun Anda terlebih dahulu.'
+    }
+    if (initialReason === 'session_expired') {
+      return 'Sesi login Anda telah berakhir. Silakan masuk kembali.'
+    }
+    return null
+  })
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search)
+      const reason = params.get('reason')
+      const message = params.get('message')
+
+      if (message) {
+        setAuthNotice(message)
+      } else if (reason === 'unauthorized') {
+        setAuthNotice('Akses ditolak: Anda belum memiliki kredensial aktif atau sesi telah berakhir. Silakan masuk ke akun Anda terlebih dahulu.')
+      } else if (reason === 'session_expired') {
+        setAuthNotice('Sesi login Anda telah berakhir. Silakan masuk kembali.')
+      }
+    }
+  }, [])
 
   // Track system preference for dark mode
   const [systemIsDark, setSystemIsDark] = useState(false)
@@ -156,6 +184,7 @@ return () => mediaQuery.removeEventListener('change', handler)
 
     setIsLoading(true)
     setErrors(prev => ({ ...prev, general: undefined }))
+    setAuthNotice(null)
     setUnverifiedData(null)
 
     try {
@@ -321,6 +350,24 @@ return
               Selamat datang kembali! Lanjutkan perjalanan kariermu.
             </p>
           </div>
+
+          {/* Alert Credential / Unauthorized Notice */}
+          {authNotice && !errors.general && (
+            <div className='p-3.5 mb-4 rounded-xl border border-amber-200 dark:border-amber-900/60 bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 text-xs font-medium flex items-center justify-between gap-2.5 animate-fadeIn'>
+              <div className='flex items-center gap-2.5'>
+                <AlertCircle className='w-4 h-4 shrink-0 text-amber-600 dark:text-amber-400' />
+                <span>{authNotice}</span>
+              </div>
+              <button
+                type='button'
+                onClick={() => setAuthNotice(null)}
+                className='text-amber-500 hover:text-amber-700 dark:hover:text-amber-200 p-0.5 rounded cursor-pointer'
+                aria-label='Tutup pemberitahuan'
+              >
+                <X className='w-3.5 h-3.5' />
+              </button>
+            </div>
+          )}
 
           {/* Alert General Error */}
           {errors.general && (

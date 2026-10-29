@@ -13,16 +13,6 @@ export async function GET() {
     let userId = session?.userId
 
     if (!userId) {
-      const demoUser = await prisma.user.findFirst({
-        where: { email: 'demo@growvia.id' }
-      })
-
-      const firstUser = demoUser || (await prisma.user.findFirst({ orderBy: { createdAt: 'asc' } }))
-
-      userId = firstUser?.id
-    }
-
-    if (!userId) {
       return apiError('Pengguna tidak terautentikasi', 401)
     }
 

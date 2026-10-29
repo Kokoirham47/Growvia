@@ -20,34 +20,6 @@ export async function GET(req: Request) {
     }
 
     if (!token) {
-      // In development / demo mode, fallback to active user
-      let demoUser = await prisma.user.findFirst({
-        where: { email: 'demo@growvia.id' },
-        include: { profile: true }
-      })
-
-      if (!demoUser) {
-        demoUser = await prisma.user.findFirst({
-          where: { careerTargets: { some: { isActive: true } } },
-          include: { profile: true }
-        })
-      }
-
-      if (demoUser) {
-        return apiSuccess({
-          user: {
-            id: demoUser.id,
-            name: demoUser.name,
-            email: demoUser.email,
-            avatarUrl: demoUser.avatarUrl,
-            status: demoUser.status,
-            emailVerifiedAt: demoUser.emailVerifiedAt,
-            createdAt: demoUser.createdAt
-          },
-          profile: demoUser.profile,
-          isProfileComplete: true
-        })
-      }
 
       return apiError('Tidak terautentikasi', 401)
     }

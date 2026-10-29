@@ -133,7 +133,6 @@ return NextResponse.redirect(adminLoginUrl)
   // 2. Bypass public auth API endpoints, master data career-fields, dashboard summary & health check
   if (
     pathname.startsWith('/api/auth/') ||
-    pathname.startsWith('/api/dashboard') ||
     pathname === '/api/career-fields' ||
     pathname === '/api/health'
   ) {
@@ -211,21 +210,17 @@ return res
 
   // 5. Halaman Dashboard & Fitur Terproteksi (/home, /dashboard, /onboarding, /experience, /skills, dll.)
   if (!isAuthenticated) {
-    // Di mode development, izinkan akses langsung ke /home dan /dashboard
-    if (pathname === '/home' || pathname === '/dashboard' || pathname === '/') {
-      return NextResponse.next()
-    }
-
     const loginUrl = new URL('/login', request.url)
 
+    // Sertakan alert reason bahwa user belum memiliki kredensial aktif
+    loginUrl.searchParams.set('reason', 'unauthorized')
 
     // Simpan return url agar bisa redirect kembali setelah login
-    if (pathname !== '/' && pathname !== '/home') {
+    if (pathname !== '/' && pathname !== '/home' && pathname !== '/dashboard') {
       loginUrl.searchParams.set('callbackUrl', pathname)
     }
 
-    
-return NextResponse.redirect(loginUrl)
+    return NextResponse.redirect(loginUrl)
   }
 
   return NextResponse.next()

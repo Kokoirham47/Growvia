@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server'
 import { Difficulty, LearningResourceType } from '@prisma/client'
 
 import { prisma } from '@/libs/prisma'
-import { getServerSession } from '@/server/utils/auth'
+import { getAuthUserId } from '@/server/utils/auth'
 import { apiSuccess, apiError } from '@/server/utils/response'
 import type { LearningCardItem, SyllabusModule } from '@/types/learning'
 
@@ -61,26 +61,6 @@ function formatCategory(type: LearningResourceType): 'course' | 'artikel' | 'vid
   }
 }
 
-/**
- * Helper to get current authenticated user ID
- */
-async function getAuthUserId(request: NextRequest): Promise<string | null> {
-  const headerUserId = request.headers.get('x-user-id')
-
-  if (headerUserId) return headerUserId
-
-  const session = await getServerSession()
-
-  if (session?.userId) return session.userId
-
-  // Fallback to demo active user in development
-  const demoUser = await prisma.user.findFirst({
-    where: { careerTargets: { some: { isActive: true } } },
-    select: { id: true }
-  })
-
-  return demoUser?.id ?? null
-}
 
 /**
  * GET /api/learning
